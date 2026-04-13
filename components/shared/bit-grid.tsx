@@ -12,6 +12,8 @@ interface BitGridProps {
   width?: 8 | 16 | 32;
   onBitToggle?: (bit: number) => void;
   labels?: Record<number, string>;
+  /** Per-bit background/border colors: maps bit index → CSS color string */
+  colors?: Record<number, string>;
   className?: string;
   readOnly?: boolean;
 }
@@ -21,10 +23,58 @@ export function BitGrid({
   width = 32,
   onBitToggle,
   labels = {},
+  colors,
   className,
   readOnly = false,
 }: BitGridProps) {
   const bits = Array.from({ length: width }, (_, i) => width - 1 - i);
+
+  function renderCell(bit: number) {
+    const isSet = (value >>> bit) & 1;
+    const label = labels[bit];
+    const color = colors?.[bit];
+
+    const cell = (
+      <button
+        key={bit}
+        type="button"
+        disabled={readOnly}
+        onClick={() => onBitToggle?.(bit)}
+        className={cn(
+          "h-8 flex items-center justify-center font-mono text-sm border rounded-sm transition-colors",
+          !color &&
+            (isSet
+              ? "bg-primary text-primary-foreground border-primary"
+              : "bg-background text-foreground border-border"),
+          !readOnly && "hover:opacity-80 cursor-pointer",
+          readOnly && "cursor-default"
+        )}
+        style={
+          color
+            ? {
+                backgroundColor: isSet ? color : `color-mix(in oklch, ${color} 18%, transparent)`,
+                borderColor: color,
+                color: isSet ? "#fff" : "inherit",
+              }
+            : undefined
+        }
+        aria-label={`Bit ${bit}, 值: ${isSet}`}
+      >
+        {isSet}
+      </button>
+    );
+
+    if (label) {
+      return (
+        <Tooltip key={bit}>
+          <TooltipTrigger render={cell} />
+          <TooltipContent>{label}</TooltipContent>
+        </Tooltip>
+      );
+    }
+
+    return cell;
+  }
 
   return (
     <div className={cn("space-y-1", className)}>
@@ -45,41 +95,7 @@ export function BitGrid({
           className="grid gap-px"
           style={{ gridTemplateColumns: `repeat(${Math.min(width, 16)}, 1fr)` }}
         >
-          {bits.slice(row * 16, (row + 1) * 16).map((bit) => {
-            const isSet = (value >>> bit) & 1;
-            const label = labels[bit];
-
-            const cell = (
-              <button
-                key={bit}
-                type="button"
-                disabled={readOnly}
-                onClick={() => onBitToggle?.(bit)}
-                className={cn(
-                  "h-8 flex items-center justify-center font-mono text-sm border rounded-sm transition-colors",
-                  isSet
-                    ? "bg-primary text-primary-foreground border-primary"
-                    : "bg-background text-foreground border-border",
-                  !readOnly && "hover:border-primary cursor-pointer",
-                  readOnly && "cursor-default"
-                )}
-                aria-label={`Bit ${bit}, 值: ${isSet}`}
-              >
-                {isSet}
-              </button>
-            );
-
-            if (label) {
-              return (
-                <Tooltip key={bit}>
-                  <TooltipTrigger render={cell} />
-                  <TooltipContent>{label}</TooltipContent>
-                </Tooltip>
-              );
-            }
-
-            return cell;
-          })}
+          {bits.slice(row * 16, (row + 1) * 16).map((bit) => renderCell(bit))}
         </div>
       ))}
 
