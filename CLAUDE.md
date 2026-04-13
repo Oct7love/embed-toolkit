@@ -17,7 +17,7 @@ Embed Toolkit 是面向嵌入式开发者的浏览器端工具集合平台，纯
 ## 目录结构
 
 ```
-embed-tookit/
+embed-toolkit/
 ├── app/
 │   ├── layout.tsx              # 根布局（侧边栏 + 主内容区）
 │   ├── page.tsx                # 首页 Dashboard
@@ -87,10 +87,10 @@ embed-tookit/
 
 ```bash
 # 创建 worktree 开发新工具
-git worktree add ../embed-tookit-feat-crc-calculator -b feat/crc-calculator
+git worktree add ../embed-toolkit-feat-crc-calculator -b feat/crc-calculator
 
 # 开发完成后移除 worktree
-git worktree remove ../embed-tookit-feat-crc-calculator
+git worktree remove ../embed-toolkit-feat-crc-calculator
 ```
 
 ### Agent-Team 协作
@@ -149,6 +149,20 @@ scope: 工具名或模块名
 - PR 必须包含完整的工具功能（UI + 计算逻辑）
 - 不要在一个 PR 中混合多个不相关的工具
 - 共享组件的修改单独提 PR
+
+## 网络与代理
+
+本机环境变量中配置了 HTTP 代理，但该代理**无法连接 GitHub**。执行 git push/pull 时需要绕过代理：
+
+```bash
+# git push/pull 绕过代理
+HTTP_PROXY="" HTTPS_PROXY="" ALL_PROXY="" git push origin main
+
+# pnpm install 如遇代理问题，同理
+HTTP_PROXY="" HTTPS_PROXY="" ALL_PROXY="" pnpm install
+```
+
+> 注意：不要用 `unset` 修改 shell 环境变量，用内联方式覆盖即可，避免影响其他需要代理的程序。
 
 ## 常用命令
 

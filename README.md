@@ -98,7 +98,7 @@ Embed Toolkit 将嵌入式工程师日常开发中频繁用到的计算、转换
 
 ```bash
 # 克隆仓库
-git clone https://github.com/your-username/embed-toolkit.git
+git clone https://github.com/Oct7love/embed-toolkit.git
 cd embed-toolkit
 
 # 安装依赖
@@ -123,7 +123,7 @@ pnpm type-check       # TypeScript 类型检查
 ## 项目结构
 
 ```
-embed-tookit/
+embed-toolkit/
 ├── app/                        # Next.js App Router 页面
 │   ├── layout.tsx              # 根布局
 │   ├── page.tsx                # 首页 Dashboard
