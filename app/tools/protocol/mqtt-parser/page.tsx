@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { MqttParser } from "@/components/tools/mqtt-parser/mqtt-parser";
 
 export const metadata: Metadata = {
   title: "MQTT 报文解析器",
@@ -9,14 +9,13 @@ export const metadata: Metadata = {
 export default function MqttParserPage() {
   return (
     <div className="p-4 lg:p-8 max-w-5xl mx-auto">
-      <Card>
-        <CardHeader>
-          <CardTitle>MQTT 报文解析器</CardTitle>
-          <CardDescription>
-            该工具正在开发中，敬请期待...
-          </CardDescription>
-        </CardHeader>
-      </Card>
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold tracking-tight">MQTT 报文解析器</h1>
+        <p className="text-muted-foreground mt-1">
+          粘贴原始字节流，解析 MQTT 固定头、报文类型、QoS、Topic、Payload
+        </p>
+      </div>
+      <MqttParser />
     </div>
   );
 }
