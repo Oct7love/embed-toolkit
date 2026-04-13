@@ -128,3 +128,8 @@
     @apply font-sans;
   }
 }
+
+/* iPhone safe area for bottom nav */
+.safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
