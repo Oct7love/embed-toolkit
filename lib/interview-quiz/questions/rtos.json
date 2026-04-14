@@ -987,5 +987,301 @@
     ],
     "correctAnswer": 1,
     "explanation": "Mutex 专为资源互斥设计：① 所有权防止误 give；② 优先级继承避免中优先级任务阻塞高优先级任务（经典的火星探路者 bug）。Semaphore（二值）适合同步通知——ISR 给任务发事件、任务间通知。选型原则：保护共享变量/外设用 Mutex；事件通知/同步用 Semaphore；计数资源（缓冲池）用计数 Semaphore。混用会导致优先级反转等问题。"
+  },
+  {
+    "id": "rtos-068",
+    "category": "rtos",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "三个任务 H（高）、M（中）、L（低），L 持有 Mutex，H 等待 Mutex，M 可运行。出现什么现象？",
+    "options": [
+      "H 立即运行",
+      "优先级反转：M 抢占 L，H 虽然优先级最高但因为等 Mutex 被 L 阻塞，L 又被 M 抢占，H 被间接饿死",
+      "L 被直接撤销 Mutex",
+      "三者同时运行"
+    ],
+    "correctAnswer": 1,
+    "explanation": "这是经典优先级反转场景（Priority Inversion）：L 持锁运行 → H 就绪但等 Mutex 阻塞 → M 就绪抢占 L（M 不需 Mutex）→ L 暂停导致 Mutex 无法释放 → H 被迫等待（优先级高却运行不了）→ M 完成后 L 才继续 → L 释放 Mutex，H 终于运行。1997 年火星探路者事件就是这类问题。解决方案：优先级继承或优先级天花板。"
+  },
+  {
+    "id": "rtos-069",
+    "category": "rtos",
+    "type": "single-choice",
+    "difficulty": "hard",
+    "question": "优先级继承（Priority Inheritance）机制的工作方式？",
+    "options": [
+      "持锁任务永久提升为最高优先级",
+      "当高优先级任务等待 Mutex 时，临时将 Mutex 持有者提升到等待者的优先级；释放 Mutex 后恢复原优先级",
+      "轮流使用锁",
+      "禁用所有中断"
+    ],
+    "correctAnswer": 1,
+    "explanation": "优先级继承动态机制：持锁任务 L 的优先级临时提升到等它锁的最高优先级任务 H 的优先级。原因：让 L 能抢占中优先级任务 M，尽快完成工作释放锁，让 H 运行。释放锁后 L 恢复原优先级。FreeRTOS Mutex 自动实现（Semaphore 不支持）。缺点：实现复杂、嵌套锁可能需多次调整、不能完全解决死锁。相关概念：优先级天花板（Ceiling）——更激进，拿锁立即提到最高级。"
+  },
+  {
+    "id": "rtos-070",
+    "category": "rtos",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "FreeRTOS 中进入临界区的正确方式？",
+    "options": [
+      "taskENTER_CRITICAL() / taskEXIT_CRITICAL()",
+      "__disable_irq() / __enable_irq()",
+      "vTaskSuspendAll() / xTaskResumeAll()",
+      "所有方式都可以，按场景选择"
+    ],
+    "correctAnswer": 3,
+    "explanation": "三种方式各有用途：① taskENTER_CRITICAL 屏蔽 configMAX_SYSCALL_INTERRUPT_PRIORITY 以下的中断，不影响更高级中断，安全且支持嵌套。② __disable_irq 关所有中断（包括高级），最强保护但影响系统响应，仅特殊场景用。③ vTaskSuspendAll 只禁止任务切换，不屏蔽中断，适合长临界区（临界区内不能调用阻塞 API）。选择原则：保护非常短的共享数据用 ENTER_CRITICAL，长时间逻辑用 Suspend。"
+  },
+  {
+    "id": "rtos-071",
+    "category": "rtos",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "configMAX_SYSCALL_INTERRUPT_PRIORITY 的作用？",
+    "options": [
+      "最高中断优先级",
+      "分割中断为'可调用 FromISR API'和'不可调用 API'两组",
+      "任务优先级上限",
+      "Tick 中断优先级"
+    ],
+    "correctAnswer": 1,
+    "explanation": "此值作为中断优先级阈值（Cortex-M 中数值越小优先级越高）：数值 >= 此值的中断（即较低优先级）可调用 FreeRTOS 的 FromISR API，但会被临界区屏蔽；数值 < 此值的中断（高于阈值）不能调用 FreeRTOS API 但不会被临界区屏蔽，响应最快。这样设计让高实时性中断（如 CAN、以太网）不受 RTOS 影响。配合 configKERNEL_INTERRUPT_PRIORITY（SysTick/PendSV 优先级，通常最低）。"
+  },
+  {
+    "id": "rtos-072",
+    "category": "rtos",
+    "type": "single-choice",
+    "difficulty": "hard",
+    "question": "以下代码存在什么问题？（Cortex-M）\n\nvoid ISR(void) {  // 优先级高于 configMAX_SYSCALL_INTERRUPT_PRIORITY\n    xSemaphoreGiveFromISR(sem, NULL);\n}",
+    "options": [
+      "无问题",
+      "ISR 优先级高于允许阈值，调用 FromISR API 会破坏内核状态（临界区无法屏蔽此中断）",
+      "应使用普通 API",
+      "sem 未创建"
+    ],
+    "correctAnswer": 1,
+    "explanation": "关键规则：调用 FromISR API 的 ISR 优先级数值必须 >= configMAX_SYSCALL_INTERRUPT_PRIORITY（即优先级低于或等于）。原因：内核用此阈值屏蔽中断实现临界区，若 ISR 优先级更高不被屏蔽，会在临界区中被调用，破坏内核数据结构。configASSERT 会在 FromISR API 入口检查并 assert 失败。写 ISR 时先检查中断优先级设置（NVIC_SetPriority）。这是嵌入式 RTOS 常见诡异崩溃的根源。"
+  },
+  {
+    "id": "rtos-073",
+    "category": "rtos",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "为什么 ISR 中不能调用 vTaskDelay？",
+    "options": [
+      "性能问题",
+      "vTaskDelay 会阻塞调用者，但 ISR 无任务上下文，阻塞 ISR 将破坏系统",
+      "API 未实现",
+      "需要设置优先级"
+    ],
+    "correctAnswer": 1,
+    "explanation": "vTaskDelay 的工作机制是把调用任务放入延时链表并让出 CPU，依赖'调用者是任务'这个前提。ISR 是响应硬件事件的上下文，不是任务——尝试阻塞 ISR 会破坏调度器状态、阻塞后续中断、触发 assertion。ISR 中需要'延时'应该：① 改为启动硬件定时器或软件定时器，到期在另一任务中处理；② 在 ISR 外处理定时逻辑。ISR 原则：短、快、不阻塞。"
+  },
+  {
+    "id": "rtos-074",
+    "category": "rtos",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "什么是'延迟中断处理'（Deferred Interrupt Processing）？",
+    "options": [
+      "推迟中断发生",
+      "ISR 只做最少工作（如清标志、读数据），通过信号量/队列通知任务做耗时处理",
+      "禁用中断",
+      "增加中断优先级"
+    ],
+    "correctAnswer": 1,
+    "explanation": "Deferred ISR 模式是 RTOS 最佳实践：ISR 保持短小（几十微秒内完成），把耗时工作放到任务（'下半部'）。典型流程：① ISR 接收硬件数据入 FIFO，或清标志位；② xSemaphoreGiveFromISR 或 xQueueSendFromISR 通知任务；③ 任务阻塞在信号量/队列上，被唤醒后处理数据。好处：保持低中断延迟，保证其他中断响应；耗时操作享用任务调度（可被更高任务抢占）。Linux 的 '上半部/下半部'（top half/bottom half）是同一思想。"
+  },
+  {
+    "id": "rtos-075",
+    "category": "rtos",
+    "type": "single-choice",
+    "difficulty": "hard",
+    "question": "taskENTER_CRITICAL 和 taskENTER_CRITICAL_FROM_ISR 的区别？",
+    "options": [
+      "相同",
+      "前者用于任务上下文（保存中断使能状态到变量，可嵌套）；后者用于 ISR，返回原中断状态",
+      "前者更快",
+      "后者不存在"
+    ],
+    "correctAnswer": 1,
+    "explanation": "taskENTER_CRITICAL 用于任务中：用内部计数支持嵌套，进入时提升中断屏蔽，退出时递减计数到 0 才恢复。taskENTER_CRITICAL_FROM_ISR 用于 ISR（仅当 ISR 中要访问共享数据）：返回当前中断状态，exit 时传回以恢复；不能嵌套。ISR 中短暂访问共享变量才需用，大多数 FromISR API 内部已处理好，应用层很少手写 FROM_ISR 版本的临界区。"
+  },
+  {
+    "id": "rtos-076",
+    "category": "rtos",
+    "type": "true-false",
+    "difficulty": "medium",
+    "question": "在 FreeRTOS 临界区内调用 vTaskDelay 是安全的。",
+    "options": [
+      "正确",
+      "错误"
+    ],
+    "correctAnswer": 1,
+    "explanation": "错误。临界区屏蔽中断/调度器，此时任务无法被切换。vTaskDelay 要求切换出当前任务，在临界区内调用会导致：① 断言失败（内核检测到调度器锁定）；② 或死锁（任务不让出，永远不到期）。类似的所有阻塞 API（xQueueReceive、xSemaphoreTake 超时 > 0 等）都不能在临界区或 vTaskSuspendAll 后调用。临界区应尽量短，仅包含必要的共享数据访问。"
+  },
+  {
+    "id": "rtos-077",
+    "category": "rtos",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "优先级天花板协议（Priority Ceiling Protocol）与优先级继承的区别？",
+    "options": [
+      "相同",
+      "天花板协议预先设定每个资源的'天花板优先级'，取资源立即提升到该级别；继承是被动按需提升",
+      "天花板只用于单资源",
+      "继承更保守"
+    ],
+    "correctAnswer": 1,
+    "explanation": "优先级天花板协议（PCP）：每个共享资源预先分配一个 ceiling 值 = 所有可能使用它的任务中最高优先级。任务获取资源时立即提升到 ceiling，释放时恢复。对比继承（仅当被高优先级等待时才提升）：PCP 更激进（无阻塞抢占），防止链式阻塞，适合硬实时；继承更灵活但可能链式升级复杂。FreeRTOS 实现的是继承，PCP 多见于学术/特殊系统（VxWorks 部分支持）。"
+  },
+  {
+    "id": "rtos-078",
+    "category": "rtos",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "taskYIELD 和 portYIELD_FROM_ISR 的使用场景区别？",
+    "options": [
+      "相同",
+      "taskYIELD 在任务中主动让出；portYIELD_FROM_ISR 在 ISR 末尾根据 pxHigherPriorityTaskWoken 决定是否立即切换",
+      "前者只能让给同级",
+      "后者弃用"
+    ],
+    "correctAnswer": 1,
+    "explanation": "taskYIELD()：任务主动请求调度器重新选择（用于同级轮转或自愿让出）。portYIELD_FROM_ISR(woken)：ISR 末尾的切换点，条件切换——如果 FromISR API 唤醒了更高优先级任务（woken=pdTRUE），立即上下文切换到它，否则继续被中断的任务。机制上 portYIELD_FROM_ISR 是置 PendSV pending，让 ISR 退出时硬件自动切换。两者在内核视角都是 '重新调度' 请求。"
+  },
+  {
+    "id": "rtos-079",
+    "category": "rtos",
+    "type": "single-choice",
+    "difficulty": "hard",
+    "question": "一个 ISR 嵌套（高优先级中断打断低优先级中断）是否会影响 RTOS？",
+    "options": [
+      "必然崩溃",
+      "只要嵌套的 ISR 符合 configMAX_SYSCALL_INTERRUPT_PRIORITY 规则且正确使用 FromISR API，RTOS 能正常工作",
+      "必须禁用嵌套",
+      "只影响任务切换"
+    ],
+    "correctAnswer": 1,
+    "explanation": "Cortex-M 支持中断嵌套，RTOS 兼容。关键规则：① 所有调用 FromISR API 的 ISR 优先级数值都 >= configMAX_SYSCALL_INTERRUPT_PRIORITY（允许阈值）；② 高于阈值的 ISR 不调用 RTOS API；③ ISR 尽量短。嵌套可改善实时响应（关键中断能打断其他 ISR）。但过度嵌套增加栈使用和调试复杂度。建议为最重要的中断（如电机控制、FOC）分配最高优先级且不使用 RTOS API。"
+  },
+  {
+    "id": "rtos-080",
+    "category": "rtos",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "vTaskSuspendAll 和 taskENTER_CRITICAL 的主要区别？",
+    "options": [
+      "完全相同",
+      "Suspend 只禁任务切换不屏蔽中断；Critical 屏蔽中断（影响 ISR）",
+      "Critical 更轻量",
+      "Suspend 只能用于低优先级任务"
+    ],
+    "correctAnswer": 1,
+    "explanation": "vTaskSuspendAll：调度器停止切换任务（加调度锁），但中断正常响应，ISR 仍可运行（不能唤醒任务让新任务运行，但可以 post 事件）。xTaskResumeAll 恢复。适合'保护任务间共享数据但允许 ISR 响应'。taskENTER_CRITICAL：屏蔽中断（按阈值），ISR 也被屏蔽。保护粒度更强但影响中断延迟。长临界段用 Suspend，短数据保护用 Critical。"
+  },
+  {
+    "id": "rtos-081",
+    "category": "rtos",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "CPU 关中断（__disable_irq）后调用 printf 安全吗？",
+    "options": [
+      "安全",
+      "不安全：printf 内部可能依赖中断（如串口发送完成中断），关中断会导致挂起",
+      "需先清缓冲区",
+      "仅 ISR 中不安全"
+    ],
+    "correctAnswer": 1,
+    "explanation": "printf 实现常依赖 UART 中断发送（发一字节等中断完成再发下一字节）或 semihosting 调用，关中断会让发送卡死。此外 printf 占栈大（几 KB）、不可重入（共享缓冲区）、在 ISR 中尤其危险。调试用的 printf 应慎用于关中断期间、ISR、临界区。替代方案：环形缓冲 + 任务异步刷出、ITM/SWO 调试输出、专用日志框架。高性能或安全代码中尽量避免 printf。"
+  },
+  {
+    "id": "rtos-082",
+    "category": "rtos",
+    "type": "true-false",
+    "difficulty": "medium",
+    "question": "Cortex-M 的 NVIC 允许为每个中断源独立设置优先级。",
+    "options": [
+      "正确",
+      "错误"
+    ],
+    "correctAnswer": 0,
+    "explanation": "正确。NVIC（Nested Vectored Interrupt Controller）为每个外部中断（IRQn）分配 8 位优先级字段（典型实现 4 位，16 级）。设置：NVIC_SetPriority(IRQn, priority)。还有分组：抢占优先级 + 子优先级（NVIC_SetPriorityGrouping）——高抢占可打断低抢占，同抢占按子优先级裁决。RTOS 要求用户正确设置，特别是 SysTick/PendSV（内核用，通常最低）和配合 configMAX_SYSCALL_INTERRUPT_PRIORITY。"
+  },
+  {
+    "id": "rtos-083",
+    "category": "rtos",
+    "type": "single-choice",
+    "difficulty": "hard",
+    "question": "以下是优先级反转的彻底解决方案吗？\n\n// 所有任务用同一个 Mutex",
+    "options": [
+      "是，全局锁简单有效",
+      "否，这会降低并发性且本质上是把共享范围放大",
+      "视情况而定",
+      "需配合优先级继承"
+    ],
+    "correctAnswer": 1,
+    "explanation": "全局锁不是好方案：① 并发度降到最低，所有任务串行，浪费多核和响应；② 反而更容易发生优先级反转（更多任务竞争同一锁）；③ 锁粒度太粗，不符合设计原则。正确方法：细粒度锁（每个资源一个 Mutex）+ 优先级继承 + 短临界区 + 避免嵌套锁（加锁顺序一致）+ 设计避免长持锁。某些系统用 lock-free 数据结构（如 ring buffer 的 SPSC 无锁实现）完全规避锁。"
+  },
+  {
+    "id": "rtos-084",
+    "category": "rtos",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "在 ISR 中访问全局变量时，是否需要加 volatile？",
+    "options": [
+      "不需要",
+      "需要，且还需临界区/原子操作保证访问的原子性和内存可见性",
+      "仅在编译优化 -O2 时需要",
+      "volatile 就足够"
+    ],
+    "correctAnswer": 1,
+    "explanation": "全局变量被 ISR 和任务共同访问时：① volatile 确保编译器每次都真正读写内存（不优化到寄存器），保证任务能看到 ISR 的写；② 对于 >字长的变量或读-改-写操作（x++），volatile 不保证原子性，必须配合临界区（任务侧）。32 位 MCU 上单个 uint32_t 赋值/读是原子的（对齐时），但 uint64_t 或复合结构不是。ARMv7-M 有 LDREX/STREX 指令可实现原子操作。"
+  },
+  {
+    "id": "rtos-085",
+    "category": "rtos",
+    "type": "single-choice",
+    "difficulty": "hard",
+    "question": "FreeRTOS 的 configKERNEL_INTERRUPT_PRIORITY 应设为？",
+    "options": [
+      "最高优先级",
+      "最低优先级（数值最大）",
+      "中间值",
+      "与任务优先级相同"
+    ],
+    "correctAnswer": 1,
+    "explanation": "configKERNEL_INTERRUPT_PRIORITY 是 SysTick 和 PendSV 的优先级，必须设为系统最低。原因：① PendSV 做上下文切换必须在所有 ISR 处理完后执行，否则会破坏嵌套中断的寄存器栈；② SysTick 低优先级让真正实时的外设中断可以抢占它，tick 不会延误实时响应。约定：configKERNEL_INTERRUPT_PRIORITY = 0xFF（最低）。configMAX_SYSCALL_INTERRUPT_PRIORITY 是中等值，高于它的 ISR 不用 API。"
+  },
+  {
+    "id": "rtos-086",
+    "category": "rtos",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "以下关于死锁的描述，错误的是？",
+    "options": [
+      "两个或以上任务互相等待对方持有的资源",
+      "必要条件包括：互斥、持有并等待、不可剥夺、循环等待",
+      "优先级继承能完全防止死锁",
+      "避免死锁的方法包括按固定顺序加锁"
+    ],
+    "correctAnswer": 2,
+    "explanation": "错误是 C。优先级继承解决的是优先级反转，不能防止死锁。死锁需满足四个条件（Coffman 条件）缺一不可。预防方法：① 固定加锁顺序（所有任务按统一顺序获取多锁）；② 避免持有锁时再请求其他锁；③ 使用超时（带 timeout 的 take，失败释放已持锁）；④ 层次化锁（每层只允许向下加锁）。检测死锁：watchdog、锁依赖图分析、静态分析工具。工业系统强烈依赖规范化设计避免死锁。"
+  },
+  {
+    "id": "rtos-087",
+    "category": "rtos",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "RT-Thread 中对应 FreeRTOS xSemaphoreTake 的 API 是？",
+    "options": [
+      "rt_sem_wait",
+      "rt_sem_take",
+      "osSemaphoreWait",
+      "sem_wait"
+    ],
+    "correctAnswer": 1,
+    "explanation": "RT-Thread 是国产主流 RTOS，API 风格前缀 rt_ + 模块 + 操作：rt_sem_take（获取）、rt_sem_release（释放）、rt_sem_create（创建动态）、rt_sem_init（初始化静态）。互斥量类似：rt_mutex_take、rt_mutex_release。osSemaphoreWait 是 CMSIS-RTOS API（跨不同 RTOS 的抽象层）。sem_wait 是 POSIX 线程 API。不同 RTOS API 不同但概念相通。"
   }
 ]
