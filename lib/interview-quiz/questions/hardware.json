@@ -957,5 +957,303 @@
     ],
     "correctAnswer": 1,
     "explanation": "测量交流信号（如音频、市电）：① ADC 通常只支持 0~Vref，负电压会烧；② 叠加直流偏置 Vref/2（中心电位），让 AC 信号摆动在 0~Vref 范围内（AC 耦合电容 + 分压偏置）；③ 采样后软件减去偏置得到双极性 AC 值；④ 计算方式：RMS = √(Σ(xi)²/N)、峰值 = max(|xi|)、THD 失真分析；⑤ 采样率 > 2×信号频率（Nyquist）；⑥ 市电测量需隔离变压器 + 分压保护。整套信号链要精心设计。"
+  },
+  {
+    "id": "h-066",
+    "category": "hardware",
+    "type": "single-choice",
+    "difficulty": "easy",
+    "question": "PWM 信号的三要素？",
+    "options": [
+      "频率、占空比、极性",
+      "仅频率",
+      "幅度、相位、频率",
+      "只有占空比"
+    ],
+    "correctAnswer": 0,
+    "explanation": "PWM（Pulse Width Modulation）三要素：① 频率——每秒脉冲数，决定'更新率'；② 占空比（Duty Cycle）——高电平时间占周期比例，决定平均输出；③ 极性——高电平有效还是低电平有效（可配置）。实际应用：① LED 亮度：频率 > 200Hz（避免肉眼闪烁），占空比控制亮度；② 电机调速：频率 1-20kHz（机械噪音），占空比控制电压；③ 舵机控制：频率 50Hz，占空比 5%-10% 对应 0-180°。"
+  },
+  {
+    "id": "h-067",
+    "category": "hardware",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "PWM 频率选择对电机控制的影响？",
+    "options": [
+      "无影响",
+      "低频（< 100Hz）有可闻的声音噪声但开关损耗小；高频（> 20kHz）静音但开关损耗大；通常选 10-20kHz 超声波避免噪声",
+      "频率越高越好",
+      "越低越省电"
+    ],
+    "correctAnswer": 1,
+    "explanation": "电机 PWM 频率选择权衡：① 低频（1-10kHz）——可闻噪声（电机线圈磁致伸缩）；② 中频（10-20kHz）——略超声无噪声，但开关损耗增加；③ 高频（> 20kHz）——静音，开关损耗大，MOSFET 热量增加。常用 10-20kHz 做直流电机调速。无刷电机（BLDC）控制频率 20-40kHz。步进电机更高（微步 50kHz+）。高电机电感不需要太高频率（本身有滤波效应）。"
+  },
+  {
+    "id": "h-068",
+    "category": "hardware",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "定时器输出 1kHz PWM，系统时钟 72MHz，Prescaler=71，ARR 应设为？",
+    "options": [
+      "999",
+      "1000",
+      "71",
+      "72"
+    ],
+    "correctAnswer": 0,
+    "explanation": "PWM 频率公式：f_PWM = f_CLK / ((PSC+1) × (ARR+1))。代入：1000 = 72M / ((71+1) × (ARR+1)) → (ARR+1) × 72 = 72000 → ARR+1 = 1000 → ARR = 999。关键理解：PSC（预分频器）将主时钟分频到定时器基础时钟（72M/72=1MHz），ARR（自动重装值）决定定时器从 0 数到 ARR 后溢出（周期 = ARR+1 个时钟）。所以定时器频率 = 1MHz / 1000 = 1kHz。PSC 和 ARR 寄存器都是寄存值 + 1 = 实际分频。"
+  },
+  {
+    "id": "h-069",
+    "category": "hardware",
+    "type": "single-choice",
+    "difficulty": "hard",
+    "question": "STM32 定时器 PWM 模式 1 (PWM1) 的行为？",
+    "options": [
+      "固定输出",
+      "向上计数时：CNT < CCR 输出有效电平，CNT ≥ CCR 输出无效电平；CCR 决定占空比（小 CCR 低占空比）",
+      "互补输出",
+      "双脉冲"
+    ],
+    "correctAnswer": 1,
+    "explanation": "STM32 PWM 模式 1（向上计数）：CNT < CCRx 时输出高（有效），CNT ≥ CCRx 时输出低。占空比 = CCR / (ARR+1)。PWM 模式 2 相反：CNT < CCRx 时输出低。CCR 值可动态修改——改变占空比（注意是否启用预装载，立即生效 or 下个周期）。Center-Aligned 模式在向上向下都输出，用于高级电机控制（互补、死区、中心对齐 PWM 对 BLDC/FOC 有益）。"
+  },
+  {
+    "id": "h-070",
+    "category": "hardware",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "STM32 高级定时器（TIM1/TIM8）相比通用定时器的特性？",
+    "options": [
+      "相同",
+      "多了互补输出、死区时间、刹车输入、重复计数器等，专为电机控制设计",
+      "只是数量多",
+      "更慢"
+    ],
+    "correctAnswer": 1,
+    "explanation": "STM32 高级定时器（Advanced Timer）专业功能：① 互补输出 CH1/CH1N 等——三相电机驱动（每相高低管互补）；② 死区时间（Dead Time）——高低管切换插入时间间隙防止直通（桥臂短路）；③ 刹车输入（BKIN）——紧急事件强制关闭 PWM 输出；④ 重复计数器 RCR——每 N 次计数溢出才触发更新事件；⑤ 更精确的 ADC 触发。这些对三相 BLDC/PMSM 电机 FOC 控制必需。通用定时器适合普通 PWM、PWM 输入捕获、编码器接口。"
+  },
+  {
+    "id": "h-071",
+    "category": "hardware",
+    "type": "single-choice",
+    "difficulty": "easy",
+    "question": "舵机控制的 PWM 参数？",
+    "options": [
+      "任意",
+      "周期 20ms (50Hz)，脉宽 1ms-2ms (对应 0-180°)，1.5ms 为中位 90°",
+      "1kHz",
+      "20MHz"
+    ],
+    "correctAnswer": 1,
+    "explanation": "标准模拟舵机 PWM：① 频率 50Hz（周期 20ms）；② 脉宽（高电平时间）1.0-2.0ms 线性映射 0-180°，1.5ms 是 90° 中位；③ 扩展脉宽（0.5-2.5ms）可转到 0-270°（取决于舵机型号）；④ 数字舵机（如 Futaba SBus）帧率 333Hz。实际控制脉宽用分辨率 ≤ 10μs（对应角度 < 1°）。定时器配置：50Hz = 20ms，设 PSC + ARR 使每计数约 1μs（1MHz tick），ARR=20000 满量程，CCR=1000-2000 对应角度。"
+  },
+  {
+    "id": "h-072",
+    "category": "hardware",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "定时器输入捕获（Input Capture）的作用？",
+    "options": [
+      "输出",
+      "测量外部信号的脉宽、周期或频率——GPIO 边沿触发时自动保存计数器值到 CCR 寄存器",
+      "ADC 读取",
+      "存储"
+    ],
+    "correctAnswer": 1,
+    "explanation": "Input Capture 原理：① 定时器自由运行（计数器持续计数）；② 配置某通道为输入捕获模式；③ 外部信号边沿（上升、下降或双沿）触发时，硬件自动把 CNT 当前值存到 CCR；④ 同时产生中断让软件读取。应用：① 测量周期——记录两次上升沿的 CCR 差；② 测量脉宽——一次上升一次下降 CCR 差；③ PWM 输入测频 + 占空比（双通道互补触发）；④ 超声波测距 HC-SR04、霍尔编码器。STM32 通用定时器都支持。"
+  },
+  {
+    "id": "h-073",
+    "category": "hardware",
+    "type": "single-choice",
+    "difficulty": "hard",
+    "question": "编码器（Encoder）接口模式？",
+    "options": [
+      "不支持",
+      "定时器特殊模式，两路输入（A、B 相）正交信号，硬件自动加减计数器，无需 CPU 处理；适合旋转编码器解码",
+      "ADC 测角度",
+      "UART 接收"
+    ],
+    "correctAnswer": 1,
+    "explanation": "增量编码器接口（Quadrature Encoder Mode）：① 定时器配置编码器模式；② A、B 相输入到 CH1、CH2；③ 硬件根据 A、B 相位关系自动判断方向，计数器自动 +1 或 -1；④ 软件定期读取 CNT 获取位置。模式类型：①TI1 单边沿、TI2 单边沿（低分辨率）、②TI1+TI2 双边沿（4 倍分辨率 = 4× quadrature）。零点 Z 相需要外部中断配合重置计数器。STM32 专门硬件支持让编码器解码几乎零 CPU 开销，关键于电机位置/速度控制。"
+  },
+  {
+    "id": "h-074",
+    "category": "hardware",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "定时器 + DMA 的作用？",
+    "options": [
+      "加速计时",
+      "定时器事件触发 DMA 搬运——例如定时采 ADC、按节拍更新 GPIO 输出、精确波形生成",
+      "存储时间",
+      "不能配合"
+    ],
+    "correctAnswer": 1,
+    "explanation": "定时器 + DMA 的典型应用：① 定时采 ADC——定时器 TRGO 触发 ADC，ADC 完成触发 DMA 存 RAM，CPU 零干预；② 精确波形生成——定时器节拍触发 DMA 从 RAM 读数据写到 DAC 或 GPIO，可实现音频 DAC、SPWM；③ LED 矩阵扫描——按 tick 更新 GPIO 列选；④ 伺服电机编队控制。STM32 定时器多个事件（Update、CC1-4、Trigger）都可触发 DMA。无 DMA 全靠 ISR 则 CPU 负载巨大。"
+  },
+  {
+    "id": "h-075",
+    "category": "hardware",
+    "type": "single-choice",
+    "difficulty": "easy",
+    "question": "DMA 的主要作用？",
+    "options": [
+      "加快 CPU",
+      "在外设和内存（或内存间）直接传输数据，不占用 CPU，CPU 可做其他工作",
+      "扩展内存",
+      "加密"
+    ],
+    "correctAnswer": 1,
+    "explanation": "DMA（Direct Memory Access）核心价值：① 外设 ↔ 内存、内存 ↔ 内存间高速搬运，不经过 CPU；② CPU 只需配置一次并接收完成中断，可并行做其他工作；③ 适合：UART/SPI/I2C 大量数据、ADC 连续采样、LCD 刷屏、DMA2D 硬件加速图形。典型延迟：DMA 搬 1K 字节可能几十微秒，CPU 在此期间正常运行。注意：DMA 与 CPU 竞争总线，可能插入等待周期。高速 MCU（H7 等）有多条 AHB 矩阵降低冲突。"
+  },
+  {
+    "id": "h-076",
+    "category": "hardware",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "STM32 DMA 的循环模式（Circular Mode）？",
+    "options": [
+      "无限循环转 CPU",
+      "传输计数到 0 后自动重新开始下一轮传输，适合连续采样/循环发送",
+      "错误模式",
+      "双缓冲"
+    ],
+    "correctAnswer": 1,
+    "explanation": "DMA 循环模式（Circular Mode）：传输完成后不停止，自动重置指针和计数器重新开始。应用：① ADC 连续采样——固定缓冲区循环写入，软件在半满/全满中断处理数据；② 周期波形输出——DAC/GPIO 循环输出波表；③ UART 接收循环缓冲——永不停止接收，软件用 IDLE 中断判断帧结束。半传输中断 + 全传输中断使软件能处理一半同时 DMA 写另一半（ping-pong 缓冲），防数据覆盖。非常实用。"
+  },
+  {
+    "id": "h-077",
+    "category": "hardware",
+    "type": "single-choice",
+    "difficulty": "hard",
+    "question": "DMA 使用的注意事项？",
+    "options": [
+      "无注意事项",
+      "① 缓冲区对齐（某些外设要求4字节对齐）；② Cache 一致性（Cortex-M7+）；③ 外设和 DMA stream/channel 匹配；④ 优先级和总线冲突",
+      "随便用",
+      "只需配置一次"
+    ],
+    "correctAnswer": 1,
+    "explanation": "DMA 配置雷区：① 缓冲区对齐——DMA 以指定宽度（字节/半字/字）传输，缓冲区地址要对齐；② Cache 一致性（Cortex-M7 有 Cache）——DMA 写入后 CPU 可能读到旧 Cache，需要 SCB_InvalidateDCache；CPU 写入后 DMA 可能读到 Cache 缓存前的旧数据，需要 CleanDCache；③ Stream/Channel 映射——每个外设只能使用特定 DMA stream（看 RM 手册）；④ 优先级配置影响总线冲突时谁胜出；⑤ 源和目的增量方向正确；⑥ DMA 对 Flash 访问受限（有些 Flash 路径不连接 DMA）。"
+  },
+  {
+    "id": "h-078",
+    "category": "hardware",
+    "type": "true-false",
+    "difficulty": "medium",
+    "question": "双缓冲 DMA（Ping-Pong Buffer）可以实现连续无间断数据流处理。",
+    "options": [
+      "正确",
+      "错误"
+    ],
+    "correctAnswer": 0,
+    "explanation": "正确。Ping-Pong 双缓冲：两个缓冲区 A、B 交替使用：① DMA 写入 A 时 CPU 处理 B 中数据；② A 满了触发中断，DMA 切到 B，CPU 开始处理 A；③ 如此交替。好处：①CPU 和 DMA 并行——数据流不间断，不丢采样；②CPU 有充足时间处理（不必在 DMA 全传输的几微秒内完成）。STM32 DMA 双缓冲模式：配置 M0AR 和 M1AR 两个地址，DBM 位开启，硬件自动切换。音频/视频流、高速 ADC 采样必用此技术。"
+  },
+  {
+    "id": "h-079",
+    "category": "hardware",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "定时器基本周期 = (PSC+1) × (ARR+1) / f_CLK，若 f_CLK=72MHz，想要 1 秒定时器中断，合理配置？",
+    "options": [
+      "PSC=7199, ARR=9999",
+      "PSC=0, ARR=72000000 (超过 16 位范围)",
+      "PSC=72000, ARR=1000 (PSC 也超范围)",
+      "无法配置"
+    ],
+    "correctAnswer": 0,
+    "explanation": "1 秒 = 72M 个时钟 = 72,000,000。需拆分到 PSC 和 ARR（都是 16 位，最大 65535）：① 72M = 7200 × 10000 → PSC=7199, ARR=9999 ✓；② 72M = 10000 × 7200 也行；③ 规则 (PSC+1)×(ARR+1) = 1 秒的时钟数。72M 超过单个 16 位寄存器，必须 PSC 降低定时器时钟后用 ARR 数到指定数。某些 32 位定时器（STM32F4 TIM2/5）有 32 位 ARR 可直接用 ARR=72M-1。"
+  },
+  {
+    "id": "h-080",
+    "category": "hardware",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "PWM 输出调光 LED，人眼感觉线性需要？",
+    "options": [
+      "占空比线性",
+      "占空比需按指数/伽马曲线映射，因为人眼对亮度感知非线性（对低亮度敏感）",
+      "随机",
+      "正弦波"
+    ],
+    "correctAnswer": 1,
+    "explanation": "人眼亮度感知非线性：伽马特性（Weber-Fechner 定律）——低亮度下对变化敏感，高亮度下感知钝化。线性 PWM 调光（0% 到 100% 等步长）在低亮度段看起来跳跃，高亮度段几乎感觉不出变化。解决：映射曲线，如：duty = 100 × (input/100)^2.2（伽马 2.2）或查表（预计算 256 个映射值）。LED 驱动器（如 WS2812B）内部做 8 位到 256 级感知亮度映射（虽然仍不完美）。好的 UI 调光应做此转换。"
+  },
+  {
+    "id": "h-081",
+    "category": "hardware",
+    "type": "single-choice",
+    "difficulty": "hard",
+    "question": "定时器 DMA Burst 模式的作用？",
+    "options": [
+      "最大速度",
+      "一次定时器事件触发 DMA 连续搬运多个寄存器（如同时更新 TIM 的多个 CCR），实现精确的多通道同步",
+      "错误",
+      "存储"
+    ],
+    "correctAnswer": 1,
+    "explanation": "Timer DMA Burst 是高级技巧：① 一次定时器更新事件，DMA 通过 DMAR 寄存器连续传输多个数据，依次写入从 DBL（目标基地址）到 DBL+N 的多个寄存器；② 用途：在单次定时器周期精确同步更新多个 CCR（如三相 PWM 同时更新三个占空比）；③ 同步性极高——硬件保证原子性；④ 实现 BLDC FOC、SPWM（正弦 PWM）等复杂电机控制；⑤ 复杂但高效。普通场景用不着，专业电机控制常用。"
+  },
+  {
+    "id": "h-082",
+    "category": "hardware",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "以下哪种不是 DMA 的触发源？",
+    "options": [
+      "软件触发",
+      "定时器事件",
+      "外设完成（UART RXNE、ADC EOC）",
+      "堆栈溢出"
+    ],
+    "correctAnswer": 3,
+    "explanation": "DMA 触发源：① 外设请求——UART 的 RXNE/TXE、SPI 的 RXNE/TXE、ADC 的 EOC、I2C 的 TXE 等，外设内部信号直接触发 DMA；② 定时器事件——TRGO、更新事件、捕获比较；③ 软件——memory-to-memory 模式手动触发；④ 外部中断（某些 DMA 控制器）。堆栈溢出触发的是异常（HardFault），与 DMA 无关。设计数据流时选择正确的触发源是实现零 CPU 参与的关键。"
+  },
+  {
+    "id": "h-083",
+    "category": "hardware",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "SPWM（正弦 PWM）用于逆变器的原理？",
+    "options": [
+      "简单 PWM",
+      "占空比按正弦规律变化（预计算查表或实时计算），LC 滤波后输出正弦波——DC 转 AC",
+      "线性",
+      "方波"
+    ],
+    "correctAnswer": 1,
+    "explanation": "SPWM 生成正弦波：① PWM 频率 > 20kHz（高频载波）；② 占空比随时间按正弦规律变化（Duty(t) = 50% + 50% × sin(2π×f×t)）；③ 输出通过 LC 低通滤波器滤除高频 PWM 分量，保留低频正弦分量（f 是目标输出频率如 50Hz）；④ 实现：预计算正弦表（如 256 点），定时器 DMA burst 更新 CCR；⑤ 应用：UPS 逆变器、伺服电机、音频 class-D 放大器。功率管通断频率高但平均输出是正弦，效率远高于线性放大。"
+  },
+  {
+    "id": "h-084",
+    "category": "hardware",
+    "type": "single-choice",
+    "difficulty": "easy",
+    "question": "PWM 为什么不直接驱动需要恒定电压的负载（如数字电路）？",
+    "options": [
+      "可以直接驱动",
+      "PWM 是方波，需要低通滤波平均后才是直流电压；数字电路要求稳定的高低电平",
+      "PWM 速度慢",
+      "功耗问题"
+    ],
+    "correctAnswer": 1,
+    "explanation": "PWM 本质是开关信号（全开/全关），不是连续电压。驱动数字电路（逻辑电平要求）必然导致电平在高低间跳变，电路无法判断信号（TTL 电路看到 PWM 会反复切换状态）。PWM 适合：① 感性/容性负载（电机、LED、加热器）——本身具有滤波效应；② 外加 LC/RC 滤波器后作为 DC 输出；③ 平均功率控制（加热、功率传输）。数字驱动要用真正的稳定电平（DAC 或稳定电源）。"
+  },
+  {
+    "id": "h-085",
+    "category": "hardware",
+    "type": "single-choice",
+    "difficulty": "hard",
+    "question": "互补 PWM + 死区时间的作用？",
+    "options": [
+      "节能",
+      "驱动半桥/全桥电路时，上下管切换间插入死区防止同时导通（直通短路），保护功率器件",
+      "增加噪声",
+      "无用"
+    ],
+    "correctAnswer": 1,
+    "explanation": "半桥/全桥电路（如电机驱动、逆变器）：上管（high-side）和下管（low-side）交替导通，不能同时（否则电源直接短路地，瞬间烧 MOSFET）。死区时间：MOSFET 关断比开通慢（存储时间 + 米勒平台），若无死区，关断的管子还在部分导通时开通的管子已开始导通，直通。插入死区时间（典型 100ns-1μs，根据 MOSFET 速度）：① 关 A → ② 等死区 → ③ 开 B。STM32 高级定时器硬件生成死区（BDTR 寄存器配置），互补输出 CH1/CH1N 自动满足约束。"
   }
 ]
