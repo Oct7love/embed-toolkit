@@ -985,5 +985,301 @@
     ],
     "correctAnswer": 1,
     "explanation": "MPU9250 SPI 协议：主机发送一字节 [R/W(1bit), addr(7bit)]——bit7=1 表示读，bit7=0 表示写。读时发 1 字节命令后接任意数量 dummy 字节读取连续寄存器（内部地址自增）。许多 SPI 传感器都用类似约定（BMI160、L3GD20、MS5611 都有各自但相似的命令格式）。查具体器件手册非常重要。数据方向字段可能是 bit7（MPU 系列）或 bit6（某些 ADC），实现时小心。"
+  },
+  {
+    "id": "p-068",
+    "category": "protocol",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "I2C 的停止信号 (STOP) 如何定义？",
+    "options": [
+      "SCL 高电平时 SDA 从高到低",
+      "SCL 高电平时 SDA 从低到高",
+      "SCL 低电平时 SDA 变化",
+      "SDA 和 SCL 同时拉低"
+    ],
+    "correctAnswer": 1,
+    "explanation": "I2C STOP 信号：SCL 保持高电平期间，SDA 从低跳变到高（上升沿）。START 相反（SCL 高时 SDA 高→低下降沿）。数据位传输期间，SDA 只能在 SCL 低电平时改变——这样 SCL 高时的变化就被解释为 START/STOP 信号，与数据清晰区分。理解这个对调试 I2C 时序很关键：示波器看 START/STOP 的位置。"
+  },
+  {
+    "id": "p-069",
+    "category": "protocol",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "I2C 中 ACK 和 NACK 的作用？",
+    "options": [
+      "错误处理",
+      "接收方在每 8 位数据后的第 9 个时钟拉低 SDA 表示 ACK（确认收到），保持高表示 NACK（未收到或不继续）",
+      "数据分隔",
+      "地址解析"
+    ],
+    "correctAnswer": 1,
+    "explanation": "I2C 每字节传输后有 1 个 ACK 位：发送方释放 SDA（高阻），接收方拉低 SDA 1 个时钟周期表示确认（ACK），保持高表示未确认（NACK）。用法：① 主机发地址后，地址匹配的从机 ACK；② 数据字节后接收方 ACK 继续接收，NACK 让发送方停止；③ 主机读多字节时最后一个字节 NACK 后发 STOP，告诉从机'读完了'。NACK 是正常流程的一部分，不一定是错误。"
+  },
+  {
+    "id": "p-070",
+    "category": "protocol",
+    "type": "single-choice",
+    "difficulty": "easy",
+    "question": "I2C 标准模式最高速度是？",
+    "options": [
+      "100 kbps",
+      "400 kbps",
+      "1 Mbps",
+      "3.4 Mbps"
+    ],
+    "correctAnswer": 0,
+    "explanation": "I2C 速率分级：① 标准模式 (Standard Mode) 100 kbps；② 快速模式 (Fast Mode) 400 kbps；③ 快速+模式 (Fast Mode Plus) 1 Mbps；④ 高速模式 (High Speed) 3.4 Mbps；⑤ Ultra Fast 5 Mbps。速度越高要求上拉电阻越小、线越短、驱动能力越强。大多数传感器支持 400kHz（主流）。上拉电阻选择：标准模式 10kΩ、快速模式 2.2kΩ、快速+ 1kΩ（或更小）。"
+  },
+  {
+    "id": "p-071",
+    "category": "protocol",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "I2C 7 位地址空间中，0x00-0x07 和 0x78-0x7F 有什么特殊？",
+    "options": [
+      "随便使用",
+      "保留给特殊用途：0x00 广播、0x01 保留、0x78-0x7F 用于 10 位地址扩展和 HS 模式等",
+      "只能用于主机",
+      "与 SPI 冲突"
+    ],
+    "correctAnswer": 1,
+    "explanation": "I2C 7 位地址保留区域：① 0x00（0000 000）广播地址——所有器件响应；② 0x01-0x07 用于 CBUS 兼容、HS 模式起始、不同总线格式、设备 ID；③ 0x78-0x7B（1111 0xx）10 位地址扩展（1111 0AA AA...）；④ 0x7C-0x7F 其他保留。实际可用地址 128 - 16 保留 = 112 个。设计新器件时避免使用这些保留地址。"
+  },
+  {
+    "id": "p-072",
+    "category": "protocol",
+    "type": "single-choice",
+    "difficulty": "hard",
+    "question": "I2C 总线上挂载同地址的两个设备，如何共存？",
+    "options": [
+      "不可能，会冲突",
+      "使用 I2C 地址选择引脚（如 ADDR）、I2C 多路复用器（TCA9548A）、或更换芯片",
+      "调高电压",
+      "用软件区分"
+    ],
+    "correctAnswer": 1,
+    "explanation": "同地址冲突解决方案：① 芯片通常有 1-3 个地址选择引脚（ADDR/A0/A1），接高低电平改变地址最低几位（如 MPU6050 ADDR=0 → 0x68，ADDR=1 → 0x69）；② I2C 多路复用器（TCA9548A 等）——主机先通过复用器选择下游通道，再访问下游设备；③ 改用 SPI 或用多路 I2C 总线（STM32 有多个 I2C 外设）。设计前查芯片手册有无地址选项。"
+  },
+  {
+    "id": "p-073",
+    "category": "protocol",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "I2C 时钟拉伸（Clock Stretching）是？",
+    "options": [
+      "物理拉伸",
+      "从机通过主动拉低 SCL 让主机暂停时钟，给自己更多时间处理",
+      "主机控制",
+      "错误机制"
+    ],
+    "correctAnswer": 1,
+    "explanation": "I2C 时钟拉伸：从机在需要更多时间时拉低 SCL（SCL 是开漏，任意设备可以拉低）。主机检测到 SCL 未正常抬高就等待，直到从机释放。用途：① 从机响应寄存器读取需要内部计算时；② EEPROM 写周期（~5ms）；③ 慢速 MCU 从机。主机支持拉伸是 I2C 规范要求。某些 MCU 硬件不完善可能漏响应拉伸，导致通信失败。Raspberry Pi 的 I2C 有此历史 bug。"
+  },
+  {
+    "id": "p-074",
+    "category": "protocol",
+    "type": "single-choice",
+    "difficulty": "hard",
+    "question": "I2C 多主机仲裁（Arbitration）如何工作？",
+    "options": [
+      "不支持多主机",
+      "多主机同时启动时，谁拉低 SDA 谁获胜（线与特性），输出高但检测到低的主机自动退出",
+      "先到先得",
+      "随机决定"
+    ],
+    "correctAnswer": 1,
+    "explanation": "I2C 多主机仲裁：① 所有主机监听总线，检测到其他 START 才等待；② 若同时启动，各自发地址，每位都比对 SDA 实际电平和自己输出的——如果自己输出 1 但实际是 0（被其他主机拉低），说明输了仲裁，立即退出（不发 STOP）；③ 赢家继续完成传输。不破坏数据完整性——输家退出时赢家仍在进行中。依赖开漏线与特性。实际应用中多主机较少，多见于主设备热插拔或备份主机系统。"
+  },
+  {
+    "id": "p-075",
+    "category": "protocol",
+    "type": "true-false",
+    "difficulty": "medium",
+    "question": "I2C 是半双工的——同一时刻只能一方发送。",
+    "options": [
+      "正确",
+      "错误"
+    ],
+    "correctAnswer": 0,
+    "explanation": "正确。I2C 只有一条 SDA 数据线，收发复用——不能同时双向传输，是半双工。主机发命令和地址 → 从机响应 ACK → 主机发数据或从机发数据（读/写不同方向）。相比 SPI 的全双工（MOSI/MISO 独立），I2C 通信方式更'回合制'。这对吞吐量有影响：I2C 实际吞吐量比标称低（因为 ACK 位、每次只能单向），1Mbps I2C 实际数据速率约 800kbps。"
+  },
+  {
+    "id": "p-076",
+    "category": "protocol",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "写 I2C 寄存器的典型序列：\nSTART → ???? → STOP",
+    "options": [
+      "[地址+W] [ACK] [数据] [ACK]",
+      "[地址+W] [ACK] [寄存器地址] [ACK] [数据] [ACK]",
+      "[数据] [ACK]",
+      "[寄存器地址] [数据]"
+    ],
+    "correctAnswer": 1,
+    "explanation": "写 I2C 寄存器的完整序列：START + [7位从机地址+R/W=0 写] + ACK（从机确认地址）+ [寄存器内部地址] + ACK + [数据字节] + ACK + STOP。每个字节后从机 ACK。多字节写：重复'数据 + ACK'。读寄存器更复杂：先写寄存器地址（不 STOP），然后 RESTART + [地址+R=1] + ACK + 读数据 + NACK + STOP。STM32 HAL 的 HAL_I2C_Mem_Write 封装了这个时序。"
+  },
+  {
+    "id": "p-077",
+    "category": "protocol",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "CAN 总线的波特率范围？",
+    "options": [
+      "100 kbps 到 1 Mbps (CAN 2.0), CAN FD 最高 8 Mbps",
+      "1 kbps",
+      "100 Mbps",
+      "固定 250 kbps"
+    ],
+    "correctAnswer": 0,
+    "explanation": "CAN 2.0 速率范围：最高 1 Mbps（40 米），更低速率支持更长距离（500 kbps 至 100m、125 kbps 至 500m、10 kbps 至 5km）。CAN FD（Flexible Data-Rate）数据段支持最高 5-8 Mbps（ISO 11898-1 2015）。汽车常用 500 kbps。CAN 传输距离长是因为差分信号 + 慢速率。工业 CAN 常用 125kbps - 1Mbps，和 Modbus 不同领域。"
+  },
+  {
+    "id": "p-078",
+    "category": "protocol",
+    "type": "single-choice",
+    "difficulty": "hard",
+    "question": "CAN 2.0A 和 2.0B 的区别？",
+    "options": [
+      "速度不同",
+      "A 使用 11 位标识符 (2048 优先级)，B 使用 29 位扩展标识符 (~5 亿)",
+      "A 不支持差分",
+      "无区别"
+    ],
+    "correctAnswer": 1,
+    "explanation": "CAN 2.0A 标准帧：11 位 ID。CAN 2.0B 扩展帧：29 位 ID。数据段都最多 8 字节。两者通过 IDE（Identifier Extension）位区分。CAN FD 也支持两种 ID 长度。选择：汽车 OBD 常用扩展帧（如 J1939），许多工业用标准帧。低位 ID 优先级高（仲裁胜）。设计 ID 分配时要规划好（紧急消息低 ID）。收发器和控制器必须支持对应版本。"
+  },
+  {
+    "id": "p-079",
+    "category": "protocol",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "CAN 总线使用的信号类型？",
+    "options": [
+      "单端 TTL",
+      "差分信号（CAN_H 和 CAN_L 两条线），抗共模干扰",
+      "光纤",
+      "无线"
+    ],
+    "correctAnswer": 1,
+    "explanation": "CAN 用差分信号提高抗干扰：CAN_H 和 CAN_L 是一对双绞线，两端各接 120Ω 终端电阻。显性位（逻辑 0）：CAN_H=3.5V、CAN_L=1.5V，差值 2V；隐性位（逻辑 1）：两者都 2.5V，差值 0V。差分好处：共模干扰被两线抵消，长距离、高抗扰。MCU 内部是单端数字，外接 CAN 收发器（TJA1050、SN65HVD230）转换为差分信号上总线。"
+  },
+  {
+    "id": "p-080",
+    "category": "protocol",
+    "type": "single-choice",
+    "difficulty": "hard",
+    "question": "CAN 非破坏性仲裁的工作原理？",
+    "options": [
+      "先到先得",
+      "ID 低位优先。冲突时各节点逐位比较自己发送和监听到的总线——若自己发送隐性1但监听到显性0，说明仲裁输了，立即停止但不中断赢家",
+      "轮询",
+      "随机"
+    ],
+    "correctAnswer": 1,
+    "explanation": "CAN 仲裁（CSMA/BA = Bitwise Arbitration）：总线空闲时多节点同时发 ID，每发一位都监听总线。显性 0 会'碾压'隐性 1（线与特性的反向——实际是主动拉到显性电平）。发送方发 1 但监听到 0 → 输家 → 立即停止发送退出；赢家继续传输整个帧不受影响。结果：ID 数值小的优先级高。这种'非破坏性'设计让总线利用率高，适合多节点实时通信。"
+  },
+  {
+    "id": "p-081",
+    "category": "protocol",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "CAN 总线需要终端电阻吗？",
+    "options": [
+      "不需要",
+      "需要，总线两端各 120Ω（线阻抗匹配），防止信号反射",
+      "中间加一个",
+      "只需要一端"
+    ],
+    "correctAnswer": 1,
+    "explanation": "CAN 总线两端必须各有 120Ω 终端电阻（总阻抗约 60Ω）。原因：电缆阻抗通常设计为 120Ω 特性阻抗，两端匹配避免信号反射引起位错误。新加节点连线不能太长（<30cm 从主线路分支）。调试：若通信不稳，用万用表测 CAN_H 到 CAN_L 应为约 60Ω（两个 120Ω 并联）。若只有 120Ω 或更大，缺终端电阻；若 0Ω 短路。"
+  },
+  {
+    "id": "p-082",
+    "category": "protocol",
+    "type": "single-choice",
+    "difficulty": "easy",
+    "question": "CAN 标准帧的数据长度字段 DLC 最大值？",
+    "options": [
+      "4",
+      "8（DLC 4 位，但协议规定 DLC>8 无效数据仍按 8 处理）",
+      "16",
+      "64"
+    ],
+    "correctAnswer": 1,
+    "explanation": "CAN 2.0 标准数据最多 8 字节。DLC 字段 4 位（0-15），但值 >8 时数据仍按 8 字节处理（某些控制器会拒绝非法值）。CAN FD 扩展到最多 64 字节（DLC 值 9-15 映射到 12/16/20/24/32/48/64）。设计协议时要在 8 字节限制下规划数据——大对象需分段传输（CAN TP/ISO-TP 层，如 UDS 诊断）。CAN FD 单帧更大但需新控制器和收发器。"
+  },
+  {
+    "id": "p-083",
+    "category": "protocol",
+    "type": "single-choice",
+    "difficulty": "hard",
+    "question": "位填充（Bit Stuffing）在 CAN 中的作用？",
+    "options": [
+      "加密",
+      "发送方连续 5 个相同电平后插入 1 个相反电平位，接收方反向去除——保证时钟恢复",
+      "错误检测",
+      "帧分隔"
+    ],
+    "correctAnswer": 1,
+    "explanation": "CAN 采用 NRZ 编码+位填充：NRZ 长时间同电平无跳变，接收方采样时钟会漂移。位填充：发送时连续 5 个同电平位后自动插入 1 个相反位，接收方检测到 5 个同电平后丢弃下一位。保证充足电平变化让接收方同步时钟。代价：实际帧长不固定（插入几位不定）。填充错误是 CAN 的一种错误类型。帧分隔符（帧间间隔 IFS 的特殊位）不受位填充约束。"
+  },
+  {
+    "id": "p-084",
+    "category": "protocol",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "CAN 总线错误处理中的'错误被动'和'错误主动'状态？",
+    "options": [
+      "都能正常发送错误帧",
+      "错误主动：发送显性错误帧 (6 个 0)；错误被动：发送隐性错误帧 (6 个 1)，错误计数 >127 时进入被动，>255 关闭总线",
+      "完全相同",
+      "用户配置"
+    ],
+    "correctAnswer": 1,
+    "explanation": "CAN 错误状态机：每个节点维护发送错误计数 TEC 和接收错误计数 REC。状态转移：① 错误主动（Error Active）：TEC/REC ≤127，可发显性错误帧强制其他节点关注；② 错误被动（Error Passive）：TEC/REC >127，只能发隐性错误帧（不强制他人）；③ 总线关闭（Bus Off）：TEC >255，完全退出总线，需要软件介入恢复。这个机制防止单个故障节点持续干扰总线。"
+  },
+  {
+    "id": "p-085",
+    "category": "protocol",
+    "type": "true-false",
+    "difficulty": "easy",
+    "question": "CAN 协议本身不包含源/目标地址，只有消息 ID 表示消息内容类型。",
+    "options": [
+      "正确",
+      "错误"
+    ],
+    "correctAnswer": 0,
+    "explanation": "正确。CAN 是面向消息的协议（不是面向节点）。帧的 ID 标识消息'内容类型'（如'引擎转速''油门位置'），任何节点都能发送/接收此 ID 消息。接收方用过滤器（Mask + Filter）只接受感兴趣的 ID，其他硬件层丢弃。优势：广播、多接收方、灵活。例如引擎 ECU 发送'RPM'消息，仪表盘和 ABS 都可以监听这个 ID。J1939 等高层协议在 ID 内编码发送方信息。"
+  },
+  {
+    "id": "p-086",
+    "category": "protocol",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "I2C 失败时常见调试步骤？",
+    "options": [
+      "重启",
+      "① 示波器看 SCL/SDA 波形 ② 检查上拉电阻 ③ 检查地址（7-bit 左移 1 位 = 8-bit 格式混淆）④ 检查速率 ⑤ 检查共地",
+      "换个 MCU",
+      "通电重试"
+    ],
+    "correctAnswer": 1,
+    "explanation": "I2C 排错清单：① 波形——SCL 应该时钟整齐，SDA 在 SCL 低时变化，上升下降沿足够快（说明上拉合适）；② 上拉电阻缺失或过大导致上升沿慢或无高电平；③ 地址陷阱——器件手册可能写 8 位地址（最后位是 R/W），而 API 用 7 位，自己算对照；④ 速率匹配（器件最大支持速率）；⑤ 共地缺失（多板连接最容易漏）；⑥ 电源不稳。逻辑分析仪非常有用。"
+  },
+  {
+    "id": "p-087",
+    "category": "protocol",
+    "type": "single-choice",
+    "difficulty": "hard",
+    "question": "SMBus 与 I2C 的关系？",
+    "options": [
+      "不同协议",
+      "SMBus 基于 I2C 物理层，增加超时、地址解析、PEC 校验等——用于 PC 主板 BMC、电池管理等场景",
+      "SMBus 速度更快",
+      "互相不兼容"
+    ],
+    "correctAnswer": 1,
+    "explanation": "SMBus（System Management Bus）基于 I2C 物理层并扩展：① 速度 10-100 kHz（更严格的时序）；② 支持超时（主机或从机超时错误应复位，I2C 原版无此机制）；③ 定义 PEC（Packet Error Check，CRC-8 校验）；④ 主机地址解析协议 ARP；⑤ 电源管理事件信号。典型应用：PC 主板电池信息读取、温度传感器（BIOS 层）、BMC 硬件管理。兼容但有细节差异，设计时注意手册说明的 SMBus 或 I2C 要求。"
   }
 ]
