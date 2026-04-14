@@ -691,5 +691,301 @@
     ],
     "correctAnswer": 3,
     "explanation": "错误描述是 D——FreeRTOS 是静态优先级调度器，不自动调整任务优先级。动态调整优先级由用户主动调用 vTaskPrioritySet（或优先级继承机制）。类似 Linux 的 CFS（Completely Fair Scheduler）会基于虚拟运行时间调整，但 RTOS 不这样做——确定性优先。其他三项描述都正确。区别 Linux 通用 OS 和 RTOS 的调度哲学：RTOS 要求行为可预测，不玩花样。"
+  },
+  {
+    "id": "rtos-048",
+    "category": "rtos",
+    "type": "single-choice",
+    "difficulty": "easy",
+    "question": "FreeRTOS 中二值信号量的典型使用场景？",
+    "options": [
+      "计数型资源管理",
+      "保护临界区（共享资源访问互斥）",
+      "任务间同步（如 ISR 通知任务）",
+      "延时操作"
+    ],
+    "correctAnswer": 2,
+    "explanation": "二值信号量（Binary Semaphore）值只能是 0 或 1，适合事件同步——ISR 中 xSemaphoreGiveFromISR 通知任务，任务 xSemaphoreTake 等待。与 Mutex 的区别：Mutex 有所有权和优先级继承、只能 take 的任务 give；二值信号量无所有权，适合 '发送-接收' 通知模式。保护临界区应用 Mutex（防止优先级反转）。计数资源用计数信号量。"
+  },
+  {
+    "id": "rtos-049",
+    "category": "rtos",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "互斥量（Mutex）相比二值信号量的关键特性？",
+    "options": [
+      "执行更快",
+      "有所有权（只能由 take 的任务 give）+ 优先级继承防止优先级反转",
+      "可在 ISR 中使用",
+      "数值可以超过 1"
+    ],
+    "correctAnswer": 1,
+    "explanation": "Mutex 两大特性：① 所有权（ownership）——只有 take（持有）的任务能 give（释放），防止误用；② 优先级继承——低优先级任务持有 Mutex 时若被高优先级任务等待，临时继承高优先级，避免被中优先级任务饿死。代价是实现复杂、不能在 ISR 中使用（因为 ISR 无任务概念，无'所有者'）。FreeRTOS 中 xSemaphoreCreateMutex 创建。"
+  },
+  {
+    "id": "rtos-050",
+    "category": "rtos",
+    "type": "single-choice",
+    "difficulty": "hard",
+    "question": "计数信号量的典型用途？",
+    "options": [
+      "保护单一资源",
+      "管理一组资源（如 N 个缓冲区），跟踪可用数量",
+      "仅用于同步",
+      "替代 Mutex"
+    ],
+    "correctAnswer": 1,
+    "explanation": "计数信号量（Counting Semaphore）值 0 ~ max。典型场景：① 资源池管理——N 个缓冲区，take 时减 1（无则阻塞），give 时加 1；② 事件计数——ISR 每发生事件 give 一次，任务按 take 次数处理所有事件（避免丢失）。区别于二值信号量（只 0/1）和 Mutex（带所有权）。xSemaphoreCreateCounting(max, initial) 创建。仓库管理、生产消费者是经典应用。"
+  },
+  {
+    "id": "rtos-051",
+    "category": "rtos",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "以下哪种 FreeRTOS API 适合在 ISR 中使用？",
+    "options": [
+      "xSemaphoreGive()",
+      "xSemaphoreGiveFromISR()",
+      "两者都可以",
+      "都不可以，ISR 不能调用 FreeRTOS API"
+    ],
+    "correctAnswer": 1,
+    "explanation": "ISR 中必须使用带 FromISR 后缀的 API：xSemaphoreGiveFromISR、xQueueSendFromISR、xTaskNotifyFromISR 等。原因：ISR 和任务上下文不同——FromISR 版本不会进入阻塞状态，使用优化的中断安全同步路径；普通 API 可能需要 take 调度器锁或阻塞，在 ISR 中使用会导致崩溃。FromISR 还支持 pxHigherPriorityTaskWoken 参数，让调度器在 ISR 退出时切换到被唤醒的高优先级任务。"
+  },
+  {
+    "id": "rtos-052",
+    "category": "rtos",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "FreeRTOS 消息队列（xQueueSend）传递数据的方式是？",
+    "options": [
+      "仅传递指针",
+      "复制整个数据（按创建时指定的 item 大小）",
+      "零拷贝共享内存",
+      "仅传递引用"
+    ],
+    "correctAnswer": 1,
+    "explanation": "FreeRTOS 队列使用值拷贝：xQueueCreate(len, itemSize) 创建时指定每项大小，发送/接收都会完整拷贝 itemSize 字节。优势：发送方和接收方不需共享数据生命周期，无悬垂指针风险；简单可靠。代价：大对象传递效率低（多一次内存拷贝）。大对象可传递指针（itemSize=sizeof(ptr)），但需要确保指向的数据生命周期，或用对象池+指针配合。"
+  },
+  {
+    "id": "rtos-053",
+    "category": "rtos",
+    "type": "single-choice",
+    "difficulty": "hard",
+    "question": "以下关于 FreeRTOS 任务通知（Task Notification）的描述，错误的是？",
+    "options": [
+      "任务通知比信号量/队列更轻量（每任务自带 32 位通知值）",
+      "可以替代二值信号量、计数信号量、事件组",
+      "适合点对点通知（一对一）",
+      "可以广播到多个任务"
+    ],
+    "correctAnswer": 3,
+    "explanation": "错误的是 D——任务通知不能广播，只能发给指定任务。任务通知优势：每任务内置一个 32 位值和状态字段，比信号量/队列省 RAM 和执行周期；支持多种模式 eSetBits/eIncrement/eSetValueWithOverwrite/eSetValueWithoutOverwrite，能模拟信号量/事件组行为；性能比信号量快约 45%。限制：只能一对一（要广播用事件组 xEventGroupSetBits）、不能在 'give 端' 阻塞等待（信号量可以）。"
+  },
+  {
+    "id": "rtos-054",
+    "category": "rtos",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "FreeRTOS 中 xSemaphoreTake(sem, portMAX_DELAY) 的行为？",
+    "options": [
+      "立即返回",
+      "等待 portMAX_DELAY 毫秒",
+      "永久阻塞直到信号量可用",
+      "总是失败"
+    ],
+    "correctAnswer": 2,
+    "explanation": "portMAX_DELAY 是最大 tick 值（通常 0xFFFFFFFF），配合 INCLUDE_vTaskSuspend=1 时表示永久等待，信号量可用前任务一直阻塞。不会超时返回 pdFALSE。任务进入 Blocked 状态，不占用 CPU。xTicksToWait=0 表示立即返回（轮询模式），返回 pdFALSE 若不可用。实际开发中避免永久等待（可能死锁），推荐合理超时+错误处理。"
+  },
+  {
+    "id": "rtos-055",
+    "category": "rtos",
+    "type": "true-false",
+    "difficulty": "medium",
+    "question": "FreeRTOS 事件组（Event Group）一个实例可以管理 24 位独立事件标志。",
+    "options": [
+      "正确",
+      "错误"
+    ],
+    "correctAnswer": 0,
+    "explanation": "正确。FreeRTOS 事件组 EventBits_t 类型默认 32 位，但高 8 位保留给内核（xEventGroupSetBitsFromISR 等内部使用），用户可用低 24 位（configUSE_16_BIT_TICKS=1 时 8 位）。每位独立表示一个事件。xEventGroupWaitBits 可等待多个事件的组合（AND：所有指定位都置位、OR：任一置位）。场景：等'温度传感器就绪'且'ADC 采样完成'再处理；等'任何一个按键按下'响应。"
+  },
+  {
+    "id": "rtos-056",
+    "category": "rtos",
+    "type": "single-choice",
+    "difficulty": "hard",
+    "question": "下面代码的问题？（FreeRTOS 生产消费者）\n\n// Producer\nwhile(1) {\n    data = produce();\n    xQueueSend(q, &data, 0);  // 超时 0\n}",
+    "options": [
+      "无问题",
+      "超时 0 表示非阻塞，队列满时数据丢失；应使用合理超时或 portMAX_DELAY",
+      "需要临界区保护",
+      "xQueueSend 用错了"
+    ],
+    "correctAnswer": 1,
+    "explanation": "超时 0 使 xQueueSend 在队列满时立即失败返回 errQUEUE_FULL，数据被丢弃——可能丢失重要数据而未察觉。需根据业务选：① portMAX_DELAY 等到有空间（简单但可能慢）；② 合理超时（如 pdMS_TO_TICKS(100)）配合错误处理（重试或记录）；③ 检查返回值并在失败时采取措施（如丢弃最旧项）。ISR 中必须用超时 0 配合 xQueueSendFromISR（ISR 不能阻塞）。"
+  },
+  {
+    "id": "rtos-057",
+    "category": "rtos",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "递归互斥量（Recursive Mutex）与普通互斥量的区别？",
+    "options": [
+      "没有区别",
+      "递归互斥量允许同一任务多次 take 而不死锁，需 take 几次就 give 几次",
+      "递归的性能更好",
+      "递归只能嵌套 2 次"
+    ],
+    "correctAnswer": 1,
+    "explanation": "递归互斥量内部计数：同一任务重复 take 只增加计数，不阻塞。必须 give 相同次数才真正释放。场景：模块内函数 A、B 都要锁，A 调 B 时若普通 Mutex 会死锁。递归 Mutex 允许嵌套调用。代价：计数需时和空间、设计不好容易掩盖架构问题（嵌套调用过深）。良好设计应尽量避免需要递归锁的场景。xSemaphoreCreateRecursiveMutex() 创建，xSemaphoreTakeRecursive/GiveRecursive 操作。"
+  },
+  {
+    "id": "rtos-058",
+    "category": "rtos",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "FreeRTOS 的 xQueuePeek 与 xQueueReceive 的区别？",
+    "options": [
+      "相同",
+      "Peek 读取但不从队列移除数据；Receive 读取并移除",
+      "Peek 更快",
+      "Receive 不阻塞"
+    ],
+    "correctAnswer": 1,
+    "explanation": "xQueuePeek 查看队头数据但保留在队列中，下次接收还是同一数据；xQueueReceive 读取后移除。Peek 的用途：多个任务想'看'同一数据（传统信号灯模式）、检查消息类型再决定是否消费、实现某种 look-ahead 逻辑。注意 Peek 会阻塞等待（同 Receive），因为空队列下没有数据可看。仍需合适超时参数。xQueueOverwrite、xQueuePeekFromISR 是其他特殊变体。"
+  },
+  {
+    "id": "rtos-059",
+    "category": "rtos",
+    "type": "single-choice",
+    "difficulty": "hard",
+    "question": "以下关于 pxHigherPriorityTaskWoken 参数的用法，正确的是？\n\nvoid ISR(void) {\n    BaseType_t woken = pdFALSE;\n    xSemaphoreGiveFromISR(sem, &woken);\n    // ??\n}",
+    "options": [
+      "直接返回",
+      "portYIELD_FROM_ISR(woken);  // 如果 woken 为 pdTRUE，触发上下文切换",
+      "taskYIELD();",
+      "vTaskDelay(1);"
+    ],
+    "correctAnswer": 1,
+    "explanation": "FromISR API 不主动切换上下文——因为中断中切换涉及硬件细节。通过 pxHigherPriorityTaskWoken 输出参数告诉调用者：是否唤醒了比当前任务更高优先级的任务。ISR 末尾调用 portYIELD_FROM_ISR(woken)——为 pdTRUE 则触发 PendSV 进行上下文切换，退出 ISR 后立即切到高优先级任务。遗漏会导致延迟切换（需等到下个 tick 或 API 调用）。"
+  },
+  {
+    "id": "rtos-060",
+    "category": "rtos",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "FreeRTOS 的软件定时器（Software Timer）回调函数运行在？",
+    "options": [
+      "中断上下文",
+      "定时器服务任务（Timer Daemon Task）上下文",
+      "主任务",
+      "独立的每个定时器有自己的任务"
+    ],
+    "correctAnswer": 1,
+    "explanation": "FreeRTOS 软件定时器：所有定时器共用一个定时器服务任务（configTIMER_TASK_PRIORITY 配置优先级），回调在该任务中串行执行。影响：① 回调不是 ISR，可调用普通 API（不需 FromISR）；② 回调间串行，一个长回调阻塞其他定时器；③ 精度受任务调度影响，高优先级任务会延迟回调。硬件定时器回调在 ISR 中，精度高但约束多。选型按精度和执行内容决定。"
+  },
+  {
+    "id": "rtos-061",
+    "category": "rtos",
+    "type": "single-choice",
+    "difficulty": "easy",
+    "question": "以下哪个不是同步机制？",
+    "options": [
+      "信号量",
+      "互斥量",
+      "消息队列",
+      "vTaskDelay"
+    ],
+    "correctAnswer": 3,
+    "explanation": "vTaskDelay 是延时函数，让任务阻塞指定时间后自动恢复，不涉及与其他任务的通信或同步。其他三者都是同步/通信机制：信号量（事件/资源计数）、互斥量（临界区保护）、消息队列（数据传递+同步）。RTOS 同步机制还包括：事件组、任务通知、Stream Buffer（字节流）、Message Buffer（消息流）、自旋锁（某些 RTOS 如 Zephyr）等。"
+  },
+  {
+    "id": "rtos-062",
+    "category": "rtos",
+    "type": "single-choice",
+    "difficulty": "hard",
+    "question": "何时应选择事件组而非多个信号量？",
+    "options": [
+      "简单通知场景",
+      "需要等待多个事件的组合（AND/OR 逻辑），且希望在一次 API 调用中等待",
+      "只有一个事件时",
+      "从不使用事件组"
+    ],
+    "correctAnswer": 1,
+    "explanation": "事件组优势在于组合等待：xEventGroupWaitBits(bits, wait_all, timeout) 一次调用等待指定位的 AND 或 OR 条件。用多个信号量实现组合等待很复杂：要么 take 一个再检查下一个（效率低）、要么同步开销大。典型场景：等'传感器 A 就绪'且'传感器 B 就绪'且'网络连接'。事件组位数有限（24 位），海量事件用队列+消息类型更合适。"
+  },
+  {
+    "id": "rtos-063",
+    "category": "rtos",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "生产者-消费者模型中，多个消费者从同一队列读取，会发生数据重复吗？",
+    "options": [
+      "会，多个消费者同时读同一项",
+      "不会，xQueueReceive 是原子的，每项只被一个消费者取走",
+      "依赖配置",
+      "需要额外的锁"
+    ],
+    "correctAnswer": 1,
+    "explanation": "FreeRTOS 队列 API 内部已加锁（taskENTER_CRITICAL），保证原子性：每个 xQueueReceive 调用要么成功取到一项（该项从队列移除），要么超时。多消费者并发调用，每项最终只被一个消费者取走。不需额外锁。但消费者间工作分配不均（谁先到谁拿），若要特定分配需其他机制（如按消息类型分多队列）。类似并发容器的 MPMC（多生产多消费）设计。"
+  },
+  {
+    "id": "rtos-064",
+    "category": "rtos",
+    "type": "true-false",
+    "difficulty": "medium",
+    "question": "FreeRTOS 的 Stream Buffer 比消息队列更适合处理字节流数据（如 UART 接收）。",
+    "options": [
+      "正确",
+      "错误"
+    ],
+    "correctAnswer": 0,
+    "explanation": "正确。Stream Buffer（FreeRTOS V10 引入）专为字节流设计：① 无项大小限制，可一次读写任意字节；② 实现轻量（SPSC 单生产者单消费者模式），比队列快；③ 支持触发阈值（缓冲区攒到 N 字节才唤醒读者）。适合 UART DMA、串行通信。Message Buffer 是变长消息版本。消息队列适合固定大小结构化数据（命令、事件），不适合原始字节流。选对机制能大幅提升性能。"
+  },
+  {
+    "id": "rtos-065",
+    "category": "rtos",
+    "type": "single-choice",
+    "difficulty": "hard",
+    "question": "一个任务在持有 Mutex 的同时被删除（vTaskDelete），后果？",
+    "options": [
+      "无影响",
+      "Mutex 永远被持有无法释放，其他任务可能死锁等待",
+      "内核自动释放 Mutex",
+      "任务无法被删除"
+    ],
+    "correctAnswer": 1,
+    "explanation": "FreeRTOS 不自动释放被删除任务持有的 Mutex（与 POSIX 一些实现不同）。所有等这个 Mutex 的任务会永远阻塞（除非使用超时）。更糟的是 Mutex 状态不一致可能破坏内核。最佳实践：不要删除可能持有同步原语的任务——设计成任务自我退出（走到 delete 前释放所有资源），或用信号通知任务'请求退出'，任务清理后调用 vTaskDelete(NULL)。这是 RTOS 设计的重要教训。"
+  },
+  {
+    "id": "rtos-066",
+    "category": "rtos",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "xSemaphoreCreateBinary 创建的二值信号量初始状态是？",
+    "options": [
+      "1（可用）",
+      "0（不可用，take 会阻塞）",
+      "未定义",
+      "由参数指定"
+    ],
+    "correctAnswer": 1,
+    "explanation": "二值信号量创建后初始为'空'（0），第一次 take 会立即阻塞。这符合事件同步语义：任务等待事件发生才继续。如需初始'可用'（如用作互斥），需在创建后立即 give 一次，或改用 xSemaphoreCreateMutex（它初始为可用）。早期版本有 vSemaphoreCreateBinary（已弃用）行为不同，创建后为可用状态——容易踩坑。注意两者差异。"
+  },
+  {
+    "id": "rtos-067",
+    "category": "rtos",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "什么场景下 Mutex 比 Semaphore 更合适？",
+    "options": [
+      "任何互斥场景",
+      "保护共享资源且需避免优先级反转（低优先级不会饿死高优先级）",
+      "跨 ISR 和任务的同步",
+      "计数资源"
+    ],
+    "correctAnswer": 1,
+    "explanation": "Mutex 专为资源互斥设计：① 所有权防止误 give；② 优先级继承避免中优先级任务阻塞高优先级任务（经典的火星探路者 bug）。Semaphore（二值）适合同步通知——ISR 给任务发事件、任务间通知。选型原则：保护共享变量/外设用 Mutex；事件通知/同步用 Semaphore；计数资源（缓冲池）用计数 Semaphore。混用会导致优先级反转等问题。"
   }
 ]
