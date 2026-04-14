@@ -95,7 +95,10 @@
     "type": "true-false",
     "difficulty": "easy",
     "question": "MCU 复位后 RAM 中的数据是确定的（全为 0）。",
-    "options": ["正确", "错误"],
+    "options": [
+      "正确",
+      "错误"
+    ],
     "correctAnswer": 1,
     "explanation": "错误。MCU 复位后 RAM 内容是未定义的（随机值）。启动代码（startup）会负责：1) .bss 段（未初始化全局/静态变量）清零；2) .data 段（已初始化变量）从 Flash 拷贝到 RAM。未显式初始化的局部变量在栈上也是随机值。"
   },
@@ -180,7 +183,10 @@
     "type": "true-false",
     "difficulty": "medium",
     "question": "GPIO 配置为输入时，必须启用内部上拉或下拉，否则会读到随机电平。",
-    "options": ["正确", "错误"],
+    "options": [
+      "正确",
+      "错误"
+    ],
     "correctAnswer": 0,
     "explanation": "GPIO 浮空输入（Floating Input）没有上下拉时，引脚状态由外部环境决定——开路或轻微干扰就会读到不确定值（高阻抗状态易受干扰）。需要上拉/下拉到确定电平，或外部电路保证电平。读按键常用内部上拉 + 按键接地。"
   },
@@ -265,7 +271,10 @@
     "type": "true-false",
     "difficulty": "easy",
     "question": "电容的单位是法拉（F），常用 μF、nF、pF 表示。1μF = 1000nF = 1000000pF。",
-    "options": ["正确", "错误"],
+    "options": [
+      "正确",
+      "错误"
+    ],
     "correctAnswer": 0,
     "explanation": "正确。电容单位法拉 F 太大，实际常用 μF（微法，10^-6）、nF（纳法，10^-9）、pF（皮法，10^-12）。换算关系：1F=10^6 μF=10^9 nF=10^12 pF，即 1μF=1000nF=1000000pF。"
   },
@@ -320,7 +329,10 @@
     "type": "true-false",
     "difficulty": "medium",
     "question": "PCB 走线上，电流始终走最短路径。",
-    "options": ["正确", "错误"],
+    "options": [
+      "正确",
+      "错误"
+    ],
     "correctAnswer": 1,
     "explanation": "错误。低频（DC-kHz）电流确实走最短路径（低电阻）。但高频信号电流走最小回路（最低阻抗，感性主导）——路径由参考地平面的镜像返回路径决定。这是高速 PCB 布线的关键：保证地平面完整，否则 EMI 问题严重。"
   },
@@ -353,5 +365,301 @@
     ],
     "correctAnswer": 1,
     "explanation": "按键机械抖动通常 5-20ms。常见软件消抖方法：1) 延时消抖：检测到变化后 delay 10-20ms 再次读取；2) 状态机消抖：在定时器中断中连续采样，N 次稳定才确认；3) 硬件：RC 滤波 + 施密特触发。软件消抖最灵活但占用 CPU。"
+  },
+  {
+    "id": "h-026",
+    "category": "hardware",
+    "type": "single-choice",
+    "difficulty": "easy",
+    "question": "STM32 GPIO 的'浮空输入'（Floating Input）含义？",
+    "options": [
+      "输出不稳定",
+      "引脚为输入模式且内部无上拉/下拉，电平完全由外部电路决定；未接电路时可能读到随机值",
+      "引脚断开",
+      "输出高阻态"
+    ],
+    "correctAnswer": 1,
+    "explanation": "浮空输入（Input Floating）：内部上拉/下拉都关闭，引脚呈高阻态。优点：不影响外部电路；缺点：无外部驱动时电平不确定，易受干扰读到乱值。适用：外部电路已确定电平（如传感器输出、另一个 MCU 输出）。若读按键，应使用上拉输入或下拉输入——按键连接固定电平的一端。STM32 复位默认是浮空输入（安全，不驱动外部）。"
+  },
+  {
+    "id": "h-027",
+    "category": "hardware",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "开漏输出和推挽输出的场景区别？",
+    "options": [
+      "一样",
+      "推挽速度快、驱动强，用于普通 GPIO；开漏用于 I2C、多设备共享总线（线与）、电平转换",
+      "开漏更快",
+      "推挽省电"
+    ],
+    "correctAnswer": 1,
+    "explanation": "推挽（Push-Pull）：有 PMOS 拉高、NMOS 拉低，主动输出两种电平，驱动能力强、上升沿快。适合单一输出（LED、UART TX、SPI 线）。开漏（Open-Drain）：只有 NMOS 主动拉低，高电平靠外部上拉电阻被动实现。适合：① I2C/SMBus 多设备共享（任一拉低即低）；② 中断请求线（多器件共享 IRQ，线与）；③ 电平转换（开漏+上拉到目标电平如 5V 转 3.3V）；④ 3.3V MCU 控制 5V 器件输入。"
+  },
+  {
+    "id": "h-028",
+    "category": "hardware",
+    "type": "single-choice",
+    "difficulty": "easy",
+    "question": "按键检测电路，MCU GPIO 配置为'输入上拉'，按键一端接 GPIO 另一端接 GND。按下时读到？",
+    "options": [
+      "高电平",
+      "低电平",
+      "未定义",
+      "高阻"
+    ],
+    "correctAnswer": 1,
+    "explanation": "输入上拉电路：未按键时 GPIO 通过内部上拉拉到高电平（3.3V），读 1。按下按键后 GPIO 直接接 GND，读 0（低电平）。另一种设计：输入下拉 + 按键接 VCC，未按读 0、按下读 1。按键常用上拉+接地方案，原因：按键闭合到 GND 容易（机械简单），内部上拉不需外接上拉电阻。注意按键抖动需软件消抖（延时重读或状态机）。"
+  },
+  {
+    "id": "h-029",
+    "category": "hardware",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "STM32 GPIO 驱动能力（Drive Strength）的作用？",
+    "options": [
+      "输出电流大小——影响能驱动多大负载（如 LED）和上升沿速度（更高驱动=更快边沿，但 EMI 恶化）",
+      "A",
+      "影响输入电压",
+      "防止损坏"
+    ],
+    "correctAnswer": 0,
+    "explanation": "驱动能力（输出电流/速度等级）：STM32 可选 Low/Medium/High/Very High，对应不同 GPIO 输出驱动强度。高驱动：上升下降沿快（SPI/高频 PWM 需要），但产生更大电磁干扰（EMI）和地弹。低驱动：边沿慢，EMI 低，省电，适合慢速信号（LED、按键扫描）。选择原则：够用就好。高驱动+长线会产生振铃/反射（需串联阻尼电阻）。标准 GPIO 典型最大电流 20mA（STM32），驱动 LED 直接接 GPIO 可行（不需三极管）。"
+  },
+  {
+    "id": "h-030",
+    "category": "hardware",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "电平转换的正确做法？\n\n// MCU 3.3V，外设 5V，MCU 要读取 5V 信号",
+    "options": [
+      "直接连接",
+      "电阻分压（5V × R2/(R1+R2) = 3.3V）或专用电平转换芯片（TXB0108、BSS138 等）",
+      "用二极管",
+      "反转"
+    ],
+    "correctAnswer": 1,
+    "explanation": "电平转换方案：① 电阻分压（R1=1.8kΩ，R2=3.3kΩ 得 3.27V）——简单便宜，适合慢速单向信号（< 100kHz）；② 双向 MOSFET 转换（BSS138 + 双端上拉）——适合 I2C 等开漏双向；③ 专用转换芯片（TXB0108/TXS0108 双向、74LVC245 单向）——支持高速；④ 二极管钳位 + 上拉。3.3V MCU 直接读 5V 信号会损坏 GPIO（静电保护二极管过载）。某些 MCU GPIO 5V 容忍（FT 标记）可直连。"
+  },
+  {
+    "id": "h-031",
+    "category": "hardware",
+    "type": "single-choice",
+    "difficulty": "hard",
+    "question": "STM32 GPIO 模式 Alternate Function (AF) 的作用？",
+    "options": [
+      "备用输出",
+      "将 GPIO 连接到内部外设（UART、SPI、I2C、定时器等），通过 GPIOx->AFR 寄存器选择具体的复用功能编号",
+      "备份",
+      "加密"
+    ],
+    "correctAnswer": 1,
+    "explanation": "Alternate Function（复用功能）：STM32 每个 GPIO 可连接多种内部外设。配置方法：① GPIOx_MODER 设为 Alternate Function (10)；② GPIOx_AFR[L/H] 选择 AF0-AF15 编号；③ 查 datasheet 引脚复用表确定具体功能（如 PA9 AF7 = USART1_TX）。意义：有限引脚支持多种外设灵活分配。某些外设可被映射到不同引脚（如 SPI1 可在 PA5/PA6/PA7 或 PB3/PB4/PB5），方便 PCB 走线。HAL 库 HAL_GPIO_Init 中设置 Alternate 成员。"
+  },
+  {
+    "id": "h-032",
+    "category": "hardware",
+    "type": "true-false",
+    "difficulty": "easy",
+    "question": "GPIO 的最大电流一般为几十 mA，直接驱动大功率负载（如电机、继电器线圈）会烧毁 GPIO。",
+    "options": [
+      "正确",
+      "错误"
+    ],
+    "correctAnswer": 0,
+    "explanation": "正确。典型 GPIO 单引脚最大输出电流 20-25mA（STM32F1）或 8mA（STM32L），总和也有限（如 STM32 VDD 总电流 150mA）。大负载（电机几百 mA 到 A、继电器线圈 70mA、蜂鸣器）必须加驱动器件：① 三极管（8050/8550、2N2222）简单，单向；② MOSFET（AO3400、IRLZ44N）效率高，功耗低；③ 专用驱动 IC（L298N 电机、ULN2003 多路）；④ 光耦隔离（保护 MCU）；⑤ 继电器用二极管续流。设计时算清电流！"
+  },
+  {
+    "id": "h-033",
+    "category": "hardware",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "上拉电阻的大小如何选择？",
+    "options": [
+      "越大越好",
+      "平衡考虑：小电阻(1-2kΩ)速度快但功耗大、抗干扰强；大电阻(10-100kΩ)省电但速度慢易受干扰",
+      "1Ω",
+      "不需要"
+    ],
+    "correctAnswer": 1,
+    "explanation": "上拉电阻选择综合考虑：① 速度——RC 时间常数决定上升沿，小电阻快（I2C 400kHz 用 2.2kΩ、1MHz 用 1kΩ）；② 功耗——低电平时持续耗电 I=V/R（1kΩ @3.3V = 3.3mA，10kΩ = 0.33mA）；③ 抗干扰——小电阻抗干扰强；④ 驱动能力——器件是否能拉低到规定 VOL。典型值：按键 10kΩ（慢+省电），I2C 2.2-4.7kΩ，中断线 4.7-10kΩ。加电容更严重需要特殊计算。"
+  },
+  {
+    "id": "h-034",
+    "category": "hardware",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "外部中断（EXTI）与 GPIO 的关系？",
+    "options": [
+      "无关系",
+      "STM32 每个 EXTI 通道连接多个同编号 GPIO（如 EXTI0 = PA0/PB0/PC0），通过 SYSCFG_EXTICR 选择哪个 GPIO；同一编号不同端口不能同时用",
+      "每个 GPIO 独立中断",
+      "只能用一个"
+    ],
+    "correctAnswer": 1,
+    "explanation": "STM32 EXTI 结构：① 16 个 EXTI 线对应 16 个引脚编号（Pin 0-15）；② 每个 EXTI 线可连接 A-G 端口的同号引脚（如 EXTI0 可选 PA0、PB0、PC0 之一），不能同时用；③ SYSCFG_EXTICR 寄存器选择具体 GPIO；④ 支持边沿/电平触发（STM32 只上升、下降、双沿）。启用流程：GPIO 配置为 Input + HAL_NVIC_EnableIRQ(EXTIx_IRQn)。ISR 在 EXTIx_IRQHandler 中清 pending 位并处理。"
+  },
+  {
+    "id": "h-035",
+    "category": "hardware",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "矩阵键盘扫描的基本原理？",
+    "options": [
+      "每个按键独立引脚",
+      "M 行 × N 列的按键矩阵用 M+N 个 GPIO：扫描时行逐次输出低电平，读取各列状态判断哪键按下",
+      "用 ADC",
+      "用中断"
+    ],
+    "correctAnswer": 1,
+    "explanation": "矩阵键盘节省 GPIO：4×4 只需 8 个 GPIO 管 16 键。扫描方法：行列 GPIO（例如行为输出、列为输入上拉）：① 所有行输出高；② 逐行将某行拉低；③ 读列状态，低位就是被按键的列；④ 行列组合 = 按键编号；⑤ 需要处理按键抖动和同时按多键（ghost key）。高级方案：中断唤醒（全行拉低，任一键按下触发中断再扫描）。用软件定时器周期扫描（10-20ms）平衡响应和 CPU。"
+  },
+  {
+    "id": "h-036",
+    "category": "hardware",
+    "type": "single-choice",
+    "difficulty": "hard",
+    "question": "GPIO 锁定机制（GPIO Lock）的作用？",
+    "options": [
+      "密码保护",
+      "一旦锁定 GPIO 配置（MODE/SPEED/PUPD 等），直到下次系统复位前不能改变，防止运行时意外修改",
+      "加密功能",
+      "禁用 GPIO"
+    ],
+    "correctAnswer": 1,
+    "explanation": "GPIO Lock（锁定寄存器）：STM32 GPIOx_LCKR 寄存器。写入特定序列（LCKK 位 1→0→1 + 相同配置）后锁定，配置直到复位都不能改。用途：关键 GPIO 配置完后锁定，避免：① 运行时程序 bug 误改；② 非预期外设复用抢占；③ 安全关键应用（确保 GPIO 不被篡改）。解锁只能通过系统复位。大多数应用不需要，但安全关键（功能安全、关键控制）场景有意义。"
+  },
+  {
+    "id": "h-037",
+    "category": "hardware",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "按键抖动的时长范围？",
+    "options": [
+      "几纳秒",
+      "5-20 毫秒（机械按键物理弹跳，接触不稳）",
+      "几秒",
+      "不抖动"
+    ],
+    "correctAnswer": 1,
+    "explanation": "机械按键按下/抬起瞬间触点会多次断通，产生 5-20ms（典型 10ms）的抖动。处理方法：① 软件延时去抖：检测到变化 → delay 20ms → 再次读取确认；② 定时器扫描：周期读取（如 10ms 一次），连续 N 次相同状态才确认；③ 硬件去抖：RC 低通滤波或施密特触发器芯片（74HC14）；④ 中断 + 软件去抖：中断检测 → 启动消抖定时器 → 确认后处理。选择：延时简单但占 CPU，定时器扫描优雅。"
+  },
+  {
+    "id": "h-038",
+    "category": "hardware",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "STM32 GPIO 的 Analog 模式？",
+    "options": [
+      "用于输出模拟电压",
+      "禁用数字输入/输出功能，引脚连接到 ADC/DAC，让模拟电路直接使用，减少数字噪声对模拟信号干扰",
+      "加密",
+      "备份"
+    ],
+    "correctAnswer": 1,
+    "explanation": "Analog 模式：① 关闭数字输入 Schmitt 触发器（不消耗电流，不干扰模拟信号）；② 关闭上拉下拉；③ 引脚直接连接到模拟外设（ADC 采样、DAC 输出、比较器）。意义：数字 GPIO 施密特触发会引入噪声，模拟模式完全 bypass 数字逻辑让模拟信号干净。ADC 引脚必须配置为 Analog 模式才能准确采样。HAL 中 GPIO_MODE_ANALOG。"
+  },
+  {
+    "id": "h-039",
+    "category": "hardware",
+    "type": "true-false",
+    "difficulty": "medium",
+    "question": "GPIO 上电复位时一般是高阻态（浮空输入），避免对外电路产生非预期驱动。",
+    "options": [
+      "正确",
+      "错误"
+    ],
+    "correctAnswer": 0,
+    "explanation": "正确。MCU 上电后 GPIO 默认通常是高阻浮空输入——避免在软件运行前驱动未知电路。好处：① 不会意外启动外设（马达、继电器）；② 保护连接的设备；③ 让外部电路决定初始电平（用上拉/下拉设置默认值）。某些关键控制信号（如电源使能、驱动器 enable）需在外部电路加默认电平（下拉到关闭状态），防止上电瞬间 GPIO 状态影响系统。这是电路设计的重要安全考虑。"
+  },
+  {
+    "id": "h-040",
+    "category": "hardware",
+    "type": "single-choice",
+    "difficulty": "hard",
+    "question": "GPIO 的 BSRR 寄存器相比 ODR 的优势？",
+    "options": [
+      "没有区别",
+      "BSRR 是原子写 (位设置/复位寄存器)，避免 read-modify-write 竞态；ODR 读改写不原子，易在 ISR 中被打断",
+      "BSRR 更快",
+      "不需要"
+    ],
+    "correctAnswer": 1,
+    "explanation": "GPIO 单个引脚操作的两种方式：① GPIOx->ODR |= (1<<n)（read-modify-write）——三步操作可被中断，中断中改 ODR 可能丢失更新；② GPIOx->BSRR = (1<<n) 置位、(1<<(n+16)) 复位——单次原子写入，硬件只对写 1 的位做动作（BSRR 低 16 位 Set，高 16 位 Reset）。BSRR 特性：线程/中断安全、无需临界区、一个寄存器一次操作。多任务/中断环境强烈推荐 BSRR。HAL 的 HAL_GPIO_WritePin 内部就用 BSRR。"
+  },
+  {
+    "id": "h-041",
+    "category": "hardware",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "LED 限流电阻计算：Vcc=3.3V，LED 正向压降 2V，工作电流 10mA，电阻多大？",
+    "options": [
+      "100Ω",
+      "130Ω",
+      "200Ω",
+      "1kΩ"
+    ],
+    "correctAnswer": 1,
+    "explanation": "限流电阻公式：R = (Vcc - Vf) / If = (3.3 - 2) / 0.01 = 130Ω。LED 是二极管特性（非线性电流-电压），必须串限流电阻否则烧毁。实际：常用标准值 150Ω（比 130 略大，电流略小，LED 寿命更长）；100Ω 偏小（电流 13mA）可接受但功耗略大。不同颜色 Vf 不同：红 1.8V、黄绿 2.2V、蓝白 3V 左右。计算后选标准值（10% 精度 E24 系列）。"
+  },
+  {
+    "id": "h-042",
+    "category": "hardware",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "GPIO 中断抖动问题的表现？",
+    "options": [
+      "频率低",
+      "一次按键触发多次 ISR（机械抖动），需软件去抖或硬件去抖",
+      "ISR 不触发",
+      "丢失中断"
+    ],
+    "correctAnswer": 1,
+    "explanation": "按键 EXTI 中断常见抖动问题：物理抖动期间触发多次 EXTI，应用看到一次按键变成多次事件。解决：① 中断中不立即处理，启动 debounce 定时器（如 20ms 单次），定时器到期后再读 GPIO 确认状态；② 先在中断中禁用该 EXTI，定时器延时后再开启；③ 硬件：RC 低通 + 施密特触发器（74HC14）彻底消抖（不推荐因浪费 GPIO）。关键点：中断触发后不立即响应，等确认稳定。"
+  },
+  {
+    "id": "h-043",
+    "category": "hardware",
+    "type": "single-choice",
+    "difficulty": "easy",
+    "question": "STM32 GPIO 的输出速度（OSPEEDR）Low/Medium/High 影响？",
+    "options": [
+      "数据值",
+      "决定输出的边沿速率——高速度上升下降沿陡（适合高频信号），低速度沿缓（减少 EMI）",
+      "不影响",
+      "影响电压"
+    ],
+    "correctAnswer": 1,
+    "explanation": "OSPEEDR 控制 GPIO 输出驱动器的摆率（Slew Rate）/ 转换速度：① Low（2MHz）：边沿最缓，EMI 最低，适合慢速信号（LED、按键反馈）；② Medium（10-25MHz）：中速信号；③ High（50MHz）：适合 UART、SPI 等；④ Very High（100+MHz）：适合高速 SPI、并行总线。选择原则：满足应用即可，高速档功耗大且辐射强。低频信号用 Low 档改善 EMI 和功耗。"
+  },
+  {
+    "id": "h-044",
+    "category": "hardware",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "GPIO 扩展器（如 PCF8574, MCP23017）的作用？",
+    "options": [
+      "替代 MCU",
+      "通过 I2C/SPI 扩展 GPIO 数量（如 PCF8574 一片加 8 个 GPIO），适合引脚不够时",
+      "加速 GPIO",
+      "加密"
+    ],
+    "correctAnswer": 1,
+    "explanation": "GPIO 扩展器通过串行总线添加更多 GPIO：① PCF8574（I2C，8 位输入输出，简单），使用 I2C 地址 0x20-0x27（3 个地址引脚）；② MCP23017（I2C，16 位，带中断/上拉配置）；③ MCP23S17（SPI 版本）。工作方式：MCU 通过 I2C/SPI 写寄存器控制 GPIO 状态，读寄存器获取输入。权衡：① 增加 GPIO 数量但速度慢（受总线速度限制）、有延迟；② 适合状态更新不频繁场景（LED 显示、按键扫描）；③ 支持中断输出，GPIO 变化时通知 MCU，减少轮询。"
+  },
+  {
+    "id": "h-045",
+    "category": "hardware",
+    "type": "single-choice",
+    "difficulty": "hard",
+    "question": "输出为什么需要'翻转(Toggle)'操作且如何高效实现？",
+    "options": [
+      "慢速方法",
+      "用 BSRR 原子操作或专用翻转寄存器（如 STM32 的 ODR^= 或 PIN）一次完成，比 read-modify-write 快且原子",
+      "必须用延时",
+      "不支持"
+    ],
+    "correctAnswer": 1,
+    "explanation": "翻转 GPIO 的几种方法：① ODR ^= mask——read-modify-write，3 步不原子（小心中断）；② 读 IDR ^ 写 BSRR——原子但较繁琐；③ 某些 MCU 有 Toggle 寄存器（Kinetis 的 PTORn、某些 SAM 的 TGL）一次写入直接翻转所有位——最快最简。HAL 的 HAL_GPIO_TogglePin 内部用 BSRR。典型场景：LED 闪烁、软件 PWM、测试信号。高频翻转（用作时钟信号模拟）建议硬件 PWM 替代。"
   }
 ]
