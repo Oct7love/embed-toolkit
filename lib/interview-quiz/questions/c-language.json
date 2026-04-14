@@ -985,5 +985,301 @@
     ],
     "correctAnswer": 0,
     "explanation": "container_of 是 Linux 内核和许多 C 框架的核心宏：已知结构体某个成员的指针 ptr，计算出包含它的结构体起始地址。原理：用 offsetof 得到 member 在 type 中的字节偏移，从 ptr 减去此偏移即得结构体起始。应用场景：侵入式链表（struct list_head 嵌入各结构体中）、回调参数还原上下文——链表节点不关心容器类型，通过 container_of 反查。是 C 语言实现多态的经典技巧。"
+  },
+  {
+    "id": "c-068",
+    "category": "c-language",
+    "type": "single-choice",
+    "difficulty": "easy",
+    "question": "以下代码的输出是什么？\n\nuint8_t x = 0x5A;\nprintf(\"%x\", x >> 2);",
+    "options": [
+      "0x16",
+      "0x2D",
+      "0x5A",
+      "0xB4"
+    ],
+    "correctAnswer": 0,
+    "explanation": "0x5A 的二进制是 0101 1010，右移 2 位变为 0001 0110 = 0x16。无符号类型右移（逻辑右移）高位补 0，有符号类型右移（算术右移）高位补符号位（由实现定义）。嵌入式开发中操作无符号类型更安全可预测。也可以心算：0x5A/4 = 0x16（右移 n 位等于除以 2^n，向下取整）。"
+  },
+  {
+    "id": "c-069",
+    "category": "c-language",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "判断 uint32_t n 的第 3 位（bit3，从 0 计）是否为 1 的最简写法？",
+    "options": [
+      "if (n & (1 << 3))",
+      "if (n >> 3)",
+      "if (n == 8)",
+      "if (n & 8 == 0)"
+    ],
+    "correctAnswer": 0,
+    "explanation": "(1 << 3) 生成掩码 0x08（只有 bit3 为 1）。n & mask 保留 n 中对应位的值，其他清零。非 0 表示该位是 1。选项 B 会保留更高位值，n>>3 可能仍非 0 但不代表 bit3 是 1。选项 C 只有 n=8 时才成立，忽略其他位。选项 D 运算符优先级陷阱：== 优先级高于 &，等价于 n & (8==0) = n & 0 = 0，永远假。永远记得给位运算加括号。"
+  },
+  {
+    "id": "c-070",
+    "category": "c-language",
+    "type": "single-choice",
+    "difficulty": "easy",
+    "question": "将 uint32_t n 的第 5 位置为 1，其他位不变的代码是？",
+    "options": [
+      "n = 1 << 5;",
+      "n |= (1 << 5);",
+      "n &= (1 << 5);",
+      "n ^= (1 << 5);"
+    ],
+    "correctAnswer": 1,
+    "explanation": "按位或 | 将指定位设为 1 且其他位保持不变（因为 x|0=x，x|1=1）。选项 A 会把 n 整个覆盖成 0x20。选项 C 用按位与反而会清零其他位（只保留 bit5）。选项 D 是按位异或，会翻转 bit5 而非置位——如果 bit5 原本是 1 会变成 0。位操作四剑客：置位 |=、清零 &=~、翻转 ^=、读取 &。"
+  },
+  {
+    "id": "c-071",
+    "category": "c-language",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "将 uint32_t n 的第 5 位清零，其他位不变的代码是？",
+    "options": [
+      "n &= ~(1 << 5);",
+      "n |= ~(1 << 5);",
+      "n ^= (1 << 5);",
+      "n &= (1 << 5);"
+    ],
+    "correctAnswer": 0,
+    "explanation": "~(1<<5) 生成掩码 0xFFFFFFDF（只有 bit5 为 0，其他全 1）。n &= mask 保留其他位（x&1=x），把 bit5 清零（x&0=0）。选项 B 按位或会把其他所有位置为 1，只剩 bit5 保持原值。选项 C 是翻转。选项 D 会清除所有位只保留 bit5 的原值。注意：在 8/16 位 MCU 上用 ~(1<<5) 时要当心类型提升，推荐写 ~(1U<<5) 明确无符号。"
+  },
+  {
+    "id": "c-072",
+    "category": "c-language",
+    "type": "single-choice",
+    "difficulty": "hard",
+    "question": "以下代码在 32 位系统上的输出是什么？\n\nint8_t x = -1;\nuint32_t y = x;\nprintf(\"%x\", y);",
+    "options": [
+      "0xFF",
+      "0xFFFF",
+      "0xFFFFFFFF",
+      "0x01"
+    ],
+    "correctAnswer": 2,
+    "explanation": "int8_t x = -1 的补码是 0xFF。赋值给 uint32_t 时先进行整型提升：int8_t → int（有符号扩展，0xFF → 0xFFFFFFFF），然后转为 uint32_t 不改变位模式。所以 y = 0xFFFFFFFF。符号扩展陷阱：从小的有符号类型转到大的无符号类型时，负数会被 '放大' 成大数。用 (uint8_t)x 再赋值可避免：y = (uint8_t)x → y = 0xFF。"
+  },
+  {
+    "id": "c-073",
+    "category": "c-language",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "清除 uint32_t 低 8 位并保留高 24 位的代码？",
+    "options": [
+      "n &= 0xFFFFFF00;",
+      "n &= 0xFF;",
+      "n |= 0xFFFFFF00;",
+      "n >>= 8;"
+    ],
+    "correctAnswer": 0,
+    "explanation": "0xFFFFFF00 是 24 个 1 后跟 8 个 0 的掩码。n &= 掩码：高 24 位原样保留（x&1=x），低 8 位变 0。选项 B 相反：清高 24 保留低 8。选项 C 会把高 24 位置 1，低 8 位不变。选项 D 右移丢失低 8 位，但其他位也都右移了，含义不同。另一种等价写法：n &= ~0xFFU（按位取反 + 整型提升）。位掩码清零是 DSP、协议处理常用操作。"
+  },
+  {
+    "id": "c-074",
+    "category": "c-language",
+    "type": "single-choice",
+    "difficulty": "hard",
+    "question": "提取 uint32_t 中 bit[11:8]（第 8-11 位共 4 位）的值？",
+    "options": [
+      "(n >> 8) & 0x0F",
+      "n & 0xF00",
+      "(n & 0xF00) >> 8",
+      "A 和 C 都正确"
+    ],
+    "correctAnswer": 3,
+    "explanation": "提取字段两种等价方式：先右移再掩码 (n>>8)&0x0F，或先掩码再右移 (n&0xF00)>>8。两者都得到 bit[11:8] 的 4 位值（0~15）。选项 B 只是把 bit[11:8] 以外的位清零，但结果值还是左移了 8 位（不是纯字段值）。嵌入式编程常用此模式解析寄存器位域。通用宏：#define GET_FIELD(n,h,l) (((n)>>(l)) & ((1U<<((h)-(l)+1))-1))。"
+  },
+  {
+    "id": "c-075",
+    "category": "c-language",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "统计 uint32_t n 中置 1 位的个数（popcount），最经典的简单实现是？",
+    "options": [
+      "while(n) { count++; n = n & (n-1); }",
+      "while(n) { count++; n = n / 2; }",
+      "while(n) { count += n & 1; n >>= 1; }",
+      "B 和 C 都错误"
+    ],
+    "correctAnswer": 0,
+    "explanation": "n & (n-1) 每次消除最低位的 1（Kernighan 算法）：n-1 会让最低 1 变 0、其右边所有 0 变 1，相与后消除最低 1 及其右侧。循环次数等于 1 的个数，比逐位扫描快。选项 C 可行但要扫描所有 32 位。选项 B 对负数不行且除法慢。GCC 提供 __builtin_popcount(n) 更快（现代 CPU 有 POPCNT 指令）。面试常考。"
+  },
+  {
+    "id": "c-076",
+    "category": "c-language",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "判断 uint32_t n 是否是 2 的幂的最快方法？",
+    "options": [
+      "n % 2 == 0",
+      "(n & (n-1)) == 0 && n != 0",
+      "log2(n) 是整数",
+      "n == 1 || n == 2 || n == 4 ..."
+    ],
+    "correctAnswer": 1,
+    "explanation": "2 的幂的二进制表示只有一个 1（如 0b100=4）。n-1 会把这个 1 变成 0，且其右侧全为 1，相与结果为 0。需额外检查 n!=0（因为 0&(0-1)=0&0xFFFFFFFF=0）。选项 A 只判断偶数。选项 C 用浮点慢且有精度问题。选项 D 穷举不现实。该技巧常用于内存对齐检查、容量调整等。"
+  },
+  {
+    "id": "c-077",
+    "category": "c-language",
+    "type": "single-choice",
+    "difficulty": "easy",
+    "question": "交换两个 int 变量的值，不使用临时变量，下列哪种方法安全？",
+    "options": [
+      "a ^= b; b ^= a; a ^= b;",
+      "a = a + b; b = a - b; a = a - b;",
+      "以上都能工作，但异或更安全",
+      "以上都不可靠"
+    ],
+    "correctAnswer": 2,
+    "explanation": "两种都可以数学上 swap。但加减法可能整数溢出（虽然无符号类型环绕是良定义的，有符号溢出是 UB）。异或 swap 无溢出风险对任何整数都工作。然而两者都有陷阱：如果 a、b 是同一个变量（&a==&b 或相同别名），两者都会把值清零。现代编译器对临时变量 swap 优化得很好，没必要使用这些技巧。代码可读性和正确性优先。"
+  },
+  {
+    "id": "c-078",
+    "category": "c-language",
+    "type": "single-choice",
+    "difficulty": "hard",
+    "question": "以下代码在 C 中的行为？\n\nint x = 1;\nint y = x << 31;",
+    "options": [
+      "y = 0x80000000",
+      "是未定义行为（有符号整数左移溢出到符号位）",
+      "y = -2147483648",
+      "B 或 A 都有可能（实现定义）"
+    ],
+    "correctAnswer": 1,
+    "explanation": "C 标准规定：对于有符号整数，若左移结果不能用结果类型表示（包括溢出到符号位），行为是未定义。int x=1; x<<31 要产生 0x80000000，但 int 表示范围是 [-2^31, 2^31-1]，0x80000000 超出正数范围，所以 UB。安全做法：使用无符号类型 1U<<31 或 (uint32_t)1<<31。这是许多安全漏洞的来源（如 SafeInt 库的价值）。"
+  },
+  {
+    "id": "c-079",
+    "category": "c-language",
+    "type": "true-false",
+    "difficulty": "medium",
+    "question": "在 C 中，对有符号整数的右移，高位补 0 还是补符号位是由实现定义的。",
+    "options": [
+      "正确",
+      "错误"
+    ],
+    "correctAnswer": 0,
+    "explanation": "C 标准（C99/C11/C17）规定：有符号整数右移的结果由实现定义（implementation-defined）。绝大多数编译器对负数做算术右移（补符号位），保持数学意义。但这不是标准保证的，理论上可能是逻辑右移（补 0）。可移植代码应避免依赖此行为。无符号右移严格定义为逻辑右移（补 0），跨平台安全。面试和代码审查中应优先用无符号类型做位操作。"
+  },
+  {
+    "id": "c-080",
+    "category": "c-language",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "以下代码输出是什么？\n\nunsigned int a = 0xFFFFFFFF;\nprintf(\"%d\", a >> 1);",
+    "options": [
+      "-1",
+      "0x7FFFFFFF (2147483647)",
+      "0xFFFFFFFF",
+      "未定义"
+    ],
+    "correctAnswer": 1,
+    "explanation": "a 是 unsigned int 类型（不是 signed），右移是逻辑右移，高位补 0。0xFFFFFFFF >> 1 = 0x7FFFFFFF = 2147483647。注意 %d 把无符号数按有符号解释，但 0x7FFFFFFF 作为 int 仍是正数 2147483647。如果 a 是 signed int=-1（补码 0xFFFFFFFF），多数实现算术右移得 -1（0xFFFFFFFF）。无符号类型行为可预测，这是位操作优选无符号类型的原因。"
+  },
+  {
+    "id": "c-081",
+    "category": "c-language",
+    "type": "single-choice",
+    "difficulty": "hard",
+    "question": "反转 uint8_t 中 8 位的顺序（bit0↔bit7, bit1↔bit6...），最紧凑的实现思路是？",
+    "options": [
+      "循环逐位处理",
+      "分组 swap：先交换高 4/低 4 位，再交换高 2/低 2 位（每 4 位内），再交换相邻位",
+      "查表法（预计算 256 项表）",
+      "B 和 C 都是常用的高效方案"
+    ],
+    "correctAnswer": 3,
+    "explanation": "方案 B（蝶式变换）：b = (b&0xF0)>>4 | (b&0x0F)<<4; b = (b&0xCC)>>2 | (b&0x33)<<2; b = (b&0xAA)>>1 | (b&0x55)<<1;，O(log n) 的位操作，无分支无循环，适合 MCU。方案 C 查表 O(1)，空间换时间，1KB 表。循环法简单但 8 次迭代慢。ARMv6+ 有 RBIT 指令单周期完成。bit reversal 常见于 FFT、CRC、通信协议字节序转换。"
+  },
+  {
+    "id": "c-082",
+    "category": "c-language",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "以下代码检查 x 是否为奇数的正确写法？",
+    "options": [
+      "x % 2 == 1",
+      "x & 1",
+      "x % 2 != 0",
+      "B 和 C 对负数都正确"
+    ],
+    "correctAnswer": 3,
+    "explanation": "选项 A 对负奇数有坑：-3 % 2 在 C99 后保证为 -1（不是 1），所以 x%2==1 对负奇数返回假。选项 C 用 !=0 能涵盖 1 和 -1。选项 B 的 x&1 只看最低位：补码下 -3=0xFFFFFFFD，最低位 1，所以 x&1=1 正确识别。对于无符号数三者等价。负数奇偶判断：x&1 最可靠跨标准。位运算通常比取模快，编译器常做此优化。"
+  },
+  {
+    "id": "c-083",
+    "category": "c-language",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "表达式 a > b ? 1 : 0 与 (a > b) 的区别？",
+    "options": [
+      "没有区别，都返回 0 或 1",
+      "C 中 > 比较运算符直接返回 0 或 1，可以直接用作整数",
+      "前者更快",
+      "后者编译错误"
+    ],
+    "correctAnswer": 1,
+    "explanation": "C 的比较运算符 > < == != >= <= 的结果是 int 类型，值为 0 或 1，符合 C 标准。所以 (a>b) 可以直接当整数使用，不需要三目运算符。写 a>b ? 1 : 0 是冗余的（虽然编译器会优化）。常见简洁用法：int bigger = a > b; 或 count += (x == target);。注意别把 C 习惯带到 Python 等语言——有些语言比较返回 bool 不能直接参与整数运算。"
+  },
+  {
+    "id": "c-084",
+    "category": "c-language",
+    "type": "true-false",
+    "difficulty": "hard",
+    "question": "C 中 int 类型的负数一定用补码（two's complement）表示。",
+    "options": [
+      "正确",
+      "错误"
+    ],
+    "correctAnswer": 1,
+    "explanation": "错误。C99/C11/C17 规定有符号整数可以用三种表示：补码、反码、符号-数值表示。实际上所有现代 CPU 都用补码，但标准层面允许其他表示。这影响到 INT_MIN 等值，例如符号数值表示下有 +0 和 -0。C23 终于强制要求补码（与实际硬件对齐）。编写跨标准代码应避免依赖具体表示，使用 <stdint.h> 和标准操作。"
+  },
+  {
+    "id": "c-085",
+    "category": "c-language",
+    "type": "single-choice",
+    "difficulty": "hard",
+    "question": "循环左移 uint32_t n k 位（rotate left）的正确写法？",
+    "options": [
+      "n << k",
+      "(n << k) | (n >> (32 - k))",
+      "(n << k) | (n >> (32 - k))，但 k=0 或 k=32 时仍有 UB",
+      "n << k + n >> (32 - k)"
+    ],
+    "correctAnswer": 2,
+    "explanation": "循环左移：高位移出的 k 位从低位进入。公式 (n<<k)|(n>>(32-k))。但 k=0 时 n>>32 是 UB（C 标准规定移位量 >= 位宽是 UB），k=32 时 n<<32 也是 UB。健壮写法需处理边界：if(k%=32) return (n<<k)|(n>>(32-k)); else return n;。或用 GCC 内建 __builtin_stdc_rotate_left/RRX 指令。选项 D 运算符优先级错误：+ 高于 >>/<<。"
+  },
+  {
+    "id": "c-086",
+    "category": "c-language",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "以下哪个宏能正确生成 n 位全 1 的掩码？（假设 n <= 31）",
+    "options": [
+      "#define MASK(n) ((1 << (n)) - 1)",
+      "#define MASK(n) (1 << ((n) - 1))",
+      "#define MASK(n) (~(~0 << (n)))",
+      "A 和 C 都正确"
+    ],
+    "correctAnswer": 3,
+    "explanation": "方法 A：1<<n 得到 bit n 为 1，减 1 后低 n 位全 1。方法 C：~0 是全 1，左移 n 位得到低 n 位为 0，再取反即低 n 位为 1。两种都正确但需注意：1<<n 当 n=32 时 UB（移位超出位宽），改用 1U<<n 并声明为 uint64_t 更安全。选项 B 错误：1<<(n-1) 得到单个 bit，不是 n 位连续 1。位掩码生成是基础操作，务必掌握。"
+  },
+  {
+    "id": "c-087",
+    "category": "c-language",
+    "type": "single-choice",
+    "difficulty": "easy",
+    "question": "0x1234 的高字节和低字节分别是？",
+    "options": [
+      "高字节 0x12，低字节 0x34",
+      "高字节 0x34，低字节 0x12",
+      "取决于大小端",
+      "都是 0x1234"
+    ],
+    "correctAnswer": 0,
+    "explanation": "数值 0x1234 在数学上高位是 0x12，低位是 0x34，这与大小端无关——大小端影响的是多字节数据在内存中字节的排列顺序，不影响数值的高低位概念。要提取：高字节 (x>>8)&0xFF=0x12，低字节 x&0xFF=0x34。内存字节序：小端 MCU 按 0x34, 0x12 存储；大端按 0x12, 0x34 存储。理解 '数值位' 与 '内存字节' 的区别对网络协议处理很关键。"
   }
 ]
