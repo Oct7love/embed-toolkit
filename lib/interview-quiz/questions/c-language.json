@@ -689,5 +689,301 @@
     ],
     "correctAnswer": 1,
     "explanation": "外设寄存器会被硬件自主改变（如 ADC 采样完成位被硬件置 1），不加 volatile 编译器可能优化掉看似'无用'的读操作（如 while(!(reg & BIT)) 循环），导致程序死锁或错过事件。volatile 告诉编译器：每次访问都必须真正读写内存，不要缓存在寄存器中或优化掉。嵌入式开发中，外设寄存器、中断共享变量、多线程共享变量都必须加 volatile。const 只表示程序不写，不影响硬件改变。"
+  },
+  {
+    "id": "c-048",
+    "category": "c-language",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "32 位系统上，以下结构体 sizeof 的值是多少？\n\nstruct S {\n    char a;\n    int b;\n    char c;\n};",
+    "options": [
+      "6",
+      "8",
+      "12",
+      "16"
+    ],
+    "correctAnswer": 2,
+    "explanation": "结构体成员按对齐规则排布：char a 占 1 字节后，为让 int b 4 字节对齐，需填充 3 字节；int b 占 4 字节；char c 占 1 字节后，为让整个结构体大小为最大对齐值 (4) 的倍数，再填充 3 字节。总计 1+3+4+1+3=12。调整成员顺序（把两个 char 放一起）可以降到 8 字节，对嵌入式节省内存很重要。"
+  },
+  {
+    "id": "c-049",
+    "category": "c-language",
+    "type": "single-choice",
+    "difficulty": "easy",
+    "question": "malloc(0) 的返回值是什么？",
+    "options": [
+      "NULL",
+      "0 字节的有效指针或 NULL（由实现定义）",
+      "一定是有效指针",
+      "编译错误"
+    ],
+    "correctAnswer": 1,
+    "explanation": "C 标准规定 malloc(0) 的行为是 implementation-defined（由实现决定）：可以返回 NULL，也可以返回一个可以安全传给 free 但不能解引用的非 NULL 指针（类似 unique pointer）。glibc 通常返回后者。因此判断 malloc 失败不能仅靠 '== NULL'，需要配合 size 检查。写可移植代码应避免 malloc(0)。"
+  },
+  {
+    "id": "c-050",
+    "category": "c-language",
+    "type": "single-choice",
+    "difficulty": "hard",
+    "question": "以下代码的问题是？\n\nint *p = malloc(10 * sizeof(int));\nif (p != NULL) {\n    free(p);\n    p[0] = 1;\n}",
+    "options": [
+      "没有问题",
+      "free 后使用悬垂指针（use-after-free），未定义行为",
+      "缺少强转",
+      "sizeof 用错"
+    ],
+    "correctAnswer": 1,
+    "explanation": "free(p) 后 p 指向的内存被归还给分配器，但 p 本身的值（地址）没变，仍指向已失效内存。此时写 p[0]=1 是典型的 use-after-free，属于未定义行为，可能立即崩溃、默默破坏其他数据或被利用为安全漏洞。良好实践：free 后立即 p=NULL，这样下次误用会触发空指针异常而非静默损坏。这是内存安全的核心问题之一。"
+  },
+  {
+    "id": "c-051",
+    "category": "c-language",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "在 #pragma pack(1) 下，struct S { char a; int b; } 的 sizeof 是？",
+    "options": [
+      "4",
+      "5",
+      "8",
+      "12"
+    ],
+    "correctAnswer": 1,
+    "explanation": "#pragma pack(1) 强制所有成员按 1 字节对齐（即紧凑排列，不填充）。char a 占 1 字节，int b 占 4 字节，总计 5 字节。不加 pragma 时为 8（填充 3 字节）。紧凑结构常用于网络协议解析、硬件寄存器映射——节省空间但代价是未对齐访问在某些架构（ARMv5 以下、MIPS）上会触发总线错误或需两次访存，性能下降。"
+  },
+  {
+    "id": "c-052",
+    "category": "c-language",
+    "type": "single-choice",
+    "difficulty": "hard",
+    "question": "以下代码的输出是什么？（64 位系统）\n\nstruct A { int a; char b; };\nstruct B { char a; struct A sub; char c; };\nprintf(\"%zu\", sizeof(struct B));",
+    "options": [
+      "10",
+      "12",
+      "16",
+      "24"
+    ],
+    "correctAnswer": 2,
+    "explanation": "struct A：int(4) + char(1) + 填充 3 = 8，对齐 4。struct B：char a(1) + 填充 3 使嵌套结构对齐到 4 + struct A(8) + char c(1) + 填充 3 = 16。嵌入的结构体会以它自身的最大对齐值对齐。规则：结构体的对齐值 = max(各成员对齐值)，总大小 = round_up(成员累计大小, 对齐值)。理解嵌套结构对齐对协议解析很关键。"
+  },
+  {
+    "id": "c-053",
+    "category": "c-language",
+    "type": "true-false",
+    "difficulty": "medium",
+    "question": "free 一个 malloc 返回的指针的中间位置（如 free(p+1)）是安全的。",
+    "options": [
+      "正确",
+      "错误"
+    ],
+    "correctAnswer": 1,
+    "explanation": "错误，这是未定义行为。free 必须精确传入 malloc/calloc/realloc 返回的原始指针，不能是偏移后的。分配器通常在内存块前面存储元信息（chunk size、flags），通过传入指针减去固定偏移来定位。传入非原始指针会错误地解释为元信息，导致堆破坏或立即崩溃。要释放部分内存请使用 realloc 缩小，或重新设计内存管理。"
+  },
+  {
+    "id": "c-054",
+    "category": "c-language",
+    "type": "single-choice",
+    "difficulty": "easy",
+    "question": "calloc(10, sizeof(int)) 与 malloc(10 * sizeof(int)) 的主要区别是？",
+    "options": [
+      "没有区别",
+      "calloc 会将分配的内存清零",
+      "calloc 比 malloc 快",
+      "calloc 分配的内存不用 free"
+    ],
+    "correctAnswer": 1,
+    "explanation": "calloc 会将分配的内存初始化为全 0，malloc 返回的内存内容不确定（可能是之前释放过的脏数据）。calloc 还会检查 nmemb*size 是否溢出（malloc 不会）。代价是清零需要写入所有字节，性能略差，但现代分配器在大块内存时会从操作系统直接申请 0 页，避免实际写入。释放同样用 free。"
+  },
+  {
+    "id": "c-055",
+    "category": "c-language",
+    "type": "single-choice",
+    "difficulty": "hard",
+    "question": "以下代码的漏洞是？\n\nvoid f(int n) {\n    char *buf = malloc(n * sizeof(char));\n    // ... use buf ...\n    free(buf);\n}",
+    "options": [
+      "没有漏洞",
+      "n 若为负数或很大，n*sizeof(char) 可能整数溢出",
+      "应该用 calloc",
+      "sizeof(char) 不等于 1"
+    ],
+    "correctAnswer": 1,
+    "explanation": "当 n 来自用户输入且很大或为负，n*sizeof 可能在 size_t 范围内溢出或 n 本身是负数被隐式转为巨大 size_t。例如传入 n=INT_MAX 乘法不会溢出但 malloc 会失败；传入负数转 size_t 后变成超大值。安全做法：if(n<=0||n>MAX_LIMIT) return; 或使用 __builtin_mul_overflow 检测溢出。这是 CVE 级别的经典漏洞类型。"
+  },
+  {
+    "id": "c-056",
+    "category": "c-language",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "以下代码内存泄漏了吗？\n\nvoid f(void) {\n    char *p = malloc(100);\n    if (some_error()) return;\n    free(p);\n}",
+    "options": [
+      "不泄漏",
+      "some_error 返回真时 p 未被释放，泄漏",
+      "编译错误",
+      "p 不需要释放"
+    ],
+    "correctAnswer": 1,
+    "explanation": "当 some_error 返回真时，函数直接返回，p 指向的 100 字节内存未被 free，丢失了唯一引用——内存泄漏。单次看似小问题，若此函数高频调用会耗尽堆。修复方式：所有 return 分支前都要 free，或使用 goto cleanup 模式，或 GCC/Clang 的 __attribute__((cleanup))，或用 RAII 封装（C++）。嵌入式系统对泄漏尤其敏感。"
+  },
+  {
+    "id": "c-057",
+    "category": "c-language",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "struct 中的位域（bit-field）跨编译器可移植吗？",
+    "options": [
+      "完全可移植",
+      "不可移植：位域分配顺序、填充、宽度类型都由实现定义",
+      "ANSI C 严格规定了所有行为",
+      "仅大小端有差异"
+    ],
+    "correctAnswer": 1,
+    "explanation": "位域的多个方面由编译器决定：位从高位还是低位开始分配（GCC 小端机从低位起）、跨存储单元时是否分割、允许的类型（标准只要求 int、unsigned int、_Bool）、有符号位域符号位含义等。因此同样的位域定义在不同编译器上可能布局不同，不适合做协议解析或寄存器映射。更可移植的做法是用 uint32_t + 掩码和移位操作。"
+  },
+  {
+    "id": "c-058",
+    "category": "c-language",
+    "type": "single-choice",
+    "difficulty": "easy",
+    "question": "栈上分配与堆上分配的主要区别，哪项错误？",
+    "options": [
+      "栈分配由编译器自动管理，函数返回自动释放",
+      "堆分配需手动 free，生命周期由程序员控制",
+      "栈分配比堆分配慢",
+      "栈空间有限（通常几 KB 到几 MB）"
+    ],
+    "correctAnswer": 2,
+    "explanation": "栈分配比堆快得多——只需一条指令调整 SP 寄存器；堆分配需要遍历空闲链表、加锁、可能陷入内核，慢几十倍以上。其他选项都对。实际选型：小而生命周期短的用栈（int a;、char buf[128];），大或动态大小或需跨函数共享的用堆。嵌入式系统栈通常只有几 KB，大数组放栈会栈溢出。MCU 开发建议用静态内存池代替 malloc。"
+  },
+  {
+    "id": "c-059",
+    "category": "c-language",
+    "type": "single-choice",
+    "difficulty": "hard",
+    "question": "offsetof 宏的典型实现是？",
+    "options": [
+      "需要编译器内建支持，无法用纯 C 实现",
+      "#define offsetof(type, member) ((size_t)&(((type*)0)->member))",
+      "#define offsetof(type, member) sizeof(type) - sizeof(member)",
+      "#define offsetof(type, member) 0"
+    ],
+    "correctAnswer": 1,
+    "explanation": "经典实现是：把 0 当作 type* 类型指针（不会真正解引用，只是取成员偏移地址），取成员地址，转为 size_t 就是成员在结构体中的字节偏移。技术上 (type*)0->member 算空指针算术是 UB，但因不实际访问内存，几乎所有编译器都支持。C11 后标准库 <stddef.h> 提供 offsetof 宏，但通常也是内建的（如 GCC 的 __builtin_offsetof）以避免 UB。用于链表节点嵌入式 container_of 宏。"
+  },
+  {
+    "id": "c-060",
+    "category": "c-language",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "union 的 sizeof 取决于什么？",
+    "options": [
+      "所有成员大小之和",
+      "最大成员的大小（考虑对齐）",
+      "第一个成员大小",
+      "总是 1"
+    ],
+    "correctAnswer": 1,
+    "explanation": "union 所有成员共享同一块内存，起始地址相同，所以其大小至少要能容纳最大的成员。此外要考虑 union 的对齐要求（等于最大成员的对齐），大小必须向上取整到对齐值的倍数。例如 union { char c; int i; double d; } 在 64 位系统大小为 8（对齐到 8）。union 常用于节省内存、类型转换（但严格别名规则限制）、解析不同消息类型。"
+  },
+  {
+    "id": "c-061",
+    "category": "c-language",
+    "type": "true-false",
+    "difficulty": "medium",
+    "question": "双重释放（double free）是未定义行为，可能导致堆破坏。",
+    "options": [
+      "正确",
+      "错误"
+    ],
+    "correctAnswer": 0,
+    "explanation": "对同一指针 free 两次是未定义行为。分配器内部维护 free chunk 的链表，第二次 free 可能将已在链表中的 chunk 再次插入，破坏链表结构。下次 malloc 可能返回非法地址，或者被攻击者利用做 tcache/fastbin poisoning 攻击。防御措施：free 后立即将指针置 NULL（free(NULL) 是安全无操作的空操作）。AddressSanitizer 能在运行时检测 double free。"
+  },
+  {
+    "id": "c-062",
+    "category": "c-language",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "在 32 位系统，如何判断变量 x 的地址是否 4 字节对齐？",
+    "options": [
+      "((uintptr_t)&x) % 4 == 0",
+      "((uintptr_t)&x) & 0x3 == 0",
+      "以上都可以",
+      "sizeof(x) == 4"
+    ],
+    "correctAnswer": 2,
+    "explanation": "对齐到 4 等价于地址最低 2 位为 0。取模 % 4 和按位与 & 0x3 都能判断，结果一致。按位与通常更快（1 条指令），取模对 2 的幂编译器也会优化成位运算。重要：需先把指针转为整数类型（uintptr_t 最安全），不能直接对指针做位运算。对齐检测在 DMA、SIMD、原子操作中很关键，许多架构对未对齐访问要么出错要么性能大幅下降。"
+  },
+  {
+    "id": "c-063",
+    "category": "c-language",
+    "type": "single-choice",
+    "difficulty": "hard",
+    "question": "以下代码在 ARM Cortex-M3（不支持未对齐访问）上的风险？\n\nuint8_t buf[10];\nuint32_t *p = (uint32_t *)(buf + 1);\nuint32_t v = *p;",
+    "options": [
+      "没有风险",
+      "触发 UsageFault 或硬件异常（未对齐访问）",
+      "性能略下降",
+      "编译错误"
+    ],
+    "correctAnswer": 1,
+    "explanation": "Cortex-M3/M4 默认启用未对齐异常检测（SCB->CCR.UNALIGN_TRP），非字对齐地址的 4 字节访问会触发 UsageFault。buf+1 大概率非 4 字节对齐。即使允许未对齐访问（Cortex-M4），单一 LDR 会被拆成多条访存，性能受损。跨平台安全方案：使用 memcpy(&v, buf+1, 4) 让编译器选择安全方式，或用 __packed 指针（GCC 扩展）。"
+  },
+  {
+    "id": "c-064",
+    "category": "c-language",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "下面两种分配方式哪个适合嵌入式 MCU？\n\n// 方式 A\nstatic uint8_t pool[1024];\n// 方式 B\nuint8_t *p = malloc(1024);",
+    "options": [
+      "方式 B，更灵活",
+      "方式 A，静态分配无碎片、无分配失败、可预测，适合实时系统",
+      "完全等价",
+      "方式 A 不可移植"
+    ],
+    "correctAnswer": 1,
+    "explanation": "MCU 资源受限且要求确定性：方式 A 编译时固定分配，无运行时开销、无碎片化、无分配失败风险，实时性强，map 文件中可看到空间占用。方式 B 依赖运行时堆管理，长时间运行产生碎片导致后期大块分配失败（即使空间够），分配失败处理增加代码复杂度，且 malloc 不是实时操作。安全攸关系统（汽车、医疗）甚至禁用 malloc。建议用内存池（pool）模式。"
+  },
+  {
+    "id": "c-065",
+    "category": "c-language",
+    "type": "single-choice",
+    "difficulty": "easy",
+    "question": "以下哪种情况下 struct S { } 在 C 中是有效的？",
+    "options": [
+      "空结构体总是合法",
+      "C 标准不允许完全空的结构体（至少一个成员或 GCC 扩展）",
+      "sizeof 必定为 0",
+      "等价于 typedef"
+    ],
+    "correctAnswer": 1,
+    "explanation": "ISO C 标准规定结构体至少要有一个成员，因此 struct S {} 在严格 C 中是语法错误（与 C++ 不同，C++ 允许空 struct 且 sizeof=1）。GCC 作为扩展允许空结构体，sizeof 为 0。需要'占位'时常用 int dummy; 或 unsigned char _:1 位域。C++ 空类 sizeof 为 1 是为了让不同实例有不同地址。工程上建议避免依赖这种扩展。"
+  },
+  {
+    "id": "c-066",
+    "category": "c-language",
+    "type": "single-choice",
+    "difficulty": "hard",
+    "question": "柔性数组成员（flexible array member）的典型定义和用法是？\n\nstruct packet {\n    uint16_t len;\n    uint8_t data[];  // 柔性数组\n};",
+    "options": [
+      "data 在 sizeof(struct packet) 中占 0 字节，分配时可附加任意长度数据",
+      "data 固定占 1 字节",
+      "柔性数组不符合 C 标准",
+      "必须放在结构体开头"
+    ],
+    "correctAnswer": 0,
+    "explanation": "C99 引入柔性数组成员（FAM）：最后一个成员是无大小的数组，sizeof 时不计入它。分配：struct packet *p = malloc(sizeof(struct packet) + n); 使得 p->data 指向后面 n 字节空间，形成单块内存的 'header+payload' 结构，好处是只需一次 malloc、一次 free，缓存友好。必须是结构体最后一个成员且不能是唯一成员。在协议栈、动态字符串等场景常用。"
+  },
+  {
+    "id": "c-067",
+    "category": "c-language",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "容器嵌入模式 container_of 宏的作用？\n\n#define container_of(ptr, type, member) \\\n    ((type *)((char *)(ptr) - offsetof(type, member)))",
+    "options": [
+      "从结构体成员的地址反推整个结构体的地址",
+      "获取成员大小",
+      "分配结构体内存",
+      "检查指针合法性"
+    ],
+    "correctAnswer": 0,
+    "explanation": "container_of 是 Linux 内核和许多 C 框架的核心宏：已知结构体某个成员的指针 ptr，计算出包含它的结构体起始地址。原理：用 offsetof 得到 member 在 type 中的字节偏移，从 ptr 减去此偏移即得结构体起始。应用场景：侵入式链表（struct list_head 嵌入各结构体中）、回调参数还原上下文——链表节点不关心容器类型，通过 container_of 反查。是 C 语言实现多态的经典技巧。"
   }
 ]
