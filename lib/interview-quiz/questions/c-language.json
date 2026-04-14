@@ -395,5 +395,299 @@
     ],
     "correctAnswer": 1,
     "explanation": "restrict 是 C99 引入的关键字，用于告诉编译器：在指针的生命周期内，只有该指针（及其衍生指针）可以访问所指向的内存。这意味着 a 和 b 指向的内存不会重叠（no aliasing），编译器可以据此做更激进的优化，如向量化（SIMD）、指令重排等。如果实际存在重叠，则行为未定义。在嵌入式的 DSP 运算中，restrict 对性能有显著提升。"
+  },
+  {
+    "id": "c-028",
+    "category": "c-language",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "以下代码的输出是什么？\n\nint a[5] = {1, 2, 3, 4, 5};\nint *p = (int *)(&a + 1);\nprintf(\"%d\", *(p - 1));",
+    "options": [
+      "1",
+      "4",
+      "5",
+      "未定义"
+    ],
+    "correctAnswer": 2,
+    "explanation": "&a 是整个数组的地址，类型为 int (*)[5]，&a + 1 指向数组末尾的下一个位置（越过整个数组）。强转为 int * 后赋给 p，p - 1 回退 4 字节（一个 int）指向最后一个元素 a[4]，所以 *(p-1) = 5。区别于 a+1（指向 a[1]）和 &a[0]+1（等同 a+1）。理解数组名退化与 &a 的类型差异是关键。"
+  },
+  {
+    "id": "c-029",
+    "category": "c-language",
+    "type": "single-choice",
+    "difficulty": "hard",
+    "question": "以下代码在 32 位系统上，sizeof(ptr) 和 strlen(ptr) 的值分别是？\n\nchar *ptr = \"Hello\";",
+    "options": [
+      "6 和 5",
+      "5 和 5",
+      "4 和 5",
+      "4 和 6"
+    ],
+    "correctAnswer": 2,
+    "explanation": "ptr 是一个 char 指针变量，sizeof(ptr) 求的是指针本身的大小：32 位系统下为 4 字节。strlen(ptr) 不包含末尾 '\\0'，\"Hello\" 有 5 个字符，所以返回 5。注意如果是 char arr[] = \"Hello\"，则 sizeof(arr)=6（含 \\0），strlen(arr)=5。sizeof 在编译期求值，strlen 在运行期遍历。"
+  },
+  {
+    "id": "c-030",
+    "category": "c-language",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "以下代码的输出是什么？\n\nint a[3][4] = {{1,2,3,4}, {5,6,7,8}, {9,10,11,12}};\nprintf(\"%d\", *(*(a+1)+2));",
+    "options": [
+      "3",
+      "6",
+      "7",
+      "11"
+    ],
+    "correctAnswer": 2,
+    "explanation": "a 是二维数组，a+1 指向第 1 行（索引从 0 开始，即 {5,6,7,8}），*(a+1) 退化为该行首元素指针（等价于 a[1]）。再 +2 指向该行第 2 个元素 a[1][2]=7。*(*(a+1)+2) 等价于 a[1][2]。这考察多维数组名 a 的类型是 int (*)[4]，+1 跨越整行（16 字节）。"
+  },
+  {
+    "id": "c-031",
+    "category": "c-language",
+    "type": "true-false",
+    "difficulty": "easy",
+    "question": "数组名 a 和 &a 的地址值相同，类型也相同。",
+    "options": [
+      "正确",
+      "错误"
+    ],
+    "correctAnswer": 1,
+    "explanation": "地址值相同（都指向数组起始位置），但类型不同。对于 int a[5]：a 退化为 int * 类型（指向第一个元素），&a 类型为 int (*)[5]（指向整个数组）。指针运算结果因此不同：a+1 前进 sizeof(int)=4 字节，而 &a+1 前进 sizeof(a)=20 字节。理解这点对多维数组和函数传参很关键。"
+  },
+  {
+    "id": "c-032",
+    "category": "c-language",
+    "type": "single-choice",
+    "difficulty": "hard",
+    "question": "下列代码存在什么问题？\n\nchar *get_string(void) {\n    char buf[64] = \"hello\";\n    return buf;\n}",
+    "options": [
+      "无问题，可以正常使用",
+      "返回了局部数组的地址，函数返回后该内存失效（悬垂指针）",
+      "缓冲区太小",
+      "类型不匹配"
+    ],
+    "correctAnswer": 1,
+    "explanation": "buf 是栈上分配的局部数组，函数返回后其栈帧被回收，返回的地址指向已失效的内存，形成悬垂指针（dangling pointer）。后续访问是未定义行为，可能看起来偶尔能工作（内存还未被覆盖），但极不稳定。正确做法：用 static 修饰（生命周期延长到程序结束，但不可重入），或 malloc 动态分配（调用方负责 free），或让调用方传入缓冲区。"
+  },
+  {
+    "id": "c-033",
+    "category": "c-language",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "int *p[5] 和 int (*p)[5] 的区别是？",
+    "options": [
+      "没有区别",
+      "前者是指针数组（5 个 int*），后者是数组指针（指向 int[5] 的指针）",
+      "前者是数组指针，后者是指针数组",
+      "都是语法错误"
+    ],
+    "correctAnswer": 1,
+    "explanation": "关键看运算符优先级：[] 优先级高于 *。int *p[5] 先结合 p[5] 得到数组，再加 * 表示每个元素是 int*，即 5 个 int 指针的数组，sizeof = 5*4=20（32位）。int (*p)[5] 括号优先，p 先是指针，指向 int[5]，即指向含 5 个 int 的数组，sizeof = 4。数组指针常用于函数传递二维数组参数。"
+  },
+  {
+    "id": "c-034",
+    "category": "c-language",
+    "type": "single-choice",
+    "difficulty": "hard",
+    "question": "以下代码的输出是什么？\n\nchar str[] = \"ABCDEF\";\nchar *p = str;\np++;\nprintf(\"%c %c\", *p, p[2]);",
+    "options": [
+      "A C",
+      "B D",
+      "B C",
+      "C E"
+    ],
+    "correctAnswer": 1,
+    "explanation": "str 是字符数组，内容 A B C D E F \\0。p 初始指向 'A'，p++ 后指向 'B'，所以 *p = 'B'。p[2] 等价于 *(p+2)，从 'B' 开始数 2 个位置是 'D'。常见陷阱：p[2] 是相对于 p 当前位置的偏移，不是绝对下标。数组下标本质就是指针偏移运算，a[i] ≡ *(a+i) ≡ *(i+a) ≡ i[a]。"
+  },
+  {
+    "id": "c-035",
+    "category": "c-language",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "以下哪种方式正确初始化一个指针数组存储字符串？",
+    "options": [
+      "char strs[3] = {\"Hello\", \"World\", \"!\"};",
+      "char *strs[3] = {\"Hello\", \"World\", \"!\"};",
+      "char strs[][3] = {\"Hello\", \"World\", \"!\"};",
+      "char (*strs)[3] = {\"Hello\", \"World\", \"!\"};"
+    ],
+    "correctAnswer": 1,
+    "explanation": "char *strs[3] 是一个指针数组，含 3 个 char* 元素，每个指向字符串字面量（位于只读数据段）。选项 A 只能存 3 个字符。选项 C 的 [][3] 要求每行 3 字节但 \"Hello\" 需要 6 字节。选项 D 是数组指针且不能这样初始化。指针数组的优势是每个字符串长度可以不同，但指向的字面量不可修改。"
+  },
+  {
+    "id": "c-036",
+    "category": "c-language",
+    "type": "single-choice",
+    "difficulty": "hard",
+    "question": "以下代码可能出现什么问题？\n\nint *p = malloc(10 * sizeof(int));\nfor (int i = 0; i <= 10; i++) {\n    p[i] = i;\n}\nfree(p);",
+    "options": [
+      "无问题",
+      "内存泄漏",
+      "数组越界写入（写 p[10]）导致堆破坏或未定义行为",
+      "malloc 失败未检查"
+    ],
+    "correctAnswer": 2,
+    "explanation": "malloc 分配了 10 个 int（索引 0-9），但循环条件是 i<=10，执行了 p[10]=10，这是越界写入。后果：可能破坏堆管理数据（malloc chunk 元信息），导致 free 时崩溃或随后不可复现的错误。这种 off-by-one 错误非常常见。虽然选项 D 也是潜在问题（没检查 NULL），但立即错误是越界。边界条件永远是 bug 重灾区。"
+  },
+  {
+    "id": "c-037",
+    "category": "c-language",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "void func(int arr[]) 中，sizeof(arr) 的值是？（64 位系统）",
+    "options": [
+      "数组实际大小",
+      "8（指针大小）",
+      "编译错误",
+      "未定义"
+    ],
+    "correctAnswer": 1,
+    "explanation": "作为函数参数时，数组会退化为指针——无论声明为 int arr[] 还是 int arr[10] 或 int *arr，在函数内部 arr 的类型都是 int*。sizeof(arr) 返回指针的大小，64 位系统为 8 字节，32 位为 4。这是数组与指针关系的经典陷阱。要在函数内知道数组长度，必须额外传入长度参数，或以哨兵值结尾（如字符串的 '\\0'）。"
+  },
+  {
+    "id": "c-038",
+    "category": "c-language",
+    "type": "single-choice",
+    "difficulty": "hard",
+    "question": "以下代码的输出是什么？\n\nint a[] = {10, 20, 30, 40};\nint *p = a;\nprintf(\"%d %d\", *p++, *++p);",
+    "options": [
+      "10 30",
+      "10 20",
+      "未定义行为",
+      "20 30"
+    ],
+    "correctAnswer": 2,
+    "explanation": "在同一表达式中对 p 进行多次未序列化的修改（p++ 和 ++p），违反了 C 标准的序列点规则。printf 参数求值顺序在标准中是未指定的（unspecified），且 ++/-- 的副作用导致同一变量被多次修改——这是未定义行为（UB）。不同编译器甚至不同优化级别可能产生不同结果。面试中看到此类代码应立即识别为 UB。"
+  },
+  {
+    "id": "c-039",
+    "category": "c-language",
+    "type": "true-false",
+    "difficulty": "medium",
+    "question": "对于 int *p; 来说，p = NULL 和 *p = 0 效果相同。",
+    "options": [
+      "正确",
+      "错误"
+    ],
+    "correctAnswer": 1,
+    "explanation": "完全不同。p = NULL 将指针本身赋为空指针常量，表示不指向任何对象（安全）。*p = 0 是对指针解引用写入——如果 p 没有先指向有效内存，这是对非法地址的写操作，会导致段错误（Linux）或硬件异常（MCU）。空指针解引用更危险：*NULL = 0 通常立即崩溃。指针使用前必须保证指向有效内存。"
+  },
+  {
+    "id": "c-040",
+    "category": "c-language",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "以下代码输出是什么？\n\nchar s1[] = \"hello\";\nchar *s2 = \"hello\";\ns1[0] = 'H';         // (1)\ns2[0] = 'H';         // (2)",
+    "options": [
+      "两行都正常",
+      "(1) 正常，(2) 可能段错误（修改字面量）",
+      "(1) 段错误，(2) 正常",
+      "编译错误"
+    ],
+    "correctAnswer": 1,
+    "explanation": "s1 是字符数组，编译器为其在栈上分配空间并将字面量拷贝过去，s1 拥有自己的可修改副本。s2 是指向字符串字面量的指针，字面量存于只读段（.rodata），写入它是未定义行为——多数系统会触发段错误。GCC 可以用 -Wwrite-strings 警告此类风险。建议声明字符串指针时用 const char * 让编译器帮你检查。"
+  },
+  {
+    "id": "c-041",
+    "category": "c-language",
+    "type": "single-choice",
+    "difficulty": "hard",
+    "question": "struct A { int x; int *p; }; 定义变量 struct A a;，以下哪个表达式合法且安全？",
+    "options": [
+      "*a.p = 5;  // 直接使用未初始化指针",
+      "a.p = &a.x; *a.p = 5;  // 先让 p 指向 x 再写入",
+      "a.p++;",
+      "free(a.p);"
+    ],
+    "correctAnswer": 1,
+    "explanation": "结构体成员 p 若未显式初始化，值是不确定的（局部变量）或 0（全局/静态变量）。选项 A 未初始化直接解引用是 UB。选项 B 先让 p 指向 a.x 这块有效内存，再写入是合法的，等价于 a.x = 5。选项 C/D 都基于未初始化的指针，都是 UB。自动存储期（栈上）的结构体成员默认不归零，一定要显式初始化。"
+  },
+  {
+    "id": "c-042",
+    "category": "c-language",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "以下代码片段的输出是什么？\n\nchar *p = \"ABCDE\";\nprintf(\"%s\", p+2);",
+    "options": [
+      "A",
+      "C",
+      "CDE",
+      "ABCDE"
+    ],
+    "correctAnswer": 2,
+    "explanation": "%s 从给定地址开始读字符直到 '\\0'。p 指向 \"ABCDE\" 首字符 'A'，p+2 跳过 2 字节，指向 'C'。从 'C' 开始打印直到 \\0，输出 \"CDE\"。这展示了字符串在 C 中是以 \\0 结尾的字符序列，%s 本质是按指针偏移读取，并非真正的 \"字符串类型\"。这也是 strcat、strcpy 等函数容易出缓冲区溢出的根源。"
+  },
+  {
+    "id": "c-043",
+    "category": "c-language",
+    "type": "single-choice",
+    "difficulty": "hard",
+    "question": "已知 int (*pf)(int, int);，以下哪种赋值正确？\n\nint add(int a, int b) { return a+b; }",
+    "options": [
+      "pf = add;",
+      "pf = &add;",
+      "两者都正确",
+      "pf = *add;"
+    ],
+    "correctAnswer": 2,
+    "explanation": "函数名在表达式中自动退化为函数指针，类似数组名退化。所以 pf = add 和 pf = &add 完全等价，都是将函数入口地址赋给 pf。调用时 pf(1,2) 和 (*pf)(1,2) 也等价。这种设计统一了函数指针的使用方式。同样 *add、**add、***add 也都退化到同一个函数指针。但为了代码清晰，推荐显式使用 & 和 (*pf)()。"
+  },
+  {
+    "id": "c-044",
+    "category": "c-language",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "以下代码存在什么问题？\n\nint *p = malloc(sizeof(int) * 10);\np = realloc(p, sizeof(int) * 20);",
+    "options": [
+      "无问题",
+      "如果 realloc 失败会内存泄漏（原 p 指向的内存丢失）",
+      "应该先 free(p)",
+      "sizeof 计算错误"
+    ],
+    "correctAnswer": 1,
+    "explanation": "realloc 失败时返回 NULL，但原内存块保持有效。如果直接 p = realloc(p,...)，失败时 p 被覆盖为 NULL，原内存地址丢失，无法再 free，造成泄漏。正确写法：int *tmp = realloc(p, ...); if (tmp) p = tmp; else { /* 处理错误，p 仍可用 */ }。realloc 成功时会自动 free 原内存（如果地址改变），所以不能也不应提前 free。"
+  },
+  {
+    "id": "c-045",
+    "category": "c-language",
+    "type": "single-choice",
+    "difficulty": "hard",
+    "question": "int a[2][3]; int (*p)[3] = a; 以下哪个访问 a[1][2] 是正确的？",
+    "options": [
+      "*(*(p+1)+2)",
+      "p[1][2]",
+      "以上都正确",
+      "*p+1+2"
+    ],
+    "correctAnswer": 2,
+    "explanation": "p 是指向 int[3] 的数组指针，p+1 跨过一整行（12 字节）指向第二行。*(p+1) 退化为该行首元素的 int*，+2 指向 a[1][2]，再解引用取值。p[1][2] 是数组下标语法，完全等价于 *(*(p+1)+2)。选项 D 的运算顺序错误：*p 先解引用得到第一行首元素值（a[0][0]），再 +1+2 是整数加法，类型不匹配。"
+  },
+  {
+    "id": "c-046",
+    "category": "c-language",
+    "type": "true-false",
+    "difficulty": "medium",
+    "question": "对于 int a[10]; 来说，a 和 &a[0] 完全等价，包括类型和值。",
+    "options": [
+      "正确",
+      "错误"
+    ],
+    "correctAnswer": 0,
+    "explanation": "正确。数组名 a 在表达式中退化为指向首元素的指针，类型是 int*，值等于 &a[0]。两者可以互换使用。但注意与 &a 区分：&a 的类型是 int(*)[10]，虽然地址值相同但类型不同，指针算术行为不同（&a+1 跨 40 字节，a+1 跨 4 字节）。在 sizeof 和 & 运算符作用下，a 不会退化——sizeof(a)=40，&a 类型为数组指针。"
+  },
+  {
+    "id": "c-047",
+    "category": "c-language",
+    "type": "single-choice",
+    "difficulty": "hard",
+    "question": "以下代码在嵌入式系统上访问外设寄存器，哪种声明最合适？\n\n// 访问地址 0x40020000 处的 32 位外设寄存器",
+    "options": [
+      "uint32_t *reg = (uint32_t *)0x40020000;",
+      "volatile uint32_t *reg = (volatile uint32_t *)0x40020000;",
+      "const uint32_t *reg = (const uint32_t *)0x40020000;",
+      "static uint32_t *reg = (uint32_t *)0x40020000;"
+    ],
+    "correctAnswer": 1,
+    "explanation": "外设寄存器会被硬件自主改变（如 ADC 采样完成位被硬件置 1），不加 volatile 编译器可能优化掉看似'无用'的读操作（如 while(!(reg & BIT)) 循环），导致程序死锁或错过事件。volatile 告诉编译器：每次访问都必须真正读写内存，不要缓存在寄存器中或优化掉。嵌入式开发中，外设寄存器、中断共享变量、多线程共享变量都必须加 volatile。const 只表示程序不写，不影响硬件改变。"
   }
 ]
