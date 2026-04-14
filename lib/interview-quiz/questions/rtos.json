@@ -1283,5 +1283,301 @@
     ],
     "correctAnswer": 1,
     "explanation": "RT-Thread 是国产主流 RTOS，API 风格前缀 rt_ + 模块 + 操作：rt_sem_take（获取）、rt_sem_release（释放）、rt_sem_create（创建动态）、rt_sem_init（初始化静态）。互斥量类似：rt_mutex_take、rt_mutex_release。osSemaphoreWait 是 CMSIS-RTOS API（跨不同 RTOS 的抽象层）。sem_wait 是 POSIX 线程 API。不同 RTOS API 不同但概念相通。"
+  },
+  {
+    "id": "rtos-088",
+    "category": "rtos",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "FreeRTOS 栈溢出检测机制中，方法 1 和方法 2 的区别？",
+    "options": [
+      "没有区别",
+      "方法 1 检测任务切换时栈指针是否超出栈空间；方法 2 用魔数填充栈，切换时检查尾部是否被破坏",
+      "方法 1 更快",
+      "方法 2 只用于 debug"
+    ],
+    "correctAnswer": 1,
+    "explanation": "方法 1（configCHECK_FOR_STACK_OVERFLOW=1）：任务切换时比较栈指针与栈底，超出则调用 vApplicationStackOverflowHook。速度快但只能检测'溢出时刚好切换'。方法 2（=2）：栈分配时填充 0xA5 魔数，切换时检查栈最后 20 字节（或其他值）是否仍是魔数，被破坏说明溢出过。方法 2 检测率更高但开销略大。生产代码建议开方法 2 + 保守的栈预留。"
+  },
+  {
+    "id": "rtos-089",
+    "category": "rtos",
+    "type": "single-choice",
+    "difficulty": "hard",
+    "question": "如何估算 FreeRTOS 任务栈的合适大小？",
+    "options": [
+      "总是 512 字节",
+      "分析：局部变量总和 + 函数调用链深度 × 每层约束 + 中断嵌套上下文；跑一段时间后用 uxTaskGetStackHighWaterMark 查看水位，保留 30% 余量",
+      "越大越好",
+      "用默认值"
+    ],
+    "correctAnswer": 1,
+    "explanation": "栈大小估算：① 静态分析——每个函数的局部变量 + ABI 规定的保存寄存器 + 参数 + 对齐。调用链深度 × 平均每层 50-100 字节。② 动态测量——运行 uxTaskGetStackHighWaterMark(task) 返回历史最低剩余，越小说明用得越多。保留 30% 以上余量应对未考虑的深调用（如 printf）和中断嵌套。嵌入式开发中栈估算不准是 bug 重灾区——溢出后默默破坏其他数据极难调试。"
+  },
+  {
+    "id": "rtos-090",
+    "category": "rtos",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "FreeRTOS 提供了几种堆管理方案？",
+    "options": [
+      "1 种",
+      "5 种（heap_1 到 heap_5）",
+      "3 种",
+      "10 种"
+    ],
+    "correctAnswer": 1,
+    "explanation": "FreeRTOS 提供 heap_1 到 heap_5 共 5 种堆方案：heap_1 只分配不释放（最简、最安全，适合全程序期固定任务）；heap_2 支持释放但不合并（已过时）；heap_3 封装 malloc/free（依赖标准库）；heap_4 首次适配 + 合并相邻空闲块（最常用，通用场景）；heap_5 类似 heap_4 但支持多块不连续内存（如 DTCM+SRAM）。根据需求选择：简单系统 heap_1，多块内存 heap_5。"
+  },
+  {
+    "id": "rtos-091",
+    "category": "rtos",
+    "type": "single-choice",
+    "difficulty": "hard",
+    "question": "heap_4 为什么比 heap_2 好？",
+    "options": [
+      "只是名字不同",
+      "heap_4 能合并相邻空闲块，避免碎片；heap_2 释放后不合并，长时间运行会碎片化无法分配大块",
+      "heap_4 更快",
+      "heap_2 不安全"
+    ],
+    "correctAnswer": 1,
+    "explanation": "碎片问题：heap_2 释放后的小块若不与邻居合并，会留下大量孤立小空闲块。即使总可用内存足够，也无法满足大块分配请求（外部碎片）。heap_4 每次释放都检查相邻块是否空闲并合并，保持空闲块尽量大。代价是稍多的管理开销。heap_5 基于 heap_4 扩展支持多区域内存。所有现代 FreeRTOS 项目都推荐 heap_4 或 heap_5，heap_2 已标记为过时。"
+  },
+  {
+    "id": "rtos-092",
+    "category": "rtos",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "为什么硬实时系统（汽车、医疗）倾向于禁用 malloc？",
+    "options": [
+      "malloc 太慢",
+      "malloc 分配时间不确定（worst case 无界）且可能因碎片化失败，违反实时性和确定性要求",
+      "内存不够",
+      "无法调试"
+    ],
+    "correctAnswer": 1,
+    "explanation": "硬实时系统要求行为可预测：① malloc 最坏执行时间取决于空闲链表长度、锁竞争等，无法给出确定上界；② 长时间运行碎片化导致分配失败——在关键时刻（如飞控）失败是不可接受的；③ 分配失败处理复杂（回滚？重试？）；④ MISRA C、DO-178B 等规范禁止或限制动态分配。替代：静态分配、对象池（预分配 N 个对象重复用）、stack allocator（生命周期短）。"
+  },
+  {
+    "id": "rtos-093",
+    "category": "rtos",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "内存池（Memory Pool）相比 malloc 的优势？",
+    "options": [
+      "没有优势",
+      "分配/释放 O(1) 恒定时间，无碎片（所有块固定大小），适合 RT 系统",
+      "占用更少内存",
+      "可分配任意大小"
+    ],
+    "correctAnswer": 1,
+    "explanation": "内存池：预分配 N 个固定大小的块，维护空闲链表。分配 pop 一个、释放 push 回去，都是 O(1) 常数时间。所有块大小一致，没有碎片问题。适合实时系统：可预测、确定性、无分配失败（池满可明确检测）。缺点：只能分配固定大小（可以多池应对多种大小），总内存可能大于按需分配。RT-Thread 的 rt_mp_* API 就是典型实现。协议栈、驱动中广泛使用。"
+  },
+  {
+    "id": "rtos-094",
+    "category": "rtos",
+    "type": "single-choice",
+    "difficulty": "hard",
+    "question": "CCM（Core Coupled Memory）或 DTCM 的作用？",
+    "options": [
+      "廉价内存",
+      "紧耦合内存，直接连 CPU，访问零等待；不在总线上，DMA 不能访问，适合存放实时数据/栈",
+      "备份存储",
+      "和 SRAM 没区别"
+    ],
+    "correctAnswer": 1,
+    "explanation": "DTCM/CCM 是 Cortex-M 的特殊 SRAM：直接挂在 CPU 总线，访问零等待（系统 SRAM 通常 1-2 周期等待），对实时代码执行很有价值。但不经过总线矩阵，所以 DMA 不能访问它——放 DMA 缓冲区在 DTCM 会得到 0 数据。用途：任务栈（提升切换和调用速度）、热点数据、实时算法（如 FOC）。STM32F4 有 64KB CCM，F7 有 DTCM。FreeRTOS 可用 heap_5 管理多块内存（SRAM + DTCM）。"
+  },
+  {
+    "id": "rtos-095",
+    "category": "rtos",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "RT-Thread 创建线程（任务）的 API？",
+    "options": [
+      "rt_thread_create (动态)、rt_thread_init (静态)",
+      "xTaskCreate",
+      "pthread_create",
+      "thread_new"
+    ],
+    "correctAnswer": 0,
+    "explanation": "RT-Thread 双模式：rt_thread_create 动态创建（栈和 TCB 都从堆分配），返回线程句柄；rt_thread_init 静态初始化（用户提前定义栈和 TCB 结构体，传入初始化）。与 FreeRTOS 的 xTaskCreate/xTaskCreateStatic 概念相同。启动线程：rt_thread_startup(tid)。RT-Thread 中 '线程（thread）' 术语与 'FreeRTOS 任务（task）' 含义相同，都是调度基本单位。"
+  },
+  {
+    "id": "rtos-096",
+    "category": "rtos",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "RT-Thread 的设备驱动框架特点？",
+    "options": [
+      "无统一框架",
+      "采用设备驱动模型：rt_device 抽象设备，应用通过 rt_device_open/read/write/control 统一 API 访问不同设备",
+      "仅支持 UART",
+      "完全兼容 Linux"
+    ],
+    "correctAnswer": 1,
+    "explanation": "RT-Thread 设备模型类似 Linux VFS：rt_device 基类定义 open/close/read/write/control/rx_indicate/tx_complete 接口，每类设备（串口、I2C、SPI、SD）实现自己的 ops。应用用设备名字符串查找：rt_device_find(\"uart1\")，然后 rt_device_open 等统一操作。优势：应用代码可移植（换芯片驱动不改）。Linux 风格 API 是 RT-Thread 吸引力之一，学习门槛低。"
+  },
+  {
+    "id": "rtos-097",
+    "category": "rtos",
+    "type": "single-choice",
+    "difficulty": "hard",
+    "question": "RT-Thread 的消息队列 rt_mq 与邮箱 rt_mailbox 的区别？",
+    "options": [
+      "相同",
+      "mailbox 传递固定 4 字节数据（通常是指针），性能高；mq 传递变长消息（< 最大长度）",
+      "mailbox 只用于 ISR",
+      "mq 只能传文本"
+    ],
+    "correctAnswer": 1,
+    "explanation": "Mailbox：传递 4 字节（或字长）数据，常用于传指针。轻量高效，适合任务间传递简单消息或对象引用。Message Queue：支持任意大小（在创建时指定上限）的消息传递，数据拷贝。两者各有场景：大量数据或命令用 mq，简单通知/指针传递用 mailbox（比 mq 快、省 RAM）。FreeRTOS 没有这种区分——都是 xQueue。API：rt_mb_send/recv、rt_mq_send/recv。"
+  },
+  {
+    "id": "rtos-098",
+    "category": "rtos",
+    "type": "true-false",
+    "difficulty": "medium",
+    "question": "FreeRTOS 的 configTOTAL_HEAP_SIZE 定义堆大小，所有动态创建的任务、信号量等共享此堆。",
+    "options": [
+      "正确",
+      "错误"
+    ],
+    "correctAnswer": 0,
+    "explanation": "正确。configTOTAL_HEAP_SIZE 指定 FreeRTOS 堆（不同于 C 标准库的 malloc 堆）的总字节数。所有 xTaskCreate、xSemaphoreCreate、xQueueCreate 等动态创建 API 都从此堆分配 TCB、栈、控制块、队列存储等。堆耗尽会让创建失败。观察堆使用：xPortGetFreeHeapSize（当前剩余）、xPortGetMinimumEverFreeHeapSize（历史最低）。堆不足时要么调大值，要么改用静态创建（xTaskCreateStatic）。"
+  },
+  {
+    "id": "rtos-099",
+    "category": "rtos",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "什么是对象池（Object Pool）模式？",
+    "options": [
+      "全局变量",
+      "预分配一组对象重复使用，获取时 check out、用完 check in，避免频繁 malloc/free",
+      "只读对象",
+      "单例模式"
+    ],
+    "correctAnswer": 1,
+    "explanation": "对象池：程序启动时创建 N 个对象实例（如消息结构、缓冲区），维护空闲链表。'分配' 就是从空闲链 pop，'释放' 就是 push 回去。优势：O(1) 确定时间、无碎片、无分配失败（池空则阻塞或拒绝）、预知内存上限。代价：对象大小固定、需提前知道最大用量。实现简单：struct Pool { T objs[N]; uint32_t free_bitmap; };。RT-Thread rt_mp_ 和 FreeRTOS 用户可自行实现。物联网固件常用。"
+  },
+  {
+    "id": "rtos-100",
+    "category": "rtos",
+    "type": "single-choice",
+    "difficulty": "hard",
+    "question": "以下代码存在的栈溢出风险？（FreeRTOS 任务栈 256 字节）\n\nvoid task(void *arg) {\n    for(;;) {\n        char buf[500];  // 大数组\n        sprintf(buf, \"Hello %d\", count);\n    }\n}",
+    "options": [
+      "无风险",
+      "buf 500 字节 + 调用开销超过栈 256 字节，立即溢出；sprintf 本身也占约 80 字节",
+      "sprintf 性能问题",
+      "count 未定义"
+    ],
+    "correctAnswer": 1,
+    "explanation": "栈分配 256 字节，buf 就要 500 字节，直接溢出。即使栈大点，sprintf 内部实现占用 50-200 字节栈（浮点格式更多）。启用方法 2 栈检测会触发 StackOverflowHook。修复：① 调大栈至少 1KB；② buf 用全局变量（如果线程安全）；③ 用 snprintf + 较小栈 buf；④ 用专门的日志框架。嵌入式开发记住：栈对大数组特别敏感，printf/sprintf 栈占用易被低估。"
+  },
+  {
+    "id": "rtos-101",
+    "category": "rtos",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "RT-Thread 中 rt_kprintf 与 rt_printf 的区别？",
+    "options": [
+      "相同",
+      "rt_kprintf 内核级、关中断输出（调试用、不阻塞），rt_printf 应用级、走正常 IO 流",
+      "rt_kprintf 只能输出十六进制",
+      "没有 rt_printf"
+    ],
+    "correctAnswer": 1,
+    "explanation": "rt_kprintf（k for kernel）设计为'能在任何上下文安全调用'——包括 ISR、临界区、内核启动前。实现上它直接轮询输出（禁用中断、忙等待串口），所以较慢且阻塞长，但可靠性极高，是调试内核问题的救命稻草。rt_printf 走标准 IO 路径（可能缓冲、被阻塞）。同样 FreeRTOS 中可借鉴这种模式——专门的 debug_printf 用于关键调试，normal log 走异步通道。"
+  },
+  {
+    "id": "rtos-102",
+    "category": "rtos",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "以下哪种做法能减小 FreeRTOS 任务栈使用？",
+    "options": [
+      "减少局部变量（特别是大数组）",
+      "减少函数调用深度（避免深递归）",
+      "避免在任务中使用 printf/snprintf（栈占大）",
+      "以上都对"
+    ],
+    "correctAnswer": 3,
+    "explanation": "减小任务栈的常用手段：① 局部变量放全局（线程安全前提下）或静态；② 大缓冲区用静态或堆；③ 递归改循环；④ printf/sprintf 集中到单一日志任务（其他任务 post 日志消息）；⑤ 函数调用链拍平；⑥ 使用 GCC -Wstack-usage=N 编译选项检查每个函数栈使用。栈优化在多任务 + 小 RAM MCU 上非常关键，比如每个任务省 256 字节，10 任务就是 2.5KB。"
+  },
+  {
+    "id": "rtos-103",
+    "category": "rtos",
+    "type": "true-false",
+    "difficulty": "easy",
+    "question": "RT-Thread 是国产开源 RTOS。",
+    "options": [
+      "正确",
+      "错误"
+    ],
+    "correctAnswer": 0,
+    "explanation": "正确。RT-Thread 由 Bernard 等中国开发者创建于 2006 年，是国内最具影响力的开源 RTOS。特点：Apache 2.0 开源、生态完善（RT-Thread Studio IDE、Env 工具、软件包中心 300+ 组件）、API 友好（接近 Linux/POSIX）、支持几十款主流 MCU。分为 Nano 版（极小，几 KB）和标准版（完整功能 + 组件）。在 IoT、工业控制、车载等领域被广泛使用。与 FreeRTOS、Zephyr、μC/OS 一起是主流 RTOS 选项。"
+  },
+  {
+    "id": "rtos-104",
+    "category": "rtos",
+    "type": "single-choice",
+    "difficulty": "hard",
+    "question": "RT-Thread 的'组件'（component）机制是什么？",
+    "options": [
+      "硬件组件",
+      "按需加载的功能模块（文件系统、网络栈、GUI 等），通过 Kconfig/SCons 配置启用，不用则不占资源",
+      "只读库",
+      "图形组件"
+    ],
+    "correctAnswer": 1,
+    "explanation": "RT-Thread 组件化架构：内核之上是可选组件——DFS（虚拟文件系统）、LwIP（TCP/IP）、AT（AT 命令解析）、FinSH（命令行 shell）、MSH（UNIX 风格 shell）等。通过 Kconfig 菜单配置启用/禁用，SCons 编译系统按需编译，不启用的组件完全不占 flash/RAM。软件包中心提供 300+ 官方和社区包（MQTT、LoRa、OLED 驱动等），一键导入。这种模块化设计降低学习曲线，按需裁剪契合嵌入式资源敏感特性。"
+  },
+  {
+    "id": "rtos-105",
+    "category": "rtos",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "FreeRTOS 中如何测量任务的 CPU 占用率？",
+    "options": [
+      "不支持",
+      "启用 configGENERATE_RUN_TIME_STATS=1，配置高频定时器作为运行时计数器，vTaskGetRunTimeStats 打印统计",
+      "用 vTaskDelay 估算",
+      "通过任务数量推算"
+    ],
+    "correctAnswer": 1,
+    "explanation": "FreeRTOS 运行时统计需 3 步：① 配置 configGENERATE_RUN_TIME_STATS=1 和 configUSE_TRACE_FACILITY=1；② 实现 portCONFIGURE_TIMER_FOR_RUN_TIME_STATS（初始化定时器）和 portGET_RUN_TIME_COUNTER_VALUE（读取计数）——建议用 10x tick 频率的定时器；③ 调用 vTaskGetRunTimeStats 获取文本报告。输出每个任务的运行 tick 数和百分比。对性能调优、识别 CPU 热点非常有用。注意统计本身有开销（每次切换读计数）。"
+  },
+  {
+    "id": "rtos-106",
+    "category": "rtos",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "FreeRTOS 与 RT-Thread 的主要差异是？",
+    "options": [
+      "完全相同",
+      "FreeRTOS 精简内核（仅调度 + 同步），需自己集成其他组件；RT-Thread 是完整 IoT 系统（内核 + 设备框架 + 网络 + 文件系统等）",
+      "RT-Thread 不支持多任务",
+      "FreeRTOS 没有开源"
+    ],
+    "correctAnswer": 1,
+    "explanation": "定位不同：FreeRTOS 坚持精简——仅提供任务、队列、信号量等核心机制，KB 级代码，其他功能（TCP/IP、文件系统）需集成第三方（如 LwIP、FatFS）。RT-Thread 是完整的 IoT 操作系统——内核之上有设备驱动框架、DFS、网络、音视频、GUI、软件包中心，接近 Linux 生态。选型：超低资源或已有成熟代码栈用 FreeRTOS；需要快速搭建复杂 IoT 应用用 RT-Thread。两者都是优秀选择。"
+  },
+  {
+    "id": "rtos-107",
+    "category": "rtos",
+    "type": "single-choice",
+    "difficulty": "hard",
+    "question": "嵌入式系统中何时需要多任务 RTOS？",
+    "options": [
+      "任何时候都用",
+      "当有多个独立活动需并发 + 对响应时延有要求时（如数据采集 + 通信 + 用户交互同时进行）",
+      "代码量大时",
+      "只有在 Linux 失败时"
+    ],
+    "correctAnswer": 1,
+    "explanation": "何时上 RTOS：① 多个独立子任务需并发（如同时跑 PID 控制环、MQTT 通信、OLED 显示、按键响应）；② 部分任务有严格响应时限（如 1ms 控制环不能被慢操作拖慢）；③ 用状态机前后台架构已复杂难维护。不需要 RTOS：简单循环就够（LED 闪烁、单传感器采集），RTOS 引入约 3-5KB 代码开销和运行开销。经验：把前后台代码写到几百行状态机就该考虑 RTOS 了。"
   }
 ]
