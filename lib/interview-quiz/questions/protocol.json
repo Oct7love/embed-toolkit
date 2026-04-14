@@ -1,0 +1,382 @@
+[
+  {
+    "id": "p-001",
+    "category": "protocol",
+    "type": "single-choice",
+    "difficulty": "easy",
+    "question": "UART 通信中，以下哪个不是必须配置的参数？",
+    "options": [
+      "波特率（Baud Rate）",
+      "数据位（Data Bits）",
+      "停止位（Stop Bits）",
+      "MAC 地址"
+    ],
+    "correctAnswer": 3,
+    "explanation": "UART 是一种点对点异步串行通信协议，必需配置：波特率、数据位（通常 8 位）、停止位（1 或 2 位）、奇偶校验位。MAC 地址属于以太网数据链路层，与 UART 无关。"
+  },
+  {
+    "id": "p-002",
+    "category": "protocol",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "I2C 协议中，起始信号（START）的定义是？",
+    "options": [
+      "SCL 为高时 SDA 从高变低",
+      "SCL 为低时 SDA 从高变低",
+      "SCL 为高时 SDA 从低变高",
+      "SDA 和 SCL 同时从高变低"
+    ],
+    "correctAnswer": 0,
+    "explanation": "I2C 起始信号（START）定义为：SCL 保持高电平时，SDA 从高电平跳变到低电平。停止信号（STOP）则相反：SCL 保持高电平时，SDA 从低电平跳变到高电平。在数据传输期间，SDA 只能在 SCL 低电平时改变。"
+  },
+  {
+    "id": "p-003",
+    "category": "protocol",
+    "type": "single-choice",
+    "difficulty": "easy",
+    "question": "SPI 总线通常需要几根信号线？",
+    "options": [
+      "2 根（SDA、SCL）",
+      "3 根（MISO、MOSI、SCK）",
+      "4 根（MISO、MOSI、SCK、CS）",
+      "5 根"
+    ],
+    "correctAnswer": 2,
+    "explanation": "标准 SPI 协议使用 4 根线：MOSI（Master Out Slave In）、MISO（Master In Slave Out）、SCK（时钟）、CS/SS（片选，低有效）。多从机时每个从机需要独立 CS。三线 SPI 存在但较少用。"
+  },
+  {
+    "id": "p-004",
+    "category": "protocol",
+    "type": "true-false",
+    "difficulty": "medium",
+    "question": "I2C 协议支持多主机（Multi-Master）模式。",
+    "options": ["正确", "错误"],
+    "correctAnswer": 0,
+    "explanation": "I2C 协议原生支持多主机模式，通过仲裁机制（基于 SDA 线的线与特性）解决总线冲突。当多个主机同时发送时，谁拉低 SDA 谁获胜，输出高电平但检测到低电平的主机自动退出。SPI 则不原生支持多主机。"
+  },
+  {
+    "id": "p-005",
+    "category": "protocol",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "CAN 总线采用以下哪种仲裁机制？",
+    "options": [
+      "时分复用（TDMA）",
+      "载波监听冲突检测（CSMA/CD）",
+      "载波监听冲突避免（CSMA/CA）",
+      "基于标识符的非破坏性仲裁"
+    ],
+    "correctAnswer": 3,
+    "explanation": "CAN 采用基于 ID 的非破坏性位仲裁（CSMA/BA）。报文 ID 值越小优先级越高（显性 0 覆盖隐性 1）。仲裁失败的节点自动退出，不会破坏正在传输的数据，这是 CAN 相比以太网 CSMA/CD 的优势。"
+  },
+  {
+    "id": "p-006",
+    "category": "protocol",
+    "type": "single-choice",
+    "difficulty": "hard",
+    "question": "Modbus RTU 帧的 CRC 校验使用哪种多项式？",
+    "options": [
+      "0x1021（CCITT）",
+      "0xA001（MODBUS，反转多项式）",
+      "0x04C11DB7（Ethernet）",
+      "0x8005"
+    ],
+    "correctAnswer": 1,
+    "explanation": "Modbus RTU 使用 CRC-16/MODBUS：多项式 0x8005（正向）或 0xA001（反转），初始值 0xFFFF，输入/输出反转，无最终异或。MODBUS CRC 采用从右向左的计算方式，所以实际运算时常用 0xA001。"
+  },
+  {
+    "id": "p-007",
+    "category": "protocol",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "MQTT QoS 1（至少一次）的传输保证是什么？",
+    "options": [
+      "消息最多送达一次，可能丢失",
+      "消息至少送达一次，可能重复",
+      "消息准确送达一次，不丢失不重复",
+      "消息按顺序送达"
+    ],
+    "correctAnswer": 1,
+    "explanation": "MQTT 三个 QoS 级别：QoS 0（最多一次，可能丢）、QoS 1（至少一次，可能重复，通过 PUBACK 确认）、QoS 2（恰好一次，通过四次握手 PUBLISH/PUBREC/PUBREL/PUBCOMP 保证）。QoS 越高开销越大。"
+  },
+  {
+    "id": "p-008",
+    "category": "protocol",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "TCP 和 UDP 最主要的区别是什么？",
+    "options": [
+      "TCP 用于局域网，UDP 用于广域网",
+      "TCP 面向连接可靠传输，UDP 无连接不保证送达",
+      "TCP 比 UDP 传输速度快",
+      "TCP 端口范围比 UDP 大"
+    ],
+    "correctAnswer": 1,
+    "explanation": "TCP 面向连接（三次握手）、可靠传输（序号、确认、重传、流控、拥塞控制）、字节流。UDP 无连接、不保证送达、不保证顺序、面向数据报。UDP 开销小、延迟低，适合实时音视频、DNS 等场景。"
+  },
+  {
+    "id": "p-009",
+    "category": "protocol",
+    "type": "single-choice",
+    "difficulty": "easy",
+    "question": "以下哪个功能码用于 Modbus 读取保持寄存器？",
+    "options": [
+      "0x01（Read Coils）",
+      "0x03（Read Holding Registers）",
+      "0x04（Read Input Registers）",
+      "0x06（Write Single Register）"
+    ],
+    "correctAnswer": 1,
+    "explanation": "Modbus 常用功能码：0x01 读线圈（Coil）、0x02 读离散输入、0x03 读保持寄存器（Holding）、0x04 读输入寄存器、0x05 写单个线圈、0x06 写单个寄存器、0x0F 写多个线圈、0x10 写多个寄存器。"
+  },
+  {
+    "id": "p-010",
+    "category": "protocol",
+    "type": "true-false",
+    "difficulty": "medium",
+    "question": "SPI 通信中，时钟极性（CPOL）和时钟相位（CPHA）共有 4 种模式组合。",
+    "options": ["正确", "错误"],
+    "correctAnswer": 0,
+    "explanation": "SPI 有 4 种模式：Mode 0（CPOL=0, CPHA=0，最常用）、Mode 1（CPOL=0, CPHA=1）、Mode 2（CPOL=1, CPHA=0）、Mode 3（CPOL=1, CPHA=1）。CPOL 决定空闲电平，CPHA 决定数据在第一个还是第二个边沿采样。主从必须使用相同模式。"
+  },
+  {
+    "id": "p-011",
+    "category": "protocol",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "I2C 7 位地址模式最多可以连接多少个从机设备（理论值）？",
+    "options": [
+      "128 个",
+      "127 个",
+      "112 个",
+      "16 个"
+    ],
+    "correctAnswer": 2,
+    "explanation": "I2C 7 位地址理论有 128 个（0-127），但其中 16 个（0000xxx 和 1111xxx）被保留用于特殊用途（广播、10 位地址扩展等），实际可用地址为 112 个。10 位地址模式可寻址更多设备。"
+  },
+  {
+    "id": "p-012",
+    "category": "protocol",
+    "type": "single-choice",
+    "difficulty": "easy",
+    "question": "Modbus RTU 帧的起始标志是什么？",
+    "options": [
+      "0x7E（Flag）",
+      "0xAA 0x55（同步字节）",
+      "至少 3.5 个字符时间的空闲",
+      "0x02（STX）"
+    ],
+    "correctAnswer": 2,
+    "explanation": "Modbus RTU 帧以至少 3.5 个字符时间的总线静默作为帧起始/结束标志（T3.5）。不同于 ASCII 模式用 ':' 和 CR/LF 字符。帧内字符间隔不能超过 1.5 字符时间（T1.5），否则被视为帧错误。"
+  },
+  {
+    "id": "p-013",
+    "category": "protocol",
+    "type": "single-choice",
+    "difficulty": "hard",
+    "question": "CAN 2.0A 标准帧的 ID 长度是多少位？",
+    "options": [
+      "8 位",
+      "11 位",
+      "16 位",
+      "29 位"
+    ],
+    "correctAnswer": 1,
+    "explanation": "CAN 2.0A（标准帧）使用 11 位 ID，可定义 2048 个优先级。CAN 2.0B（扩展帧）使用 29 位 ID。标准帧和扩展帧可以在同一总线上共存，扩展帧通过 IDE 位标识。"
+  },
+  {
+    "id": "p-014",
+    "category": "protocol",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "UART 发送 1 字节数据（8N1 格式）在 9600 bps 波特率下，理论传输时间是多少？",
+    "options": [
+      "约 0.83 ms",
+      "约 1.04 ms",
+      "约 1.25 ms",
+      "约 8.33 ms"
+    ],
+    "correctAnswer": 1,
+    "explanation": "8N1 格式 = 1 起始位 + 8 数据位 + 0 校验位 + 1 停止位 = 10 位。9600 bps 下每位时间 = 1/9600 ≈ 104.17 μs。1 字节 = 10 × 104.17 ≈ 1041.67 μs ≈ 1.04 ms。"
+  },
+  {
+    "id": "p-015",
+    "category": "protocol",
+    "type": "true-false",
+    "difficulty": "easy",
+    "question": "以太网 MAC 地址长度为 6 字节（48 位）。",
+    "options": ["正确", "错误"],
+    "correctAnswer": 0,
+    "explanation": "以太网 MAC 地址为 48 位（6 字节），通常以 XX:XX:XX:XX:XX:XX 十六进制表示。前 3 字节是 OUI（厂商标识），后 3 字节是设备序列号。特殊地址：FF:FF:FF:FF:FF:FF 为广播地址。"
+  },
+  {
+    "id": "p-016",
+    "category": "protocol",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "MQTT 协议中 CONNECT 报文的 Keep Alive 参数作用是什么？",
+    "options": [
+      "定义消息保留时间",
+      "定义连接超时重试次数",
+      "客户端发送控制报文的最大间隔（秒）",
+      "定义消息传输的 QoS 级别"
+    ],
+    "correctAnswer": 2,
+    "explanation": "Keep Alive 是客户端相邻两次控制报文之间的最大时间间隔（秒）。如果没有数据要发送，客户端必须发送 PINGREQ 保持连接。服务器在 1.5 × Keep Alive 时间内未收到任何报文则断开连接。0 表示禁用心跳。"
+  },
+  {
+    "id": "p-017",
+    "category": "protocol",
+    "type": "single-choice",
+    "difficulty": "hard",
+    "question": "Modbus RTU 功能码 03（读保持寄存器）的请求帧中，字节顺序是什么？",
+    "options": [
+      "[从机地址][功能码][起始地址高][起始地址低][数量高][数量低][CRC 低][CRC 高]",
+      "[从机地址][功能码][起始地址低][起始地址高][数量低][数量高][CRC 高][CRC 低]",
+      "[功能码][从机地址][起始地址][数量][CRC]",
+      "[CRC][功能码][起始地址][数量][从机地址]"
+    ],
+    "correctAnswer": 0,
+    "explanation": "Modbus RTU 请求帧格式：从机地址(1) + 功能码(1) + 起始地址(2, 大端) + 数量(2, 大端) + CRC(2, 小端)。数据部分大端存储（高字节在前），但 CRC 是小端（低字节在前），这是 Modbus 的特殊约定。"
+  },
+  {
+    "id": "p-018",
+    "category": "protocol",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "RS485 和 RS232 的主要区别是？",
+    "options": [
+      "波特率不同",
+      "RS485 支持多点通信和差分信号，RS232 是点对点单端信号",
+      "RS485 只用于工业，RS232 只用于家用",
+      "电压不同"
+    ],
+    "correctAnswer": 1,
+    "explanation": "RS232 是单端信号（参考地），点对点，传输距离约 15m，抗干扰差。RS485 采用差分信号（A-B），半双工多点通信（最多 32 个节点），距离可达 1200m，抗干扰强。工业常用 RS485。"
+  },
+  {
+    "id": "p-019",
+    "category": "protocol",
+    "type": "single-choice",
+    "difficulty": "easy",
+    "question": "以下哪个是应用层协议？",
+    "options": [
+      "TCP",
+      "IP",
+      "MQTT",
+      "Ethernet"
+    ],
+    "correctAnswer": 2,
+    "explanation": "OSI/TCP-IP 分层：Ethernet（数据链路层）、IP（网络层）、TCP/UDP（传输层）、MQTT/HTTP/FTP/DNS（应用层）。MQTT 基于 TCP 之上，是轻量级发布/订阅应用层协议。"
+  },
+  {
+    "id": "p-020",
+    "category": "protocol",
+    "type": "true-false",
+    "difficulty": "medium",
+    "question": "SPI 协议支持全双工通信。",
+    "options": ["正确", "错误"],
+    "correctAnswer": 0,
+    "explanation": "SPI 通过 MOSI 和 MISO 两条独立数据线实现全双工——主从设备可以同时发送和接收。而 I2C 只有一条 SDA 数据线，只能半双工。UART 有独立 TX 和 RX，也是全双工。"
+  },
+  {
+    "id": "p-021",
+    "category": "protocol",
+    "type": "single-choice",
+    "difficulty": "hard",
+    "question": "以下关于 MQTT Retained Message（保留消息）的描述正确的是？",
+    "options": [
+      "保留消息会被无限保存在客户端",
+      "发布时设置 RETAIN=1，新订阅者会立即收到该 Topic 的最后一条保留消息",
+      "保留消息比普通消息优先级高",
+      "保留消息一定是 QoS 2"
+    ],
+    "correctAnswer": 1,
+    "explanation": "Retained Message 机制：发布时 RETAIN=1，Broker 会存储该 Topic 的最新一条消息。之后任何新订阅该 Topic 的客户端会立即收到这条保留消息（不等待下次发布）。常用于状态通知。发布空 Payload 可清除保留消息。"
+  },
+  {
+    "id": "p-022",
+    "category": "protocol",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "I2C 总线的上拉电阻作用是什么？",
+    "options": [
+      "限流保护",
+      "降低功耗",
+      "提供高电平（因为 I2C 是开漏输出）",
+      "防止静电"
+    ],
+    "correctAnswer": 2,
+    "explanation": "I2C 总线 SDA 和 SCL 都是开漏/开集输出——设备只能主动拉低，释放时通过上拉电阻被动拉高。典型上拉电阻 4.7kΩ（标准模式）、2.2kΩ（快速模式）。没有上拉总线就无法回到高电平。"
+  },
+  {
+    "id": "p-023",
+    "category": "protocol",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "CAN 报文帧中，DLC（Data Length Code）的最大值是多少？",
+    "options": [
+      "4",
+      "8",
+      "15",
+      "64"
+    ],
+    "correctAnswer": 1,
+    "explanation": "标准 CAN 2.0（A 和 B）的 DLC 字段虽然是 4 位（最大 15），但协议规定数据长度最多 8 字节，DLC > 8 的值无效。CAN FD（Flexible Data）协议扩展到 64 字节，在 CAN 2.0 基础上增加了高速数据段。"
+  },
+  {
+    "id": "p-024",
+    "category": "protocol",
+    "type": "true-false",
+    "difficulty": "easy",
+    "question": "在 TCP/IP 网络中，ping 命令使用 ICMP 协议。",
+    "options": ["正确", "错误"],
+    "correctAnswer": 0,
+    "explanation": "ping 命令使用 ICMP（Internet Control Message Protocol）协议的 Echo Request/Reply 报文测试连通性。ICMP 是网络层协议，直接封装在 IP 数据报中，与 TCP/UDP 平级。traceroute 也使用 ICMP。"
+  },
+  {
+    "id": "p-025",
+    "category": "protocol",
+    "type": "single-choice",
+    "difficulty": "hard",
+    "question": "UART 硬件流控信号 RTS 和 CTS 的作用？",
+    "options": [
+      "RTS 请求发送，CTS 清除发送——控制数据流防止缓冲区溢出",
+      "RTS 复位信号，CTS 时钟信号",
+      "用于错误检测",
+      "用于波特率协商"
+    ],
+    "correctAnswer": 0,
+    "explanation": "RTS（Request To Send）和 CTS（Clear To Send）用于 UART 硬件流控：接收方通过 RTS 告诉发送方 '我准备好了'，发送方收到 CTS 后开始发送。当接收方缓冲区快满时释放 RTS，发送方暂停。防止数据丢失。"
+  },
+  {
+    "id": "p-026",
+    "category": "protocol",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "MQTT 中，Topic 过滤器的通配符 '+' 和 '#' 的区别是？",
+    "options": [
+      "+ 匹配多层，# 匹配单层",
+      "+ 匹配单层，# 匹配多层（必须在最后）",
+      "两者等价",
+      "+ 用于订阅，# 用于发布"
+    ],
+    "correctAnswer": 1,
+    "explanation": "'+' 单层通配符：sensor/+/temp 匹配 sensor/room1/temp 和 sensor/room2/temp。'#' 多层通配符且必须在末尾：sensor/# 匹配 sensor/room1/temp 和 sensor/room1/humidity/indoor 等。发布的 Topic 不能包含通配符。"
+  },
+  {
+    "id": "p-027",
+    "category": "protocol",
+    "type": "single-choice",
+    "difficulty": "easy",
+    "question": "HTTP 协议默认使用的 TCP 端口号是？",
+    "options": [
+      "21",
+      "23",
+      "80",
+      "443"
+    ],
+    "correctAnswer": 2,
+    "explanation": "常见端口：HTTP 80、HTTPS 443、FTP 21（控制）/20（数据）、SSH 22、Telnet 23、SMTP 25、DNS 53、MQTT 1883（明文）/8883（TLS）、Modbus TCP 502。"
+  }
+]

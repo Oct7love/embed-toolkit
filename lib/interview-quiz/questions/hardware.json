@@ -1,0 +1,357 @@
+[
+  {
+    "id": "h-001",
+    "category": "hardware",
+    "type": "single-choice",
+    "difficulty": "easy",
+    "question": "GPIO 的 '推挽输出（Push-Pull）' 和 '开漏输出（Open-Drain）' 的主要区别是？",
+    "options": [
+      "推挽能输出高低电平，开漏只能输出低电平（需上拉到高）",
+      "推挽功耗更低",
+      "开漏速度更快",
+      "两者没有区别"
+    ],
+    "correctAnswer": 0,
+    "explanation": "推挽输出：内部有 PMOS 和 NMOS，可主动输出高低电平，驱动能力强。开漏输出：只有 NMOS，只能主动拉低，输出高电平需要外部上拉电阻（或内部上拉）。开漏用于电平转换、线与逻辑、I2C 等总线。"
+  },
+  {
+    "id": "h-002",
+    "category": "hardware",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "12 位 ADC 在 3.3V 参考电压下的理论分辨率是？",
+    "options": [
+      "约 0.8 mV",
+      "约 3.3 mV",
+      "约 12 mV",
+      "约 330 mV"
+    ],
+    "correctAnswer": 0,
+    "explanation": "ADC 分辨率 = Vref / 2^n。12 位 ADC：3.3V / 4096 ≈ 0.806 mV/LSB。这是理论最小可分辨电压，实际受 INL/DNL、噪声影响。8 位 ADC 分辨率约 12.9 mV，16 位约 50 μV。"
+  },
+  {
+    "id": "h-003",
+    "category": "hardware",
+    "type": "single-choice",
+    "difficulty": "easy",
+    "question": "PWM 占空比为 25%，周期 1ms 的波形，高电平持续时间是？",
+    "options": [
+      "0.25 ms",
+      "0.75 ms",
+      "1 ms",
+      "4 ms"
+    ],
+    "correctAnswer": 0,
+    "explanation": "占空比（Duty Cycle）= 高电平时间 / 周期。25% × 1ms = 0.25ms 高电平，剩下 0.75ms 低电平。PWM 常用于调速、调光、DAC 输出。频率影响电机/LED 响应，占空比控制平均输出。"
+  },
+  {
+    "id": "h-004",
+    "category": "hardware",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "DMA 的主要作用是？",
+    "options": [
+      "加快 CPU 运算速度",
+      "在外设和内存之间传输数据时不占用 CPU",
+      "扩展 RAM 容量",
+      "作为外部存储接口"
+    ],
+    "correctAnswer": 1,
+    "explanation": "DMA（Direct Memory Access）直接存储访问，允许外设和内存之间直接传输数据，CPU 只需配置和接收完成中断，不参与搬运过程。适用于大量连续数据传输（ADC 采样、UART 收发、内存拷贝等），大幅减少 CPU 负载。"
+  },
+  {
+    "id": "h-005",
+    "category": "hardware",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "看门狗定时器（Watchdog Timer）的作用是？",
+    "options": [
+      "计算程序运行时间",
+      "检测程序跑飞或死锁，超时未喂狗则系统复位",
+      "产生精确延时",
+      "测量外部脉冲频率"
+    ],
+    "correctAnswer": 1,
+    "explanation": "看门狗是硬件安全机制：程序必须周期性 '喂狗'（重置计数器），否则计数到 0 触发系统复位。防止程序跑飞、死循环。独立看门狗（IWDG）由独立时钟驱动，可在系统时钟停止时工作；窗口看门狗（WWDG）有喂狗时间窗口。"
+  },
+  {
+    "id": "h-006",
+    "category": "hardware",
+    "type": "single-choice",
+    "difficulty": "hard",
+    "question": "STM32F1 系列最高主频 72MHz，定时器 TIM2 挂在 APB1 上（APB1 预分频 2），要产生 1kHz PWM，Prescaler=71 时 Period 应为？",
+    "options": [
+      "499",
+      "999",
+      "1999",
+      "71999"
+    ],
+    "correctAnswer": 1,
+    "explanation": "APB1 分频 2 时，定时器时钟是 APB1 的 2 倍 = 72MHz。分频系数 PSC+1=72，计数时钟 = 72MHz/72 = 1MHz。PWM 频率 = 1MHz/(ARR+1)，要 1kHz 则 ARR+1 = 1000，即 Period(ARR) = 999。"
+  },
+  {
+    "id": "h-007",
+    "category": "hardware",
+    "type": "true-false",
+    "difficulty": "easy",
+    "question": "MCU 复位后 RAM 中的数据是确定的（全为 0）。",
+    "options": ["正确", "错误"],
+    "correctAnswer": 1,
+    "explanation": "错误。MCU 复位后 RAM 内容是未定义的（随机值）。启动代码（startup）会负责：1) .bss 段（未初始化全局/静态变量）清零；2) .data 段（已初始化变量）从 Flash 拷贝到 RAM。未显式初始化的局部变量在栈上也是随机值。"
+  },
+  {
+    "id": "h-008",
+    "category": "hardware",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "以下关于 ARM Cortex-M 内核中断优先级的说法，哪个是正确的？",
+    "options": [
+      "数字越大优先级越高",
+      "数字越小优先级越高",
+      "中断优先级固定不能修改",
+      "所有中断优先级相同"
+    ],
+    "correctAnswer": 1,
+    "explanation": "Cortex-M 中断优先级：数值越小优先级越高（0 最高）。分为抢占优先级（Preemption）和子优先级（Sub）。高抢占可打断低抢占，相同抢占按子优先级仲裁。复位、NMI、HardFault 有固定优先级（-3/-2/-1）不可配置。"
+  },
+  {
+    "id": "h-009",
+    "category": "hardware",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "去耦电容（Decoupling Capacitor）的主要作用是？",
+    "options": [
+      "滤除电源纹波，为芯片瞬态电流提供能量",
+      "提高芯片运行速度",
+      "降低芯片温度",
+      "防止静电损坏"
+    ],
+    "correctAnswer": 0,
+    "explanation": "去耦电容（又称旁路电容）并联在芯片电源引脚附近（通常 0.1μF 陶瓷电容 + 10μF 钽电容组合），作用：1) 滤除电源高频噪声；2) 在芯片切换瞬间提供瞬态电流（电源无法及时响应高频变化）；3) 减小 PCB 辐射。"
+  },
+  {
+    "id": "h-010",
+    "category": "hardware",
+    "type": "single-choice",
+    "difficulty": "easy",
+    "question": "10kΩ 和 10kΩ 并联的等效电阻是？",
+    "options": [
+      "20 kΩ",
+      "10 kΩ",
+      "5 kΩ",
+      "1 kΩ"
+    ],
+    "correctAnswer": 2,
+    "explanation": "并联公式：R = R1×R2/(R1+R2) = 10k×10k/(10k+10k) = 5kΩ。相等阻值并联 = R/2。串联则简单相加 = 20kΩ。口诀：'并联变小，串联变大'。"
+  },
+  {
+    "id": "h-011",
+    "category": "hardware",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "以下哪种存储器是非易失性的（掉电不丢失数据）？",
+    "options": [
+      "SRAM",
+      "DRAM",
+      "Flash",
+      "Register"
+    ],
+    "correctAnswer": 2,
+    "explanation": "非易失性：Flash、EEPROM、ROM、FRAM（掉电保留）。易失性：SRAM、DRAM、Registers（掉电丢失）。MCU 的程序代码烧写在 Flash 中，运行时变量在 SRAM 中，寄存器用于 CPU 内部快速访问。"
+  },
+  {
+    "id": "h-012",
+    "category": "hardware",
+    "type": "single-choice",
+    "difficulty": "hard",
+    "question": "使用 10 位 ADC 采样 0-5V 信号，采样值为 512，对应电压约为？",
+    "options": [
+      "1.25 V",
+      "2.5 V",
+      "2.504 V",
+      "5 V"
+    ],
+    "correctAnswer": 2,
+    "explanation": "10 位 ADC 共 2^10=1024 级，每级 = 5V/1024 ≈ 4.883 mV。采样值 512 × 4.883mV ≈ 2500 mV ≈ 2.5V。精确计算：V = (Sample/ADC_Max) × Vref = (512/1023) × 5 ≈ 2.504V（注意满量程对应 1023 不是 1024）。"
+  },
+  {
+    "id": "h-013",
+    "category": "hardware",
+    "type": "true-false",
+    "difficulty": "medium",
+    "question": "GPIO 配置为输入时，必须启用内部上拉或下拉，否则会读到随机电平。",
+    "options": ["正确", "错误"],
+    "correctAnswer": 0,
+    "explanation": "GPIO 浮空输入（Floating Input）没有上下拉时，引脚状态由外部环境决定——开路或轻微干扰就会读到不确定值（高阻抗状态易受干扰）。需要上拉/下拉到确定电平，或外部电路保证电平。读按键常用内部上拉 + 按键接地。"
+  },
+  {
+    "id": "h-014",
+    "category": "hardware",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "分压电路 Vin=5V, R1=10kΩ (上端), R2=10kΩ (下端, 接地)，Vout (R1 和 R2 中点) 是多少？",
+    "options": [
+      "1.25 V",
+      "2.5 V",
+      "5 V",
+      "10 V"
+    ],
+    "correctAnswer": 1,
+    "explanation": "分压公式：Vout = Vin × R2/(R1+R2) = 5 × 10k/(10k+10k) = 2.5V。当 R1=R2 时输出等于输入的一半。常用于电压检测（降压后送 ADC）、基准电压生成。注意后级负载不能太重（需高阻抗）。"
+  },
+  {
+    "id": "h-015",
+    "category": "hardware",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "RC 低通滤波器 R=10kΩ, C=10nF, 截止频率约为？",
+    "options": [
+      "约 159 Hz",
+      "约 1.59 kHz",
+      "约 15.9 kHz",
+      "约 159 kHz"
+    ],
+    "correctAnswer": 1,
+    "explanation": "RC 低通截止频率 fc = 1/(2πRC) = 1/(2π × 10k × 10nF) = 1/(2π × 10^4 × 10^-8) = 1/(6.28 × 10^-4) ≈ 1591.5 Hz ≈ 1.59 kHz。大于 fc 的频率被衰减（-20dB/十倍频程）。"
+  },
+  {
+    "id": "h-016",
+    "category": "hardware",
+    "type": "single-choice",
+    "difficulty": "easy",
+    "question": "以下关于 LED 限流电阻的说法，正确的是？",
+    "options": [
+      "LED 不需要限流电阻",
+      "限流电阻防止 LED 过流烧毁，R = (Vcc - Vf) / If",
+      "限流电阻越大 LED 越亮",
+      "用电容代替电阻效果更好"
+    ],
+    "correctAnswer": 1,
+    "explanation": "LED 是电流驱动器件，正向压降 Vf（红 1.8V、蓝/白 3.0V 左右）基本恒定。必须串限流电阻：R = (Vcc - Vf) / If。例如 Vcc=5V、红 LED (Vf=2V, If=10mA)，R = (5-2)/0.01 = 300Ω。"
+  },
+  {
+    "id": "h-017",
+    "category": "hardware",
+    "type": "single-choice",
+    "difficulty": "hard",
+    "question": "MCU 低功耗模式 Sleep、Stop、Standby 中，唤醒速度最慢的是？",
+    "options": [
+      "Sleep",
+      "Stop",
+      "Standby",
+      "三者一样"
+    ],
+    "correctAnswer": 2,
+    "explanation": "STM32 低功耗三种模式：Sleep（CPU 停，外设运行，唤醒 μs 级）、Stop（时钟停，SRAM 和寄存器保留，唤醒 10μs-ms 级）、Standby（掉电模式，只 RTC 和备份寄存器保留，唤醒 ms 级，相当于复位）。功耗递减，唤醒速度也递减。"
+  },
+  {
+    "id": "h-018",
+    "category": "hardware",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "STM32 中 HSE、HSI、LSE、LSI 分别代表什么？",
+    "options": [
+      "四种不同品牌",
+      "高速外部、高速内部、低速外部、低速内部时钟源",
+      "四种 DMA 通道",
+      "四种 ADC 模式"
+    ],
+    "correctAnswer": 1,
+    "explanation": "STM32 时钟源：HSE（High Speed External）外部高速晶振（4-16MHz）、HSI（Internal）内部 RC 振荡器（8MHz）、LSE 外部低速（32.768kHz，RTC 用）、LSI 内部低速（40kHz，IWDG 用）。主时钟通常 HSE → PLL → 72MHz。"
+  },
+  {
+    "id": "h-019",
+    "category": "hardware",
+    "type": "true-false",
+    "difficulty": "easy",
+    "question": "电容的单位是法拉（F），常用 μF、nF、pF 表示。1μF = 1000nF = 1000000pF。",
+    "options": ["正确", "错误"],
+    "correctAnswer": 0,
+    "explanation": "正确。电容单位法拉 F 太大，实际常用 μF（微法，10^-6）、nF（纳法，10^-9）、pF（皮法，10^-12）。换算关系：1F=10^6 μF=10^9 nF=10^12 pF，即 1μF=1000nF=1000000pF。"
+  },
+  {
+    "id": "h-020",
+    "category": "hardware",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "外部中断（EXTI）触发方式有哪些？",
+    "options": [
+      "只有上升沿",
+      "只有下降沿",
+      "上升沿、下降沿、双边沿",
+      "只有电平触发"
+    ],
+    "correctAnswer": 2,
+    "explanation": "STM32 EXTI 支持三种触发：上升沿（Rising Edge）、下降沿（Falling Edge）、双边沿（Both Edges）。按键检测常用下降沿触发（按下拉低）。不支持电平触发（避免持续中断）。中断处理函数中需要清除中断标志。"
+  },
+  {
+    "id": "h-021",
+    "category": "hardware",
+    "type": "single-choice",
+    "difficulty": "hard",
+    "question": "SPI Flash 读取指令 0x03（Standard Read）和 0x0B（Fast Read）的主要区别是？",
+    "options": [
+      "0x0B 读取数据更多",
+      "0x0B 需要额外一个 dummy 字节，可支持更高时钟频率",
+      "0x03 用于写入，0x0B 用于读取",
+      "完全一样"
+    ],
+    "correctAnswer": 1,
+    "explanation": "0x03 普通读：命令 + 24 位地址后立即输出数据，时钟频率受限（通常 ≤ 50MHz）。0x0B 快速读：命令 + 24 位地址 + 1 字节 dummy 后输出数据，dummy 提供建立时间，时钟可达 80-133MHz。高速场景用 Fast Read。"
+  },
+  {
+    "id": "h-022",
+    "category": "hardware",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "RTC（实时时钟）通常使用哪种晶振？",
+    "options": [
+      "8 MHz",
+      "16 MHz",
+      "32.768 kHz",
+      "1 MHz"
+    ],
+    "correctAnswer": 2,
+    "explanation": "RTC 标配 32.768 kHz 晶振。32768 = 2^15，通过 15 位分频器得到 1Hz 秒脉冲。低频晶振功耗极低（μA 级），适合电池备份。使用 VBAT 电池后 RTC 在主电源掉电时继续运行。"
+  },
+  {
+    "id": "h-023",
+    "category": "hardware",
+    "type": "true-false",
+    "difficulty": "medium",
+    "question": "PCB 走线上，电流始终走最短路径。",
+    "options": ["正确", "错误"],
+    "correctAnswer": 1,
+    "explanation": "错误。低频（DC-kHz）电流确实走最短路径（低电阻）。但高频信号电流走最小回路（最低阻抗，感性主导）——路径由参考地平面的镜像返回路径决定。这是高速 PCB 布线的关键：保证地平面完整，否则 EMI 问题严重。"
+  },
+  {
+    "id": "h-024",
+    "category": "hardware",
+    "type": "single-choice",
+    "difficulty": "easy",
+    "question": "在电阻色环计算中，四色环电阻：棕-黑-红-金，阻值和误差是？",
+    "options": [
+      "1kΩ ±5%",
+      "10kΩ ±5%",
+      "100Ω ±5%",
+      "1kΩ ±10%"
+    ],
+    "correctAnswer": 0,
+    "explanation": "色环颜色对应数字：黑 0、棕 1、红 2、橙 3、黄 4、绿 5、蓝 6、紫 7、灰 8、白 9；乘数：金 0.1、银 0.01；误差：金 ±5%、银 ±10%、棕 ±1%。棕-黑-红-金 = 10 × 10^2 ± 5% = 1kΩ ±5%。"
+  },
+  {
+    "id": "h-025",
+    "category": "hardware",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "按键抖动（Bounce）处理最常见的软件方法是？",
+    "options": [
+      "立即响应第一次按下",
+      "检测到变化后延时 10-20ms 再次确认",
+      "硬件滤波后不需要软件处理",
+      "忽略所有按键"
+    ],
+    "correctAnswer": 1,
+    "explanation": "按键机械抖动通常 5-20ms。常见软件消抖方法：1) 延时消抖：检测到变化后 delay 10-20ms 再次读取；2) 状态机消抖：在定时器中断中连续采样，N 次稳定才确认；3) 硬件：RC 滤波 + 施密特触发。软件消抖最灵活但占用 CPU。"
+  }
+]

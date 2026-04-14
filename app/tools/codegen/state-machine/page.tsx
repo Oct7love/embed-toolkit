@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { StateMachineEditor } from "@/components/tools/state-machine/state-machine-editor";
 
 export const metadata: Metadata = {
   title: "状态机编辑器",
@@ -8,15 +8,8 @@ export const metadata: Metadata = {
 
 export default function StateMachinePage() {
   return (
-    <div className="p-4 lg:p-8 max-w-5xl mx-auto">
-      <Card>
-        <CardHeader>
-          <CardTitle>状态机编辑器</CardTitle>
-          <CardDescription>
-            该工具正在开发中，敬请期待...
-          </CardDescription>
-        </CardHeader>
-      </Card>
+    <div className="p-4 lg:p-8 max-w-7xl mx-auto">
+      <StateMachineEditor />
     </div>
   );
 }

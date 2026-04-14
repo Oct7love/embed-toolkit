@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { GpioPlanner } from "@/components/tools/gpio-planner/gpio-planner";
 
 export const metadata: Metadata = {
   title: "GPIO 引脚分配表",
@@ -9,14 +9,13 @@ export const metadata: Metadata = {
 export default function GpioPlannerPage() {
   return (
     <div className="p-4 lg:p-8 max-w-5xl mx-auto">
-      <Card>
-        <CardHeader>
-          <CardTitle>GPIO 引脚分配表</CardTitle>
-          <CardDescription>
-            该工具正在开发中，敬请期待...
-          </CardDescription>
-        </CardHeader>
-      </Card>
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold tracking-tight">GPIO Pin Planner</h1>
+        <p className="text-muted-foreground mt-1">
+          Select an MCU, assign alternate functions to each pin, detect conflicts, and export C initialization code
+        </p>
+      </div>
+      <GpioPlanner />
     </div>
   );
 }

@@ -1,0 +1,399 @@
+[
+  {
+    "id": "rtos-001",
+    "category": "rtos",
+    "type": "single-choice",
+    "difficulty": "easy",
+    "question": "RTOS 中任务（Task）的基本状态不包括以下哪个？",
+    "options": [
+      "运行态（Running）",
+      "就绪态（Ready）",
+      "阻塞态（Blocked）",
+      "编译态（Compiling）"
+    ],
+    "correctAnswer": 3,
+    "explanation": "RTOS 任务的基本状态包括：运行态（Running，正在执行）、就绪态（Ready，可以执行但 CPU 被更高优先级任务占用）、阻塞态（Blocked，等待事件、信号量、延时等）、挂起态（Suspended，被显式挂起）。没有所谓的\"编译态\"，编译是开发阶段的概念，与运行时任务状态无关。"
+  },
+  {
+    "id": "rtos-002",
+    "category": "rtos",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "FreeRTOS 中，以下哪个函数用于创建任务？",
+    "options": [
+      "osThreadCreate()",
+      "xTaskCreate()",
+      "task_create()",
+      "pthread_create()"
+    ],
+    "correctAnswer": 1,
+    "explanation": "xTaskCreate() 是 FreeRTOS 的原生 API，用于动态创建任务。它的参数包括任务函数指针、任务名、栈大小、参数、优先级和任务句柄。FreeRTOS 还提供 xTaskCreateStatic() 用于静态创建（不使用动态内存分配）。osThreadCreate() 是 CMSIS-RTOS API，pthread_create() 是 POSIX 线程 API，task_create() 不是标准 API。"
+  },
+  {
+    "id": "rtos-003",
+    "category": "rtos",
+    "type": "single-choice",
+    "difficulty": "hard",
+    "question": "什么是优先级反转（Priority Inversion）？",
+    "options": [
+      "高优先级任务的优先级被自动降低",
+      "低优先级任务持有高优先级任务需要的资源，导致高优先级任务被阻塞",
+      "任务优先级被随机打乱",
+      "中断优先级低于任务优先级"
+    ],
+    "correctAnswer": 1,
+    "explanation": "优先级反转是指：低优先级任务 L 持有某个共享资源（如互斥锁），高优先级任务 H 需要该资源而被阻塞。此时中优先级任务 M 可以抢占 L 运行，间接导致 H 被 M 阻塞，看起来像是 M 的优先级高于 H。经典案例是 1997 年火星探路者号的系统重置。解决方案包括：优先级继承（Priority Inheritance）——临时提升 L 的优先级到 H 的级别；优先级天花板（Priority Ceiling）——将互斥锁的优先级预设为可能使用它的最高优先级。"
+  },
+  {
+    "id": "rtos-004",
+    "category": "rtos",
+    "type": "single-choice",
+    "difficulty": "easy",
+    "question": "信号量（Semaphore）和互斥锁（Mutex）的主要区别是什么？",
+    "options": [
+      "信号量只能取 0 或 1",
+      "互斥锁有所有权概念，只能由获取它的任务释放",
+      "信号量比互斥锁效率更高",
+      "互斥锁可以在中断中使用"
+    ],
+    "correctAnswer": 1,
+    "explanation": "互斥锁（Mutex）具有所有权（ownership）概念：只有获取（take）互斥锁的任务才能释放（give）它，这保证了对共享资源的独占访问。而信号量（Semaphore）没有所有权，任何任务都可以释放它，更适用于任务间同步和事件通知。此外，互斥锁通常支持优先级继承机制来解决优先级反转问题，而信号量一般不支持。"
+  },
+  {
+    "id": "rtos-005",
+    "category": "rtos",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "FreeRTOS 中，以下哪种方式最适合在中断服务程序（ISR）中向任务发送数据？",
+    "options": [
+      "使用 xQueueSend()",
+      "使用 xQueueSendFromISR()",
+      "直接修改全局变量",
+      "使用 xSemaphoreTake()"
+    ],
+    "correctAnswer": 1,
+    "explanation": "在 ISR 中必须使用带 FromISR 后缀的 API（如 xQueueSendFromISR、xSemaphoreGiveFromISR），因为普通 API 可能包含阻塞操作，而 ISR 不能被阻塞。xQueueSendFromISR() 将数据发送到队列，并可选择性地触发上下文切换。直接修改全局变量缺乏同步机制，不安全。xSemaphoreTake() 是获取信号量，方向相反且不能在 ISR 中调用。"
+  },
+  {
+    "id": "rtos-006",
+    "category": "rtos",
+    "type": "true-false",
+    "difficulty": "easy",
+    "question": "在抢占式调度 RTOS 中，当高优先级任务变为就绪状态时，会立即抢占当前运行的低优先级任务。",
+    "options": [
+      "正确",
+      "错误"
+    ],
+    "correctAnswer": 0,
+    "explanation": "抢占式调度（Preemptive Scheduling）的核心特性就是：当更高优先级的任务变为就绪态时，调度器会立即暂停当前运行的低优先级任务，切换到高优先级任务执行。这与协作式调度（Cooperative Scheduling）不同——后者需要当前任务主动放弃 CPU（如调用 yield 或阻塞 API）。FreeRTOS 默认使用抢占式调度。"
+  },
+  {
+    "id": "rtos-007",
+    "category": "rtos",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "什么是死锁（Deadlock）？以下哪个场景会导致死锁？",
+    "options": [
+      "任务 A 持有锁 1 并等待锁 2，任务 B 持有锁 2 并等待锁 1",
+      "两个任务同时等待同一个信号量",
+      "任务获取锁后忘记释放",
+      "任务优先级设置相同"
+    ],
+    "correctAnswer": 0,
+    "explanation": "死锁是指两个或多个任务相互等待对方持有的资源，形成循环等待，导致所有相关任务永远无法继续执行。经典条件（Coffman 条件）包括：互斥、持有并等待、不可抢占、循环等待。选项 A 中任务 A 和 B 形成了循环等待，是典型的死锁。选项 C 是资源泄漏（但不是死锁），选项 B 和 D 不会直接导致死锁。避免死锁的方法包括：按固定顺序获取锁、使用超时机制、避免嵌套锁。"
+  },
+  {
+    "id": "rtos-008",
+    "category": "rtos",
+    "type": "single-choice",
+    "difficulty": "hard",
+    "question": "FreeRTOS 中任务栈溢出检测机制不包括以下哪种方法？",
+    "options": [
+      "方法一：检查任务切换时栈指针是否超出栈边界",
+      "方法二：在栈底填充特定模式字，检查是否被破坏",
+      "方法三：使用 MPU（内存保护单元）硬件检测",
+      "方法四：编译时静态分析栈使用量"
+    ],
+    "correctAnswer": 3,
+    "explanation": "FreeRTOS 提供了两种内建的栈溢出检测方法（通过 configCHECK_FOR_STACK_OVERFLOW 配置）：方法一在任务切换时检查栈指针是否越界，快速但可能漏检；方法二在栈底填充已知模式（如 0xA5A5A5A5），在任务切换时检查模式是否被破坏，更可靠但有少量开销。MPU 硬件保护也是可选手段。编译时静态分析虽然有用，但不是 FreeRTOS 的内建机制，通常通过第三方工具（如 GCC 的 -fstack-usage）实现。"
+  },
+  {
+    "id": "rtos-009",
+    "category": "rtos",
+    "type": "single-choice",
+    "difficulty": "easy",
+    "question": "FreeRTOS 中 vTaskDelay(100) 的含义是什么？（假设 configTICK_RATE_HZ = 1000）",
+    "options": [
+      "延迟 100 秒",
+      "延迟 100 毫秒",
+      "延迟 100 微秒",
+      "延迟不确定时间"
+    ],
+    "correctAnswer": 1,
+    "explanation": "vTaskDelay() 的参数单位是系统节拍（tick）。当 configTICK_RATE_HZ = 1000 时，每个 tick 为 1ms，因此 vTaskDelay(100) 延迟 100 个 tick = 100ms。可以使用 pdMS_TO_TICKS(100) 宏来做毫秒到 tick 的转换，使代码不依赖具体的 tick 频率。注意 vTaskDelay 是相对延迟，vTaskDelayUntil 是绝对延迟（周期性任务推荐后者）。"
+  },
+  {
+    "id": "rtos-010",
+    "category": "rtos",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "以下关于 RTOS 消息队列（Queue）的描述，哪个是错误的？",
+    "options": [
+      "队列可以在任务间传递数据的副本",
+      "队列满时，发送操作可以设置超时等待",
+      "队列是 FIFO（先进先出）结构",
+      "队列只能传递指针，不能传递数据副本"
+    ],
+    "correctAnswer": 3,
+    "explanation": "RTOS 消息队列可以传递数据副本（value copy），不仅仅是指针。FreeRTOS 的 xQueueSend() 会将数据复制到队列缓冲区中。这种值传递方式比传递指针更安全，避免了发送方在接收方读取前修改数据的竞态问题。但对于大数据，传递指针效率更高（此时需注意数据所有权的转移）。队列确实是 FIFO 结构，满时可以阻塞等待。"
+  },
+  {
+    "id": "rtos-011",
+    "category": "rtos",
+    "type": "single-choice",
+    "difficulty": "hard",
+    "question": "在 FreeRTOS 中，configMAX_SYSCALL_INTERRUPT_PRIORITY 的作用是什么？",
+    "options": [
+      "设置所有中断的最高优先级",
+      "分隔可以调用 FreeRTOS API 的中断和不能调用的中断",
+      "设置系统时钟中断的优先级",
+      "限制任务可以使用的最高优先级"
+    ],
+    "correctAnswer": 1,
+    "explanation": "configMAX_SYSCALL_INTERRUPT_PRIORITY 定义了一个优先级阈值：优先级数值 ≥ 此值的中断（即优先级较低的）可以调用 FreeRTOS 的 FromISR API；优先级数值 < 此值的中断（即优先级更高的）不能调用任何 FreeRTOS API，但响应更快且不会被 FreeRTOS 的临界区屏蔽。注意 ARM Cortex-M 中数值越小优先级越高。这使得时间关键的中断（如高速通信）不受 RTOS 影响。"
+  },
+  {
+    "id": "rtos-012",
+    "category": "rtos",
+    "type": "true-false",
+    "difficulty": "medium",
+    "question": "在 FreeRTOS 中，空闲任务（Idle Task）的优先级是最低的（优先级为 0）。",
+    "options": [
+      "正确",
+      "错误"
+    ],
+    "correctAnswer": 0,
+    "explanation": "FreeRTOS 的空闲任务（Idle Task）在调度器启动时自动创建，优先级为 0（最低）。空闲任务的主要职责包括：清理被删除任务的资源、执行空闲钩子函数（vApplicationIdleHook）、在 tickless idle 模式下让 MCU 进入低功耗状态。用户任务的优先级应该 ≥ 1，否则可能抢占不了空闲任务。"
+  },
+  {
+    "id": "rtos-013",
+    "category": "rtos",
+    "type": "single-choice",
+    "difficulty": "easy",
+    "question": "RTOS 中临界区（Critical Section）的作用是什么？",
+    "options": [
+      "提高代码执行速度",
+      "保护共享资源，防止被中断或其他任务打断",
+      "减少内存占用",
+      "使代码可以在多核处理器上运行"
+    ],
+    "correctAnswer": 1,
+    "explanation": "临界区是一段需要原子执行的代码，进入临界区时会禁用中断（或特定优先级以下的中断），退出时恢复。在临界区内，当前代码不会被中断或任务调度打断，确保对共享资源的访问是安全的。FreeRTOS 提供 taskENTER_CRITICAL() / taskEXIT_CRITICAL() 宏。注意：临界区应尽量短，因为禁用中断会影响系统的实时响应能力。"
+  },
+  {
+    "id": "rtos-014",
+    "category": "rtos",
+    "type": "single-choice",
+    "difficulty": "hard",
+    "question": "以下关于 FreeRTOS 任务通知（Task Notification）的描述，哪个是正确的？",
+    "options": [
+      "任务通知只能用于二值信号量功能",
+      "任务通知比信号量更节省 RAM，但只能一对一通知",
+      "任务通知可以广播给多个任务",
+      "任务通知会自动创建队列存储数据"
+    ],
+    "correctAnswer": 1,
+    "explanation": "任务通知（Task Notification）是 FreeRTOS 的轻量级机制，每个任务自带一个 32 位通知值。它可以替代二值信号量、计数信号量、事件组甚至轻量级队列。优势：不需要额外分配数据结构，比信号量快约 45%，节省约 80 字节 RAM。限制：只能通知特定任务（一对一），不能广播；没有等待发送端的能力；不能用于 ISR 接收通知。"
+  },
+  {
+    "id": "rtos-015",
+    "category": "rtos",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "在 RTOS 中，时间片轮转（Time Slicing）调度适用于什么场景？",
+    "options": [
+      "所有任务优先级不同时",
+      "多个任务具有相同优先级时",
+      "只有一个任务运行时",
+      "实时性要求极高时"
+    ],
+    "correctAnswer": 1,
+    "explanation": "时间片轮转调度用于处理多个相同优先级的就绪任务。调度器给每个任务分配一个时间片（通常为 1 个 tick），轮流执行。当一个任务的时间片用完时，调度器切换到下一个同优先级的就绪任务。FreeRTOS 通过 configUSE_TIME_SLICING 配置项启用。对于不同优先级的任务，始终是高优先级优先，不需要时间片。"
+  },
+  {
+    "id": "rtos-016",
+    "category": "rtos",
+    "type": "single-choice",
+    "difficulty": "easy",
+    "question": "FreeRTOS 中，xSemaphoreTake() 的第二个参数 xTicksToWait 设为 portMAX_DELAY 意味着什么？",
+    "options": [
+      "不等待，立即返回",
+      "等待 1 秒",
+      "永久等待，直到信号量可用",
+      "等待一个 tick"
+    ],
+    "correctAnswer": 2,
+    "explanation": "portMAX_DELAY 是最大超时值，表示任务将无限期阻塞等待，直到信号量变为可用（前提是 INCLUDE_vTaskSuspend 设为 1）。设为 0 表示不等待（轮询模式），设为其他值表示等待对应的 tick 数。在实际使用中，永久等待要小心死锁风险，建议在调试阶段使用合理的超时值。"
+  },
+  {
+    "id": "rtos-017",
+    "category": "rtos",
+    "type": "single-choice",
+    "difficulty": "hard",
+    "question": "FreeRTOS 的软件定时器（Software Timer）与硬件定时器的主要区别是什么？",
+    "options": [
+      "软件定时器精度更高",
+      "软件定时器在定时器服务任务（Timer Task）上下文中执行回调，受任务调度影响",
+      "软件定时器可以产生中断",
+      "软件定时器不消耗任何 CPU 资源"
+    ],
+    "correctAnswer": 1,
+    "explanation": "FreeRTOS 软件定时器的回调函数在定时器服务任务（Timer Daemon Task）的上下文中执行，而非中断上下文。这意味着：(1) 回调的执行时机受任务调度影响，精度不如硬件定时器；(2) 回调中可以调用普通 API（不限于 FromISR）；(3) 回调不应阻塞或执行耗时操作，否则会影响其他定时器。定时器服务任务的优先级由 configTIMER_TASK_PRIORITY 决定。"
+  },
+  {
+    "id": "rtos-018",
+    "category": "rtos",
+    "type": "true-false",
+    "difficulty": "easy",
+    "question": "在 FreeRTOS 中，中断服务程序（ISR）可以直接调用 xSemaphoreTake()。",
+    "options": [
+      "正确",
+      "错误"
+    ],
+    "correctAnswer": 1,
+    "explanation": "ISR 中不能调用可能阻塞的 API，如 xSemaphoreTake()、xQueueReceive() 等。必须使用带 FromISR 后缀的版本，如 xSemaphoreTakeFromISR()。但更常见的模式是在 ISR 中 Give 信号量（xSemaphoreGiveFromISR），在任务中 Take 信号量，实现中断到任务的同步。这是\"延迟中断处理\"（Deferred Interrupt Processing）模式。"
+  },
+  {
+    "id": "rtos-019",
+    "category": "rtos",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "以下哪个不是避免优先级反转的有效方法？",
+    "options": [
+      "使用优先级继承互斥锁",
+      "使用优先级天花板协议",
+      "降低高优先级任务的优先级",
+      "减少临界资源的持有时间"
+    ],
+    "correctAnswer": 2,
+    "explanation": "降低高优先级任务的优先级并不能解决优先级反转问题，反而可能破坏系统的实时性设计。有效的解决方法包括：(1) 优先级继承——当低优先级任务持有高优先级任务需要的互斥锁时，临时提升其优先级；(2) 优先级天花板——将互斥锁的优先级设为所有可能使用者中的最高值；(3) 减少持锁时间——降低反转发生的概率和持续时间；(4) 使用无锁数据结构。"
+  },
+  {
+    "id": "rtos-020",
+    "category": "rtos",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "FreeRTOS 中事件组（Event Group）与信号量相比，最大的优势是什么？",
+    "options": [
+      "事件组速度更快",
+      "事件组可以让一个任务同时等待多个事件的组合（AND/OR）",
+      "事件组使用更少的内存",
+      "事件组可以传递数据"
+    ],
+    "correctAnswer": 1,
+    "explanation": "事件组（Event Group）允许任务同时等待多个事件位的组合。通过 xEventGroupWaitBits() 可以指定等待所有指定位被设置（AND 逻辑）或任意一个被设置（OR 逻辑）。这在复杂同步场景中很有用，比如：任务需要等待\"数据就绪\"且\"通信通道空闲\"才能执行。信号量只能等待一个事件，要实现组合等待需要复杂的逻辑。"
+  },
+  {
+    "id": "rtos-021",
+    "category": "rtos",
+    "type": "single-choice",
+    "difficulty": "hard",
+    "question": "以下关于 FreeRTOS 内存管理的描述，哪个是正确的？",
+    "options": [
+      "FreeRTOS 只提供一种内存分配方案",
+      "heap_1 方案支持内存释放",
+      "heap_4 使用首次适配算法，支持分配和释放，会合并相邻空闲块",
+      "heap_5 只能管理一段连续内存"
+    ],
+    "correctAnswer": 2,
+    "explanation": "FreeRTOS 提供 5 种内存管理方案（heap_1 到 heap_5）：heap_1 只分配不释放，最简单安全；heap_2 支持释放但不合并空闲块，可能产生碎片；heap_3 封装标准 malloc/free；heap_4 使用首次适配算法，支持分配和释放，并能合并相邻空闲块减少碎片，是最常用的方案；heap_5 类似 heap_4 但支持管理多段不连续内存。"
+  },
+  {
+    "id": "rtos-022",
+    "category": "rtos",
+    "type": "single-choice",
+    "difficulty": "easy",
+    "question": "RTOS 中\"上下文切换（Context Switch）\"是指什么？",
+    "options": [
+      "从一个文件切换到另一个文件",
+      "保存当前任务的寄存器状态，恢复下一个任务的寄存器状态",
+      "从用户模式切换到内核模式",
+      "从 Flash 加载代码到 RAM"
+    ],
+    "correctAnswer": 1,
+    "explanation": "上下文切换是 RTOS 调度器将 CPU 从一个任务切换到另一个任务的过程。具体步骤：(1) 保存当前任务的上下文（CPU 寄存器、程序计数器、栈指针等）到该任务的栈中；(2) 选择下一个要运行的任务；(3) 从下一个任务的栈中恢复其上下文到 CPU 寄存器。上下文切换有一定的时间开销（通常几微秒），切换频率过高会影响系统效率。"
+  },
+  {
+    "id": "rtos-023",
+    "category": "rtos",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "以下哪种调度算法不属于 RTOS 常用的调度策略？",
+    "options": [
+      "固定优先级抢占式调度",
+      "时间片轮转调度",
+      "最短作业优先调度（SJF）",
+      "协作式调度"
+    ],
+    "correctAnswer": 2,
+    "explanation": "RTOS 常用的调度策略包括：(1) 固定优先级抢占式——最常用，高优先级任务总是优先执行；(2) 时间片轮转——用于同优先级任务；(3) 协作式调度——任务主动让出 CPU。SJF（最短作业优先）是通用操作系统的批处理调度算法，不适合实时系统，因为 RTOS 的任务通常是无限循环，没有固定的\"作业长度\"。"
+  },
+  {
+    "id": "rtos-024",
+    "category": "rtos",
+    "type": "single-choice",
+    "difficulty": "hard",
+    "question": "在 ARM Cortex-M 处理器上，FreeRTOS 使用哪个异常来进行上下文切换？",
+    "options": [
+      "SysTick",
+      "SVC (Supervisor Call)",
+      "PendSV",
+      "NMI"
+    ],
+    "correctAnswer": 2,
+    "explanation": "FreeRTOS 在 ARM Cortex-M 上使用 PendSV（Pendable Service Call）异常进行上下文切换。PendSV 被设为最低优先级的异常，确保上下文切换在所有中断处理完成后才发生。SysTick 用于产生系统节拍（tick），在 SysTick 中断中可能会触发 PendSV。SVC 用于首次启动调度器。NMI（不可屏蔽中断）用于紧急事件，不用于调度。这种设计避免了在中断处理中进行上下文切换的复杂性。"
+  },
+  {
+    "id": "rtos-025",
+    "category": "rtos",
+    "type": "true-false",
+    "difficulty": "medium",
+    "question": "FreeRTOS 中的队列（Queue）可以在中断服务程序和任务之间双向传递数据。",
+    "options": [
+      "正确",
+      "错误"
+    ],
+    "correctAnswer": 0,
+    "explanation": "FreeRTOS 队列支持 ISR 和任务之间的双向通信。ISR 可以通过 xQueueSendFromISR() 向队列发送数据（ISR → 任务），也可以通过 xQueueReceiveFromISR() 从队列接收数据（任务 → ISR）。但实际使用中，ISR → 任务（延迟处理模式）更常见，因为 ISR 接收数据的场景较少——ISR 通常是数据的产生者而非消费者。"
+  },
+  {
+    "id": "rtos-026",
+    "category": "rtos",
+    "type": "single-choice",
+    "difficulty": "hard",
+    "question": "FreeRTOS 中 configUSE_TICKLESS_IDLE 的作用是什么？",
+    "options": [
+      "禁用系统 tick 中断以提高性能",
+      "在系统空闲时停止 tick 中断并让 MCU 进入低功耗模式",
+      "使任务调度不依赖 tick 中断",
+      "将 tick 频率降低到最低"
+    ],
+    "correctAnswer": 1,
+    "explanation": "Tickless idle（无 tick 空闲模式）是 FreeRTOS 的低功耗特性。当没有就绪任务时（只有空闲任务运行），FreeRTOS 会计算下一个任务唤醒的时间，停止 SysTick 中断，让 MCU 进入低功耗睡眠模式（如 ARM 的 WFI 指令）。在需要唤醒时，通过定时器中断或外部中断唤醒，补偿睡眠期间丢失的 tick 计数。这对电池供电的嵌入式设备至关重要。"
+  },
+  {
+    "id": "rtos-027",
+    "category": "rtos",
+    "type": "single-choice",
+    "difficulty": "easy",
+    "question": "在 FreeRTOS 中，任务优先级数值越大表示什么？",
+    "options": [
+      "优先级越低",
+      "优先级越高",
+      "取决于配置",
+      "与优先级无关"
+    ],
+    "correctAnswer": 1,
+    "explanation": "在 FreeRTOS 中，任务优先级数值越大，优先级越高。优先级 0 是最低的（空闲任务），最高优先级为 configMAX_PRIORITIES - 1。这与 ARM Cortex-M 的中断优先级相反（中断优先级数值越小越高）。这种差异容易混淆，开发者需要特别注意。"
+  }
+]

@@ -1,0 +1,399 @@
+[
+  {
+    "id": "c-001",
+    "category": "c-language",
+    "type": "single-choice",
+    "difficulty": "easy",
+    "question": "以下代码的输出是什么？\n\nint a = 5;\nprintf(\"%d %d\", a++, ++a);",
+    "options": [
+      "5 7",
+      "5 6",
+      "6 7",
+      "未定义行为"
+    ],
+    "correctAnswer": 3,
+    "explanation": "在同一个表达式中对同一个变量进行多次修改（a++ 和 ++a），属于未定义行为（Undefined Behavior）。C 标准规定，在两个序列点之间，对同一变量进行多次写操作或一次写操作加一次读操作（非用于计算写入值）都是未定义行为。不同编译器可能给出不同结果。"
+  },
+  {
+    "id": "c-002",
+    "category": "c-language",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "以下代码中，sizeof(arr) 的值是多少？（假设 32 位系统）\n\nvoid func(int arr[10]) {\n    printf(\"%zu\", sizeof(arr));\n}",
+    "options": [
+      "40",
+      "10",
+      "4",
+      "编译错误"
+    ],
+    "correctAnswer": 2,
+    "explanation": "当数组作为函数参数时，会退化为指针。因此 int arr[10] 在函数参数中等价于 int *arr，sizeof(arr) 返回的是指针的大小。在 32 位系统中指针大小为 4 字节，64 位系统中为 8 字节。这是 C 语言中最经典的陷阱之一。"
+  },
+  {
+    "id": "c-003",
+    "category": "c-language",
+    "type": "single-choice",
+    "difficulty": "hard",
+    "question": "以下结构体在 32 位系统中（默认对齐）占用多少字节？\n\nstruct S {\n    char a;\n    int b;\n    char c;\n};",
+    "options": [
+      "6",
+      "8",
+      "9",
+      "12"
+    ],
+    "correctAnswer": 3,
+    "explanation": "由于内存对齐规则：char a 占 1 字节 + 3 字节填充（对齐到 4 字节边界），int b 占 4 字节，char c 占 1 字节 + 3 字节尾部填充（结构体总大小必须是最大成员对齐值的整数倍，即 4 的倍数）。总计 4 + 4 + 4 = 12 字节。如果调整成员顺序为 char a, char c, int b，则只需 8 字节。"
+  },
+  {
+    "id": "c-004",
+    "category": "c-language",
+    "type": "single-choice",
+    "difficulty": "easy",
+    "question": "以下代码的输出是什么？\n\nchar *p = \"Hello\";\np[0] = 'h';",
+    "options": [
+      "hello",
+      "Hello",
+      "编译错误",
+      "运行时错误（段错误）"
+    ],
+    "correctAnswer": 3,
+    "explanation": "字符串字面量 \"Hello\" 存储在只读数据段（.rodata），通过指针修改字符串字面量的内容是未定义行为，大多数系统会产生段错误（Segmentation Fault）。正确做法是使用字符数组：char p[] = \"Hello\"; 这样字符串会被复制到栈上，可以修改。"
+  },
+  {
+    "id": "c-005",
+    "category": "c-language",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "volatile 关键字的主要作用是什么？",
+    "options": [
+      "使变量存储在寄存器中以提高访问速度",
+      "防止编译器对该变量的读写进行优化",
+      "使变量成为原子操作",
+      "使变量在多线程中安全"
+    ],
+    "correctAnswer": 1,
+    "explanation": "volatile 告诉编译器：该变量的值可能在程序流之外被修改（如硬件寄存器、中断服务程序、多线程环境），编译器不应对其进行优化（如缓存到寄存器、删除看似无用的读取、重排序等）。但 volatile 并不保证原子性，也不提供内存屏障，因此不能替代互斥锁或原子操作。在嵌入式开发中常用于访问硬件寄存器和中断共享变量。"
+  },
+  {
+    "id": "c-006",
+    "category": "c-language",
+    "type": "single-choice",
+    "difficulty": "hard",
+    "question": "以下宏定义有什么问题？\n\n#define SQUARE(x) x * x\n\nint result = SQUARE(3 + 1);",
+    "options": [
+      "结果为 16",
+      "结果为 7，因为展开为 3 + 1 * 3 + 1",
+      "编译错误",
+      "结果为 10"
+    ],
+    "correctAnswer": 1,
+    "explanation": "宏是文本替换，SQUARE(3 + 1) 展开为 3 + 1 * 3 + 1。根据运算符优先级，先算 1 * 3 = 3，再算 3 + 3 + 1 = 7。正确的宏应该为每个参数和整体加括号：#define SQUARE(x) ((x) * (x))。这是宏定义中最常见的陷阱。即使加了括号，宏仍然有副作用问题，如 SQUARE(a++) 会导致 a 被递增两次。"
+  },
+  {
+    "id": "c-007",
+    "category": "c-language",
+    "type": "true-false",
+    "difficulty": "easy",
+    "question": "在 C 语言中，局部变量如果不初始化，其值为 0。",
+    "options": [
+      "正确",
+      "错误"
+    ],
+    "correctAnswer": 1,
+    "explanation": "局部变量（自动变量）存储在栈上，如果不初始化，其值是不确定的（未定义的），可能是之前栈上残留的任何值。只有全局变量和静态变量（static）会被自动初始化为 0。在嵌入式开发中，使用未初始化的变量可能导致难以复现的 Bug。"
+  },
+  {
+    "id": "c-008",
+    "category": "c-language",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "以下代码中 ptr 指向哪里？\n\nint *ptr;\nint arr[5] = {1, 2, 3, 4, 5};\nptr = &arr[2];\nprintf(\"%d\", *(ptr - 1));",
+    "options": [
+      "1",
+      "2",
+      "3",
+      "4"
+    ],
+    "correctAnswer": 1,
+    "explanation": "ptr 指向 arr[2]（值为 3），ptr - 1 指向 arr[1]（值为 2）。指针算术运算以所指类型的大小为单位：ptr - 1 意味着地址减去 sizeof(int) 个字节，即向前移动一个 int 的位置。因此 *(ptr - 1) 的值为 2。"
+  },
+  {
+    "id": "c-009",
+    "category": "c-language",
+    "type": "single-choice",
+    "difficulty": "hard",
+    "question": "以下代码的输出是什么？\n\nint a = -1;\nunsigned int b = 1;\nif (a > b)\n    printf(\"a > b\");\nelse\n    printf(\"a <= b\");",
+    "options": [
+      "a <= b",
+      "a > b",
+      "编译错误",
+      "结果不确定"
+    ],
+    "correctAnswer": 1,
+    "explanation": "当有符号数和无符号数进行比较时，C 语言会将有符号数隐式转换为无符号数。-1 的补码表示（所有位为 1）转换为无符号数后变成一个非常大的值（32 位系统中为 4294967295，即 UINT_MAX），因此 a > b 为真。这是 C 语言中有符号/无符号混合运算的经典陷阱，嵌入式开发中经常遇到。"
+  },
+  {
+    "id": "c-010",
+    "category": "c-language",
+    "type": "single-choice",
+    "difficulty": "easy",
+    "question": "static 关键字用于局部变量时的作用是什么？",
+    "options": [
+      "使变量只能在当前文件中访问",
+      "使变量的生命周期延长到整个程序运行期间",
+      "使变量存储在寄存器中",
+      "使变量成为常量"
+    ],
+    "correctAnswer": 1,
+    "explanation": "static 用于局部变量时，变量的存储位置从栈改为静态存储区（.bss 或 .data 段），生命周期从函数调用期间延长到整个程序运行期间。变量只会初始化一次，后续调用函数时保留上次的值。但其作用域仍然限于所在函数。static 用于全局变量/函数时，限制其链接属性为内部链接（只在当前文件可见）。"
+  },
+  {
+    "id": "c-011",
+    "category": "c-language",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "以下位运算表达式的结果是什么？\n\nunsigned char x = 0xAB;\nunsigned char result = (x >> 4) | (x << 4);",
+    "options": [
+      "0xAB",
+      "0xBA",
+      "0xFF",
+      "0x00"
+    ],
+    "correctAnswer": 1,
+    "explanation": "这是一个经典的字节内高低 4 位交换操作。x = 0xAB = 1010_1011。x >> 4 = 0x0A = 0000_1010（高 4 位移到低 4 位），x << 4 = 0xB0 = 1011_0000（低 4 位移到高 4 位）。两者按位或：0x0A | 0xB0 = 0xBA。这种位操作技巧在嵌入式协议处理中非常常用。"
+  },
+  {
+    "id": "c-012",
+    "category": "c-language",
+    "type": "single-choice",
+    "difficulty": "hard",
+    "question": "以下代码有什么问题？\n\nchar *getString() {\n    char str[] = \"Hello World\";\n    return str;\n}",
+    "options": [
+      "没有问题，正常返回字符串",
+      "返回了局部数组的地址，悬垂指针",
+      "编译错误，不能返回数组",
+      "内存泄漏"
+    ],
+    "correctAnswer": 1,
+    "explanation": "str 是局部数组，存储在栈上。函数返回后，栈帧被释放，str 指向的内存变为无效。调用者得到的是一个悬垂指针（dangling pointer），访问它是未定义行为。解决方案：使用 static char str[]（静态存储）、malloc 动态分配（需调用者释放）、或由调用者提供缓冲区。注意：如果是 char *str = \"Hello World\"，返回是安全的，因为字符串字面量在静态区。"
+  },
+  {
+    "id": "c-013",
+    "category": "c-language",
+    "type": "true-false",
+    "difficulty": "easy",
+    "question": "在 C 语言中，数组名和指针完全等价，没有区别。",
+    "options": [
+      "正确",
+      "错误"
+    ],
+    "correctAnswer": 1,
+    "explanation": "数组名和指针并不完全等价。虽然数组名在大多数表达式中会退化为指向首元素的指针，但有三个例外：(1) sizeof(arr) 返回整个数组的大小，而非指针大小；(2) &arr 的类型是指向整个数组的指针，而非指向元素的指针；(3) 数组名是不可修改的左值，不能被赋值（如 arr = ptr 是非法的）。"
+  },
+  {
+    "id": "c-014",
+    "category": "c-language",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "以下代码输出什么？\n\nint x = 0;\nswitch(x) {\n    case 0: printf(\"zero \");\n    case 1: printf(\"one \");\n    case 2: printf(\"two \");\n    default: printf(\"default\");\n}",
+    "options": [
+      "zero",
+      "zero one",
+      "zero one two default",
+      "编译错误"
+    ],
+    "correctAnswer": 2,
+    "explanation": "switch 语句中每个 case 后面如果没有 break，会发生 fall-through（贯穿），继续执行后面所有 case 的代码。x = 0 匹配 case 0 后，由于没有 break，会依次执行 case 1、case 2 和 default 的代码。输出为 \"zero one two default\"。这是 C 语言 switch 的经典陷阱，忘记写 break 是常见错误。"
+  },
+  {
+    "id": "c-015",
+    "category": "c-language",
+    "type": "single-choice",
+    "difficulty": "hard",
+    "question": "以下声明中，p 是什么类型？\n\nint (*p)[10];",
+    "options": [
+      "指向 int 的指针数组，包含 10 个元素",
+      "指向包含 10 个 int 的数组的指针",
+      "函数指针，参数为 int，返回数组",
+      "指向 int 的二级指针"
+    ],
+    "correctAnswer": 1,
+    "explanation": "int (*p)[10] 声明 p 是一个指针，指向一个包含 10 个 int 的数组。注意与 int *p[10] 的区别：后者声明 p 是一个包含 10 个 int* 指针的数组。括号改变了运算符的优先级——[] 的优先级高于 *，所以 int *p[10] 中 p 先与 [] 结合成数组，而 int (*p)[10] 中 p 先与 * 结合成指针。这种数组指针在处理二维数组时很有用。"
+  },
+  {
+    "id": "c-016",
+    "category": "c-language",
+    "type": "single-choice",
+    "difficulty": "easy",
+    "question": "以下代码中 const int *p 的含义是什么？",
+    "options": [
+      "p 是一个常量指针，不能修改 p 的值",
+      "p 指向的内容不能通过 p 修改",
+      "p 和 p 指向的内容都不能修改",
+      "与 int *p 完全相同"
+    ],
+    "correctAnswer": 1,
+    "explanation": "const int *p（等价于 int const *p）表示 p 指向的内容是只读的，不能通过 *p = ... 修改，但 p 本身可以指向其他地址。与之对比：int * const p 表示 p 本身不能修改（常量指针），但可以通过 *p 修改内容。const int * const p 则两者都不能修改。记忆口诀：const 在 * 左边修饰数据，在 * 右边修饰指针。"
+  },
+  {
+    "id": "c-017",
+    "category": "c-language",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "以下代码中，union 的大小是多少字节？（32 位系统）\n\nunion U {\n    char c;\n    int i;\n    double d;\n};",
+    "options": [
+      "1 + 4 + 8 = 13",
+      "4",
+      "8",
+      "16"
+    ],
+    "correctAnswer": 2,
+    "explanation": "union（联合体）的所有成员共享同一段内存，大小等于最大成员的大小。这里最大的成员是 double d，占 8 字节，因此整个 union 大小为 8 字节。union 在嵌入式开发中常用于类型双关（type punning），比如将 float 值解释为 int 来操作其位表示，或者在协议解析中用不同方式访问同一段数据。"
+  },
+  {
+    "id": "c-018",
+    "category": "c-language",
+    "type": "single-choice",
+    "difficulty": "hard",
+    "question": "以下代码执行后 a 的值是什么？\n\nint a = 0x1234;\nchar *p = (char *)&a;\n// 假设小端序系统\nprintf(\"0x%02x\", *p);",
+    "options": [
+      "0x12",
+      "0x34",
+      "0x00",
+      "取决于编译器"
+    ],
+    "correctAnswer": 1,
+    "explanation": "在小端序（Little-Endian）系统中，低字节存储在低地址。0x1234 的存储方式为：低地址 -> 0x34, 高地址 -> 0x12。char 指针 p 指向 a 的起始地址（最低地址），因此 *p 读取的是低字节 0x34。这种通过不同类型指针访问数据的方式在嵌入式开发中很常见，用于协议组包/解包。大端系统结果为 0x12。"
+  },
+  {
+    "id": "c-019",
+    "category": "c-language",
+    "type": "true-false",
+    "difficulty": "medium",
+    "question": "在 C 语言中，malloc(0) 的返回值一定是 NULL。",
+    "options": [
+      "正确",
+      "错误"
+    ],
+    "correctAnswer": 1,
+    "explanation": "C 标准规定 malloc(0) 的行为是实现定义的：可能返回 NULL，也可能返回一个非 NULL 的唯一指针（该指针不能解引用，但可以传给 free）。不同编译器和平台的行为不同。因此不能假设 malloc(0) 一定返回 NULL。在写代码时应避免 malloc(0)，或者检查返回值时同时检查请求的大小。"
+  },
+  {
+    "id": "c-020",
+    "category": "c-language",
+    "type": "single-choice",
+    "difficulty": "easy",
+    "question": "以下哪个是正确的函数指针声明？（指向接受两个 int 参数、返回 int 的函数）",
+    "options": [
+      "int *func(int, int);",
+      "int (*func)(int, int);",
+      "int *(func)(int, int);",
+      "(int *)func(int, int);"
+    ],
+    "correctAnswer": 1,
+    "explanation": "int (*func)(int, int) 声明 func 为一个函数指针，指向接受两个 int 参数并返回 int 的函数。注意 int *func(int, int) 声明的是一个返回 int* 的普通函数，而非函数指针。函数指针在嵌入式中广泛用于回调函数、状态机跳转表、驱动抽象层等场景。"
+  },
+  {
+    "id": "c-021",
+    "category": "c-language",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "以下代码的输出是什么？\n\n#define CONCAT(a, b) a##b\nint xy = 100;\nprintf(\"%d\", CONCAT(x, y));",
+    "options": [
+      "xy",
+      "100",
+      "编译错误",
+      "0"
+    ],
+    "correctAnswer": 1,
+    "explanation": "## 是预处理器的令牌粘合（token pasting）运算符，它将两个令牌拼接成一个。CONCAT(x, y) 展开为 xy，即变量名 xy。由于 int xy = 100，所以 printf 输出 100。## 运算符在嵌入式开发中常用于自动生成寄存器访问宏，例如 GPIO_PIN(n) 展开为 GPIO_PIN_0、GPIO_PIN_1 等。"
+  },
+  {
+    "id": "c-022",
+    "category": "c-language",
+    "type": "single-choice",
+    "difficulty": "hard",
+    "question": "以下代码在大多数嵌入式平台上的输出是什么？\n\nuint8_t a = 200;\nuint8_t b = 100;\nuint8_t c = a + b;\nprintf(\"%u\", c);",
+    "options": [
+      "300",
+      "44",
+      "0",
+      "编译错误"
+    ],
+    "correctAnswer": 1,
+    "explanation": "uint8_t 的范围是 0~255。200 + 100 = 300，超出了 uint8_t 的最大值。无符号整数溢出是定义明确的行为（与有符号不同），结果对 256 取模：300 % 256 = 44。但需要注意：在 C 中 a + b 实际上会先进行整数提升（integer promotion）为 int 相加，结果 300 再赋值给 uint8_t 时才发生截断。"
+  },
+  {
+    "id": "c-023",
+    "category": "c-language",
+    "type": "single-choice",
+    "difficulty": "easy",
+    "question": "以下哪个操作可以将变量 x 的第 3 位（bit 3）清零？",
+    "options": [
+      "x |= (1 << 3)",
+      "x &= ~(1 << 3)",
+      "x ^= (1 << 3)",
+      "x >>= 3"
+    ],
+    "correctAnswer": 1,
+    "explanation": "清零某一位需要用 AND 操作配合取反的掩码。~(1 << 3) 生成一个除 bit 3 为 0、其余位都为 1 的掩码（如 0xFFFFFFF7）。x 与这个掩码做 AND 操作，bit 3 被清零，其余位保持不变。对比：|= 是置位，^= 是翻转，>>= 是右移。这三种位操作（置位、清零、翻转）是嵌入式寄存器操作的基础。"
+  },
+  {
+    "id": "c-024",
+    "category": "c-language",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "以下代码中 typedef 和 #define 有什么区别？\n\ntypedef char *STRING_T;\n#define STRING_D char *\n\nSTRING_T a, b;\nSTRING_D c, d;",
+    "options": [
+      "a, b, c, d 都是 char* 类型",
+      "a, b 是 char*；c 是 char*，d 是 char",
+      "a 是 char*，b 是 char；c, d 都是 char*",
+      "编译错误"
+    ],
+    "correctAnswer": 1,
+    "explanation": "typedef 创建的是真正的类型别名，STRING_T a, b 中 a 和 b 都是 char* 类型。而 #define 是简单的文本替换，STRING_D c, d 展开为 char *c, d，因此 c 是 char* 但 d 只是 char。这是 typedef 和 #define 的重要区别之一，typedef 是类型安全的，推荐使用 typedef 来定义类型别名。"
+  },
+  {
+    "id": "c-025",
+    "category": "c-language",
+    "type": "single-choice",
+    "difficulty": "hard",
+    "question": "以下代码使用位域定义寄存器，该结构体占用多少字节？\n\nstruct RegBits {\n    unsigned int flag1 : 1;\n    unsigned int flag2 : 1;\n    unsigned int mode  : 3;\n    unsigned int reserved : 27;\n};",
+    "options": [
+      "1",
+      "4",
+      "8",
+      "32"
+    ],
+    "correctAnswer": 1,
+    "explanation": "位域成员总共使用 1 + 1 + 3 + 27 = 32 位 = 4 字节。由于所有位域都是 unsigned int 类型（32 位），且总位数恰好为 32 位，编译器将它们打包到一个 unsigned int 中，结构体大小为 4 字节。位域在嵌入式中常用于映射硬件寄存器的各个字段，但要注意位域的内存布局是实现定义的（大端/小端、高位/低位在前），可移植性较差。"
+  },
+  {
+    "id": "c-026",
+    "category": "c-language",
+    "type": "true-false",
+    "difficulty": "medium",
+    "question": "在 C 语言中，free(NULL) 是安全的，不会产生错误。",
+    "options": [
+      "正确",
+      "错误"
+    ],
+    "correctAnswer": 0,
+    "explanation": "C 标准明确规定：如果传递给 free() 的指针是 NULL，则 free 不执行任何操作（no-op）。这是安全的，不会导致崩溃或未定义行为。因此在释放内存前不必检查指针是否为 NULL。但 free 同一个非 NULL 指针两次（double free）则是未定义行为。良好的实践是 free 之后将指针设为 NULL。"
+  },
+  {
+    "id": "c-027",
+    "category": "c-language",
+    "type": "single-choice",
+    "difficulty": "hard",
+    "question": "以下代码中 restrict 关键字的作用是什么？\n\nvoid add(int * restrict a, int * restrict b, int n) {\n    for (int i = 0; i < n; i++)\n        a[i] += b[i];\n}",
+    "options": [
+      "限制 a 和 b 只能在函数内部使用",
+      "声明 a 和 b 不存在内存重叠，编译器可以做更好的优化",
+      "使 a 和 b 成为只读指针",
+      "限制循环迭代次数"
+    ],
+    "correctAnswer": 1,
+    "explanation": "restrict 是 C99 引入的关键字，用于告诉编译器：在指针的生命周期内，只有该指针（及其衍生指针）可以访问所指向的内存。这意味着 a 和 b 指向的内存不会重叠（no aliasing），编译器可以据此做更激进的优化，如向量化（SIMD）、指令重排等。如果实际存在重叠，则行为未定义。在嵌入式的 DSP 运算中，restrict 对性能有显著提升。"
+  }
+]
