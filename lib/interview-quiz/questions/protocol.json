@@ -1281,5 +1281,303 @@
     ],
     "correctAnswer": 1,
     "explanation": "SMBus（System Management Bus）基于 I2C 物理层并扩展：① 速度 10-100 kHz（更严格的时序）；② 支持超时（主机或从机超时错误应复位，I2C 原版无此机制）；③ 定义 PEC（Packet Error Check，CRC-8 校验）；④ 主机地址解析协议 ARP；⑤ 电源管理事件信号。典型应用：PC 主板电池信息读取、温度传感器（BIOS 层）、BMC 硬件管理。兼容但有细节差异，设计时注意手册说明的 SMBus 或 I2C 要求。"
+  },
+  {
+    "id": "p-088",
+    "category": "protocol",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "Modbus RTU 和 Modbus TCP 的主要区别？",
+    "options": [
+      "相同",
+      "RTU 基于 RS485/422，二进制紧凑，帧结束用 3.5 字符时间空闲；TCP 基于以太网，加 MBAP 头（事务 ID+协议标识+长度+单元ID），以太网层自动分帧",
+      "RTU 更快",
+      "TCP 不兼容"
+    ],
+    "correctAnswer": 1,
+    "explanation": "Modbus RTU：① 物理层 RS485/RS232；② 帧末端用 >3.5 字符空闲判断；③ 帧含 CRC16 校验；④ 二进制紧凑。Modbus TCP：① 基于 TCP/IP，端口 502；② 帧开头加 MBAP 头 7 字节：事务 ID + 协议标识 (0) + 长度 + 单元 ID；③ 无 CRC（TCP 自带校验）；④ 由 TCP 负责分帧。两者功能码定义相同，网关可互转。现代部署 TCP 更流行（以太网基础设施成熟）。"
+  },
+  {
+    "id": "p-089",
+    "category": "protocol",
+    "type": "single-choice",
+    "difficulty": "easy",
+    "question": "Modbus 功能码 01 和 03 的区别？",
+    "options": [
+      "相同",
+      "01 读取线圈（Coils，只读/只写 1 位）；03 读取保持寄存器（Holding Registers，16 位读写）",
+      "地址不同",
+      "位宽不同"
+    ],
+    "correctAnswer": 1,
+    "explanation": "Modbus 数据模型分四类：① 线圈 Coils（1 位，读写，功能码 01 读、05 写单、15 写多）；② 离散输入 Discrete Inputs（1 位，只读，02 读）；③ 输入寄存器 Input Registers（16 位，只读，04 读）；④ 保持寄存器 Holding Registers（16 位，读写，03 读、06 写单、16 写多）。设计从机时要把硬件数据合理映射到这四种区域。通常 DI/DO（开关量）用线圈和离散输入，AI/AO（模拟量）用寄存器。"
+  },
+  {
+    "id": "p-090",
+    "category": "protocol",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "Modbus 从机地址的范围？",
+    "options": [
+      "0-255",
+      "1-247 (0 为广播地址，248-255 保留)",
+      "1-127",
+      "任意"
+    ],
+    "correctAnswer": 1,
+    "explanation": "Modbus 从机地址：1-247（0x01-0xF7）。0 是广播地址（所有从机都响应写命令，但不回复；读命令不支持广播）。248-255 保留。设计多从机系统时按顺序分配，避免碰撞。大规模系统（>247 从机）可以用多条 Modbus 总线或网关分段。地址 0（广播）慎用，因为所有从机同时响应数据会冲突。"
+  },
+  {
+    "id": "p-091",
+    "category": "protocol",
+    "type": "single-choice",
+    "difficulty": "hard",
+    "question": "Modbus RTU 请求帧：01 03 00 00 00 0A C5 CD，含义？",
+    "options": [
+      "无效",
+      "从机地址 1，功能码 03 (读保持寄存器)，起始地址 0x0000，读取 10 个寄存器，CRC 0xCDC5",
+      "写入",
+      "广播"
+    ],
+    "correctAnswer": 1,
+    "explanation": "帧解析：① 01 从机地址 1；② 03 功能码（读保持寄存器）；③ 00 00 起始寄存器地址 0x0000（大端）；④ 00 0A 寄存器数量 10（大端，读 10 个寄存器 = 20 字节数据）；⑤ C5 CD CRC16（小端，所以值是 0xCDC5）。从机响应：01 03 14 [20 字节数据] [CRC16]。注意 Modbus 数据用大端，但 CRC 是小端存储——这是 Modbus 的特殊之处，易混淆。"
+  },
+  {
+    "id": "p-092",
+    "category": "protocol",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "Modbus 异常响应中，从机如何报告错误？",
+    "options": [
+      "不响应",
+      "功能码最高位置 1 (如 03 变 0x83)，后接 1 字节异常码 (01=非法功能、02=非法地址、03=非法数据、04=从机故障等)",
+      "返回 0",
+      "重试"
+    ],
+    "correctAnswer": 1,
+    "explanation": "Modbus 异常响应机制：① 从机地址；② 原功能码 | 0x80（最高位=1 表示异常）；③ 1 字节异常码：01=Illegal Function、02=Illegal Data Address、03=Illegal Data Value、04=Slave Device Failure、05=Acknowledge（处理中请等待）、06=Slave Device Busy、07=Negative Acknowledge、08=Memory Parity Error、0A-0B=Gateway 错误；④ CRC16。主机收到异常响应应重试或报错。编写从机固件时务必正确实现异常响应，否则主机会以为超时。"
+  },
+  {
+    "id": "p-093",
+    "category": "protocol",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "MQTT 中的 Topic 命名规则？",
+    "options": [
+      "任意字符串",
+      "分层结构，用 / 分隔，如 sensor/room1/temperature；发布的 Topic 不能含通配符",
+      "必须 IP 地址",
+      "最长 16 字符"
+    ],
+    "correctAnswer": 1,
+    "explanation": "MQTT Topic 规则：① 分层结构，/ 分隔（sensor/floor1/room2/temp）；② 大小写敏感；③ 发布的 Topic 不能含通配符 + 或 #，必须具体；④ 订阅的 Topic 可用通配符；⑤ 推荐结构化命名（不要 sensor_floor1_room2_temp 这种扁平）。好处：层级化订阅灵活（订阅整层 sensor/# 或只订房间 sensor/room1/#）。最佳实践：前缀加业务域、设备 ID、数据类型分层。"
+  },
+  {
+    "id": "p-094",
+    "category": "protocol",
+    "type": "single-choice",
+    "difficulty": "easy",
+    "question": "MQTT QoS 三个级别？",
+    "options": [
+      "0 最多一次, 1 至少一次, 2 恰好一次",
+      "A 和 B",
+      "高中低",
+      "仅一个级别"
+    ],
+    "correctAnswer": 0,
+    "explanation": "MQTT QoS：① QoS 0 At most once——fire and forget，可能丢；② QoS 1 At least once——PUBACK 确认，可能重复；③ QoS 2 Exactly once——PUBLISH/PUBREC/PUBREL/PUBCOMP 四步握手，保证不丢不重。QoS 越高开销越大：QoS 2 传输量是 QoS 0 的 4 倍。发布方和订阅方可以用不同 QoS（broker 降级到较低）。选择：遥测数据（传感器）用 QoS 0 够；命令/关键事件用 QoS 1；金融级交易用 QoS 2。"
+  },
+  {
+    "id": "p-095",
+    "category": "protocol",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "MQTT 的 Retain 标志作用？",
+    "options": [
+      "不丢包",
+      "发布时 Retain=1 让 Broker 保存该 Topic 最后一条消息，新订阅者立即收到它；常用于状态通知",
+      "加密",
+      "压缩"
+    ],
+    "correctAnswer": 1,
+    "explanation": "Retained Message 机制：① 发布时 RETAIN=1，Broker 存储最新一条到该 Topic；② 之后订阅此 Topic 的新客户端立即收到这条（即使是订阅时刻的'过去'消息）；③ 发布空 Payload + RETAIN=1 清除保留消息。用途：设备状态（在线/离线）、最新传感值、配置信息。让后来加入的客户端快速获取当前状态而不必等下次发布。每 Topic 只保留最新一条（不是历史）。"
+  },
+  {
+    "id": "p-096",
+    "category": "protocol",
+    "type": "single-choice",
+    "difficulty": "hard",
+    "question": "MQTT Will 消息（遗嘱消息）的作用？",
+    "options": [
+      "定期发送",
+      "客户端连接时设置 Will Topic/Payload，若异常断开（非正常 DISCONNECT），Broker 自动发布 Will 消息通知其他订阅者",
+      "仅测试",
+      "加密凭证"
+    ],
+    "correctAnswer": 1,
+    "explanation": "Will（Last Will and Testament）是 MQTT 的优雅机制：客户端 CONNECT 时可携带 Will Flag + Will Topic + Will Message + Will QoS。若客户端异常断开（心跳超时、TCP RST、网络故障），Broker 自动按遗嘱消息发布到 Will Topic，通知其他订阅者。常见用途：发布'device_offline' 给 sensor/status/deviceX。若正常 DISCONNECT 则不发遗嘱。结合 Retain=1 实现完整的在线/离线状态管理。"
+  },
+  {
+    "id": "p-097",
+    "category": "protocol",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "MQTT Keep Alive 机制？",
+    "options": [
+      "心跳包",
+      "客户端约定的心跳间隔（秒），超时未收任何消息 Broker 断开连接；客户端若无数据要发，发 PINGREQ 保持连接",
+      "错误检测",
+      "加密"
+    ],
+    "correctAnswer": 1,
+    "explanation": "Keep Alive：客户端 CONNECT 时设定秒数（典型 60s）。工作机制：① 客户端须在 Keep Alive 时间内发送任何数据（PUBLISH/SUBSCRIBE/PINGREQ等）；② 如无数据可发，发 PINGREQ（ping 请求），Broker 回 PINGRESP；③ Broker 在 1.5 × Keep Alive 时间内未收到任何数据则判断连接失效，断开并发布 Will。0 表示禁用心跳（不推荐）。NAT 穿透、移动网络场景对心跳很敏感，值选大省电，选小响应快。"
+  },
+  {
+    "id": "p-098",
+    "category": "protocol",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "MQTT 通配符 + 和 # 的区别？",
+    "options": [
+      "相同",
+      "+ 匹配单层 (如 sensor/+/temp 匹配 sensor/room1/temp)，# 匹配多层且必须在末尾 (如 sensor/# 匹配 sensor 下所有)",
+      "都匹配全部",
+      "+ 是正则"
+    ],
+    "correctAnswer": 1,
+    "explanation": "MQTT 订阅通配符：① + 单层通配符，匹配一个层级；sensor/+/temp 匹配 sensor/room1/temp、sensor/room2/temp 但不匹配 sensor/room1/main/temp。② # 多层通配符，匹配多个层级，必须在末尾；sensor/# 匹配 sensor/anything 和 sensor/a/b/c。③ 单独 # 匹配所有 Topic。发布端不能用通配符。灵活订阅：# 捞取整个子树、+ 过滤特定层级。"
+  },
+  {
+    "id": "p-099",
+    "category": "protocol",
+    "type": "single-choice",
+    "difficulty": "hard",
+    "question": "MQTT CONNECT 报文的 Clean Session 标志？",
+    "options": [
+      "加密",
+      "CleanSession=1 Broker 不保留会话信息 (订阅、未决消息)；=0 持久化会话，断线重连后恢复订阅、接收断线期间缓存的 QoS 1/2 消息",
+      "清空 Topic",
+      "重启 Broker"
+    ],
+    "correctAnswer": 1,
+    "explanation": "Clean Session 控制会话持久化：① CleanSession=1（清洁会话）：每次连接都是新会话，Broker 删除之前订阅和消息，适合临时客户端（监控面板）；② CleanSession=0（持久化）：Broker 保留会话，断线重连后自动恢复所有订阅，并推送断线期间缓存的 QoS 1/2 消息（QoS 0 仍丢）。适合关键设备（不能漏掉消息）。MQTT 5 改为 Session Expiry Interval 更灵活，可设置过期时间。"
+  },
+  {
+    "id": "p-100",
+    "category": "protocol",
+    "type": "true-false",
+    "difficulty": "easy",
+    "question": "MQTT 基于 TCP，默认端口 1883（MQTT over TLS 是 8883）。",
+    "options": [
+      "正确",
+      "错误"
+    ],
+    "correctAnswer": 0,
+    "explanation": "正确。MQTT v3/v5 基于 TCP 连接。端口：1883（明文，标准）、8883（TLS 加密，IANA 分配）。TLS 保证传输安全（敏感数据必用），但增加 CPU 和握手延迟。也有 MQTT over WebSocket（80/443）用于浏览器。MQTT-SN（Sensor Networks）基于 UDP，适合低功耗或不支持 TCP 的网络（Zigbee）。选择取决于网络环境和安全需求。云平台通常强制 TLS。"
+  },
+  {
+    "id": "p-101",
+    "category": "protocol",
+    "type": "single-choice",
+    "difficulty": "hard",
+    "question": "MQTT 5 相比 3.1.1 的主要改进？",
+    "options": [
+      "无改进",
+      "Reason Code 带错误详情、Session Expiry、User Property (自定义元数据)、Shared Subscription (负载均衡)、Topic Alias 减小报文",
+      "仅更改端口",
+      "完全不兼容"
+    ],
+    "correctAnswer": 1,
+    "explanation": "MQTT 5 (2019) 关键新特性：① Reason Code—— 返回具体错误原因；② Session Expiry Interval 替代 Clean Session；③ User Properties 可附加自定义 key-value 元数据；④ Shared Subscription—— 订阅 $share/group/topic 让组内多个客户端负载均衡；⑤ Topic Alias—— 长 Topic 用数字代替减小报文；⑥ Flow Control 限流；⑦ Payload Format 标明是二进制还是 UTF-8。3.1.1 仍广泛使用，MQTT 5 主要在新项目和企业级场景。"
+  },
+  {
+    "id": "p-102",
+    "category": "protocol",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "TCP 和 UDP 在物联网场景的选择？",
+    "options": [
+      "永远 TCP",
+      "TCP 可靠但开销大（握手、重传），适合控制/数据完整性重要的场景；UDP 轻量低延迟，适合遥测、实时音视频、能容忍少量丢失的场景",
+      "永远 UDP",
+      "必须 TCP"
+    ],
+    "correctAnswer": 1,
+    "explanation": "TCP vs UDP 选型：① TCP——面向连接，三次握手，可靠传输（重传、排序、流控），适合 MQTT、HTTP、文件传输。代价：建立连接慢、头开销大（20+ 字节）、电池不友好。② UDP——无连接，尽力而为，适合 DNS、视频流、COAP、MQTT-SN。适合：高频小数据遥测（丢一次没关系）、实时性要求（新数据覆盖旧的更有意义）、低功耗设备（无握手开销）。物联网混合：TCP 做命令和关键数据，UDP 做传感流。"
+  },
+  {
+    "id": "p-103",
+    "category": "protocol",
+    "type": "single-choice",
+    "difficulty": "easy",
+    "question": "Modbus TCP 的默认端口是？",
+    "options": [
+      "80",
+      "502",
+      "1883",
+      "5432"
+    ],
+    "correctAnswer": 1,
+    "explanation": "Modbus TCP 默认 TCP 端口 502（IANA 注册）。工业网络中该端口开放的设备通常是 PLC、变频器、HMI 等。设计时注意防火墙配置。相关端口：Modbus over UDP 不标准；OPC UA 4840；HTTP 80/443；MQTT 1883/8883；Modbus TCP Security（TLS）802。扫描工业网络发现 502 端口开放的设备就是典型 Modbus 设备。"
+  },
+  {
+    "id": "p-104",
+    "category": "protocol",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "MQTT 订阅一个 Topic 后接收到消息时，应用层处理顺序？",
+    "options": [
+      "不定",
+      "客户端收到 PUBLISH -> 根据 QoS 回 PUBACK/PUBREC -> 回调 on_message 处理；要快速返回避免阻塞其他消息",
+      "必须同步",
+      "立即返回"
+    ],
+    "correctAnswer": 1,
+    "explanation": "MQTT 客户端处理流程：① 从 Broker 收到 PUBLISH 报文；② 根据 QoS 级别发送 ACK：QoS 1 回 PUBACK、QoS 2 回 PUBREC 并等后续流程；③ 调用用户注册的 on_message 回调。回调不应长时间阻塞——实际客户端通常是单线程或协程，阻塞会延迟其他消息处理。推荐做法：回调中把数据推入队列，另一个线程/任务处理；或用异步框架。嵌入式 MQTT 客户端如 paho-c 要特别注意。"
+  },
+  {
+    "id": "p-105",
+    "category": "protocol",
+    "type": "single-choice",
+    "difficulty": "hard",
+    "question": "Modbus RTU 帧之间的静默时间要求？",
+    "options": [
+      "无要求",
+      "帧内字符间隔 < 1.5 字符时间 (T1.5)，两帧之间 >= 3.5 字符时间 (T3.5) 作为帧分隔",
+      "固定 1 秒",
+      "任意"
+    ],
+    "correctAnswer": 1,
+    "explanation": "Modbus RTU 时序约束：① 帧内字符间隔 ≤ 1.5 字符时间（T1.5）——超过视为帧错误（接收方丢弃当前帧）；② 两帧之间 ≥ 3.5 字符时间（T3.5）空闲——作为帧结束和新帧开始的分隔标志。字符时间 = 10 位 / 波特率（8N1）。9600 bps 下 T3.5 ≈ 3.64ms，T1.5 ≈ 1.56ms。高速下（>19200）标准指定使用固定值（T1.5 = 750μs、T3.5 = 1.75ms）避免过小。实现 Modbus RTU 从机要正确检测这些时间。"
+  },
+  {
+    "id": "p-106",
+    "category": "protocol",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "MQTT Broker 的作用？",
+    "options": [
+      "数据库",
+      "MQTT 的中心服务器，负责接收发布、分发给订阅者、管理会话、执行认证/授权；流行实现：Mosquitto、EMQX、HiveMQ",
+      "只是转发",
+      "客户端"
+    ],
+    "correctAnswer": 1,
+    "explanation": "MQTT Broker（消息代理）职责：① 接受客户端 TCP 连接和 CONNECT；② 管理订阅：客户端 SUBSCRIBE 的 Topic 映射；③ 转发：客户端 PUBLISH 时按订阅匹配分发；④ QoS 处理：QoS 1/2 的确认流程；⑤ 会话管理：持久化订阅、缓存离线消息；⑥ 认证授权：用户名密码、TLS 证书、ACL；⑦ 桥接：与其他 Broker 连接。流行实现：Mosquitto（轻量开源）、EMQX（高性能国产）、HiveMQ（商业级）、AWS IoT Core（云）。Broker 是 MQTT 架构的核心。"
+  },
+  {
+    "id": "p-107",
+    "category": "protocol",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "MQTT over TLS 的配置要点？",
+    "options": [
+      "不需要",
+      "端口 8883、配置 CA 证书验证服务器、可选客户端证书双向认证、选 TLS 1.2+ 协议版本",
+      "只改端口",
+      "关闭加密"
+    ],
+    "correctAnswer": 1,
+    "explanation": "MQTT over TLS 关键配置：① 端口 8883（标准）；② 服务端加载服务器证书（CA 签名）和私钥；③ 客户端验证服务器证书（CA 根证书或信任链）防中间人；④ 可选双向认证（客户端也提供证书，工业/关键场景推荐）；⑤ TLS 版本≥1.2（1.3 更好），禁用弱密码套件；⑥ 证书更新和撤销处理。嵌入式设备 TLS 开销：RAM + 几 KB 代码、CPU（握手耗时）、电量。资源受限设备可用 mbedTLS、wolfSSL 等轻量实现。"
   }
 ]
