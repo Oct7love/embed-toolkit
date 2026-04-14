@@ -1281,5 +1281,301 @@
     ],
     "correctAnswer": 0,
     "explanation": "数值 0x1234 在数学上高位是 0x12，低位是 0x34，这与大小端无关——大小端影响的是多字节数据在内存中字节的排列顺序，不影响数值的高低位概念。要提取：高字节 (x>>8)&0xFF=0x12，低字节 x&0xFF=0x34。内存字节序：小端 MCU 按 0x34, 0x12 存储；大端按 0x12, 0x34 存储。理解 '数值位' 与 '内存字节' 的区别对网络协议处理很关键。"
+  },
+  {
+    "id": "c-088",
+    "category": "c-language",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "以下哪个声明表示'指针本身不可变，指向的内容可变'？",
+    "options": [
+      "const int *p;",
+      "int const *p;",
+      "int *const p;",
+      "const int *const p;"
+    ],
+    "correctAnswer": 2,
+    "explanation": "读法技巧：从右往左读。int *const p 读作 'p 是常量指针，指向 int'——指针本身不可改（*const）、但所指的 int 可改。选项 A/B 完全等价，都是 'p 指向 const int'——内容不可改，指针可改。选项 D 两者都不可改。实战：函数参数中 int *const p 表示函数内不能让 p 指向别处（防误用），const int *p 表示函数不会修改调用方传入的数据（承诺只读）。"
+  },
+  {
+    "id": "c-089",
+    "category": "c-language",
+    "type": "single-choice",
+    "difficulty": "hard",
+    "question": "下面哪种情况必须使用 volatile？",
+    "options": [
+      "多线程共享的普通变量",
+      "访问硬件寄存器",
+      "被中断服务程序修改的全局变量",
+      "B 和 C 都需要；A 应该用原子操作而不仅是 volatile"
+    ],
+    "correctAnswer": 3,
+    "explanation": "volatile 告诉编译器：每次访问都必须真正读/写内存，不能优化。B/C 必须用：硬件寄存器和 ISR 修改的变量会被编译器视为'外部不可见地变化'。A 是常见误解——volatile 不提供原子性和内存序保证，多线程共享变量应该用原子类型 (C11 _Atomic、__atomic_*) 或互斥锁。volatile 只保证访问不被优化掉，不是线程安全工具。嵌入式单核 MCU 中 ISR 场景下 volatile 足矣（配合临界区）。"
+  },
+  {
+    "id": "c-090",
+    "category": "c-language",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "下面代码在开启编译优化后可能出现什么问题？\n\n// 等待硬件状态位清零\nwhile (*(uint32_t*)0x40000000 & 0x1) ;",
+    "options": [
+      "没问题",
+      "可能被优化成死循环（编译器认为内存值不变）",
+      "性能问题",
+      "栈溢出"
+    ],
+    "correctAnswer": 1,
+    "explanation": "编译器在优化时会假设普通内存不会'自己变化'——因此循环体内没有写这个地址，编译器可能只读一次就缓存在寄存器中，循环永远判断同一个值，变成死循环。硬件状态寄存器的变化对 CPU 是'外部事件'。修复：(*(volatile uint32_t*)0x40000000) 让每次循环都实际 LDR 读内存。这是 volatile 最典型的使用场景。"
+  },
+  {
+    "id": "c-091",
+    "category": "c-language",
+    "type": "single-choice",
+    "difficulty": "easy",
+    "question": "函数内 static 局部变量的特点是？",
+    "options": [
+      "每次调用时重新初始化",
+      "只初始化一次，值在多次调用间保持；作用域仍为函数内",
+      "可以从其他函数访问",
+      "分配在栈上"
+    ],
+    "correctAnswer": 1,
+    "explanation": "static 局部变量存储在静态存储区（.data 或 .bss），生命周期与程序相同（不是栈上临时的）；仅初始化一次（首次进入函数时或程序启动时）；值在多次函数调用间保留。作用域仍然是函数内（外部不能访问）。典型用途：计数器、缓存、状态保持（如 strtok 的内部指针）。注意在多线程下不安全（所有线程共享同一副本）。嵌入式中常用来实现单例数据。"
+  },
+  {
+    "id": "c-092",
+    "category": "c-language",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "在 .c 文件中，全局变量加 static 的作用是？",
+    "options": [
+      "延长生命周期",
+      "限制链接可见性：只能在本文件（编译单元）内访问",
+      "加快访问速度",
+      "减小内存占用"
+    ],
+    "correctAnswer": 1,
+    "explanation": "static 在全局/函数级声明时表示'内部链接'（internal linkage），该符号只在当前翻译单元（.c 文件）可见，其他文件用 extern 也访问不到。作用类似 C++ 的匿名命名空间。用途：模块封装（隐藏实现细节）、避免符号冲突（多个 .c 文件可以有同名 static 变量）。生命周期方面全局变量本来就是程序生命周期，static 不影响。嵌入式工程里模块化设计大量使用 static。"
+  },
+  {
+    "id": "c-093",
+    "category": "c-language",
+    "type": "single-choice",
+    "difficulty": "hard",
+    "question": "以下声明含义，哪个正确？\n\nconst volatile uint32_t *p = (const volatile uint32_t *)0x40000000;",
+    "options": [
+      "自相矛盾，编译错误",
+      "p 指向的值程序不能修改（const），但硬件会改（volatile）——典型的只读状态寄存器",
+      "等同于普通 const 指针",
+      "等同于普通 volatile 指针"
+    ],
+    "correctAnswer": 1,
+    "explanation": "const 和 volatile 可以共存且有明确语义：const 约束程序不能通过此指针写（编译检查），volatile 告诉编译器值可能被外部改变（强制每次读内存）。这正描述硬件只读寄存器：程序只读不能写（否则出错），但硬件会更新（如 ADC 采样结果寄存器）。正确描述了嵌入式最常见的 MMIO 场景。选项 A 的误解源于对两个修饰符语义的混淆。"
+  },
+  {
+    "id": "c-094",
+    "category": "c-language",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "以下代码能通过编译吗？为什么？\n\nconst int n = 10;\nint arr[n];  // 数组大小",
+    "options": [
+      "可以，const 变量可作为数组大小",
+      "C 标准中 const int 不是常量表达式；C99 引入 VLA（可变长数组）才允许",
+      "编译错误",
+      "等同于 #define n 10"
+    ],
+    "correctAnswer": 1,
+    "explanation": "C 中 const int 是 '只读变量'，不是 '常量表达式'（与 C++ 不同）。在 C89/90，数组大小必须是编译时常量表达式，因此 const int n 作为数组大小不合法。C99 引入可变长数组（VLA）后可以，但 VLA 在栈上分配，大数组风险高。现代 C 中更推荐 #define 或 enum 作编译时常量，或用 malloc 堆分配。C11 起 VLA 变为可选特性。"
+  },
+  {
+    "id": "c-095",
+    "category": "c-language",
+    "type": "true-false",
+    "difficulty": "medium",
+    "question": "const char *s = \"hello\"; 虽然 s 没加 const 限定，但仍不能通过 s[0]='H' 修改字符串。",
+    "options": [
+      "正确",
+      "错误"
+    ],
+    "correctAnswer": 0,
+    "explanation": "s 的类型是指向 const char 的指针——编译器会阻止通过 s 写入目标内存（编译错误 'assignment of read-only location'）。同时字符串字面量通常存放在只读段（.rodata），即使通过 char *（未加 const）指向它然后写入，运行时也会段错误。最佳实践：字符串字面量用 const char * 类型（让编译器帮你检查），可修改的字符串用 char arr[]=\"...\" （会在栈上或数据段复制一份可写副本）。"
+  },
+  {
+    "id": "c-096",
+    "category": "c-language",
+    "type": "single-choice",
+    "difficulty": "hard",
+    "question": "以下代码中，volatile 作用是什么？\n\nvolatile int flag = 0;\n// ISR\nvoid isr(void) { flag = 1; }\n// main\nwhile (!flag) ;",
+    "options": [
+      "保证 while 循环每次都从内存读 flag，不会被优化成死循环",
+      "保证 flag 的访问是原子的",
+      "保证多 CPU 间的内存同步",
+      "A 正确；B 和 C 需要其他机制（原子操作/内存屏障）"
+    ],
+    "correctAnswer": 3,
+    "explanation": "volatile 仅保证每次访问变量都产生实际的内存读写指令，不被优化。对单核 MCU 的 ISR 场景足够：ISR 修改 flag，主循环能看到。但 volatile 不保证：① 读-改-写的原子性（flag++ 可能被中断打断）；② 多核 CPU 的 cache 一致性和内存可见性（需要内存屏障）。跨核场景应使用 C11 _Atomic 或 __sync_*/__atomic_* 内建函数。"
+  },
+  {
+    "id": "c-097",
+    "category": "c-language",
+    "type": "single-choice",
+    "difficulty": "easy",
+    "question": "extern 关键字的典型作用？",
+    "options": [
+      "定义变量",
+      "声明一个在其他文件中定义的变量或函数，链接时解析",
+      "延长变量生命周期",
+      "仅用于函数"
+    ],
+    "correctAnswer": 1,
+    "explanation": "extern 表示符号在别处定义（其他 .c 或库），当前只是声明，不分配存储。典型用法：头文件中 extern int g_counter; 声明，某个 .c 文件中 int g_counter = 0; 定义。函数默认就是 extern 的（可省略），变量则默认是定义。多个文件需要共享变量时必须这样用，否则每个文件各有副本导致链接错误或逻辑错误。避免在头文件里直接 int x=0;（多文件 include 会重复定义）。"
+  },
+  {
+    "id": "c-098",
+    "category": "c-language",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "头文件中声明全局变量的正确方式是？",
+    "options": [
+      "在 .h 中写 int counter = 0; 然后被多个 .c 包含",
+      "在 .h 中 extern int counter; 声明，在唯一的 .c 中 int counter = 0; 定义",
+      "在 .h 中 static int counter = 0;",
+      "不能在头文件声明全局变量"
+    ],
+    "correctAnswer": 1,
+    "explanation": "选项 A 会导致多重定义链接错误：每个 include 这个头文件的 .c 都会分配一次 counter。选项 B 是标准做法——extern 声明告诉编译器'符号存在于别处'，不分配存储；在一个 .c 里真正定义。选项 C 的 static 导致每个 .c 各自有独立副本，与'全局共享'的意图相反（有时这也是想要的）。嵌入式开发中常把共享状态的声明集中放在一个头文件，严格执行 '一个 .c 定义' 原则。"
+  },
+  {
+    "id": "c-099",
+    "category": "c-language",
+    "type": "single-choice",
+    "difficulty": "hard",
+    "question": "static 全局变量和普通全局变量在链接上的区别？",
+    "options": [
+      "没有区别",
+      "static 是内部链接（文件内可见），普通全局是外部链接（整个程序可见）",
+      "static 占用更少内存",
+      "static 不能赋初值"
+    ],
+    "correctAnswer": 1,
+    "explanation": "链接分类：外部链接（extern linkage）符号全局可见，不同文件引用同一对象；内部链接（static 关键字）符号仅当前翻译单元可见，不同文件的同名 static 变量是独立对象；无链接（函数内局部变量）。static 全局的好处：隐藏实现细节、避免符号冲突、可多个文件用相同变量名而不冲突。在大型项目中常用于模块私有数据。生成的目标文件中 static 符号在符号表可能不出现或标记为 local。"
+  },
+  {
+    "id": "c-100",
+    "category": "c-language",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "const 修饰函数参数的作用？\n\nvoid func(const int *p);",
+    "options": [
+      "提高函数执行速度",
+      "向调用方承诺：函数内部不会修改 *p 指向的内容（接口契约）",
+      "减少函数栈帧大小",
+      "等同于 volatile"
+    ],
+    "correctAnswer": 1,
+    "explanation": "const 参数是接口契约：告知调用方函数不会修改指针指向的数据，调用方可放心传入 const 数据或字面量。同时编译器会阻止函数内部意外写入（编译错误），起到文档和检查双重作用。如 strlen、memcpy 的源参数都是 const char*。注意 const 不影响性能（编译器不会因此优化）。最佳实践：只读数据的指针/引用参数都加 const，形成规范的 API 风格。"
+  },
+  {
+    "id": "c-101",
+    "category": "c-language",
+    "type": "single-choice",
+    "difficulty": "hard",
+    "question": "函数内局部 static 变量在多线程下的风险？",
+    "options": [
+      "无风险，static 是线程安全的",
+      "所有线程共享同一副本，竞态条件可能破坏数据一致性",
+      "编译错误",
+      "仅影响性能"
+    ],
+    "correctAnswer": 1,
+    "explanation": "函数内 static 变量存储在全局数据区（不是栈），所有调用该函数的线程共享同一地址。如果多线程并发调用且函数修改此 static（如计数器 static int count; count++），就是典型竞态条件——count++ 不是原子操作（读-改-写），线程间会丢失更新。解决方法：用 _Atomic、互斥锁保护、thread_local 关键字（C11）。strtok 经典的线程不安全就是这个原因，strtok_r 是安全版本。"
+  },
+  {
+    "id": "c-102",
+    "category": "c-language",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "inline 函数与宏相比的主要优势？",
+    "options": [
+      "没有区别",
+      "类型安全、可调试、单次求值参数；编译器可选择是否展开",
+      "总是更快",
+      "可跨文件使用"
+    ],
+    "correctAnswer": 1,
+    "explanation": "inline 函数相比宏的优势：① 类型安全（编译器做类型检查）；② 参数求值一次（宏如 MAX(i++, j++) 会多次求值导致 bug）；③ 可调试（有真实函数符号）；④ 遵循作用域和命名空间规则。inline 只是对编译器的建议，编译器可能不展开（如地址被取用）。嵌入式开发中短小热点函数用 inline，复杂宏仍用宏。C99 标准引入 inline 关键字，早期 GCC 扩展为 __inline__。"
+  },
+  {
+    "id": "c-103",
+    "category": "c-language",
+    "type": "true-false",
+    "difficulty": "easy",
+    "question": "const int x = 5; 之后可以通过 (int*)&x 再修改 x 的值。",
+    "options": [
+      "正确",
+      "错误"
+    ],
+    "correctAnswer": 1,
+    "explanation": "错误——这是未定义行为。通过强制去除 const 再修改的行为是 UB（C99/C11 6.7.3 规定：通过非 const 指针修改 const 限定的对象为 UB）。实际后果：① 对象可能放在只读段导致段错误；② 编译器可能基于 const 假设做常量折叠（直接用字面量 5 替换 x）。绕过 const 除非对象本身不是真的 const（如指向的是非 const 数据），否则都不安全。代码审查中发现此类强转应严查。"
+  },
+  {
+    "id": "c-104",
+    "category": "c-language",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "以下哪个声明不是 '指向函数的指针'？",
+    "options": [
+      "int (*fp)(int, int);",
+      "int *fp(int, int);",
+      "int (*fp)(void);",
+      "typedef int (*FP)(int);"
+    ],
+    "correctAnswer": 1,
+    "explanation": "选项 B 的 int *fp(int, int); 是一个函数声明：fp 是函数，接受两个 int 参数，返回 int*。由于 [] 和 () 运算符优先级高于 *，不加括号时 * 先结合返回类型。函数指针必须加括号：int (*fp)(...)。选项 A/C 是函数指针，D 是函数指针的 typedef。这种语法歧义是 C 中著名的 'spiral rule' 解析陷阱，推荐用 typedef 简化：typedef int (*Callback)(int, int); 然后 Callback fp;。"
+  },
+  {
+    "id": "c-105",
+    "category": "c-language",
+    "type": "single-choice",
+    "difficulty": "hard",
+    "question": "static 函数的作用？",
+    "options": [
+      "比普通函数执行快",
+      "限制为文件内部可见，不参与外部链接，可避免符号冲突并利于编译器优化（内联）",
+      "函数结果会被缓存",
+      "必须在同一编译单元定义和调用"
+    ],
+    "correctAnswer": 1,
+    "explanation": "static 函数是内部链接的函数：① 其他 .c 文件通过 extern 也访问不到；② 符号不出现在外部符号表，避免与其他模块同名函数冲突；③ 编译器可以确定函数只在本文件内被调用，有利于做内联、参数特化等优化；④ 多个 .c 可以有同名 static 函数互不干扰。这是 C 模块化封装的主要手段，类似 C++ private。嵌入式项目通常约定：非对外 API 的实现函数一律 static。"
+  },
+  {
+    "id": "c-106",
+    "category": "c-language",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "下面宏的潜在问题？\n\n#define MAX(a, b) (a > b ? a : b)",
+    "options": [
+      "无问题",
+      "参数多次求值（MAX(i++, j) 会让 i 自增两次），运算符优先级问题（MAX(x&3, 5) 可能出错）",
+      "太慢",
+      "只能用于整数"
+    ],
+    "correctAnswer": 1,
+    "explanation": "经典宏陷阱：① 参数被展开两次，MAX(i++, j) 展开为 (i++ > j ? i++ : j)，i 可能自增两次，结果依赖于比较和返回的具体边；② 宏参数未加括号，MAX(x&3, 5) 展开为 (x&3 > 5 ? x&3 : 5)，> 优先级高于 &，实际是 x&(3>5)=x&0=0。健壮写法：#define MAX(a,b) ({ typeof(a) _a=(a); typeof(b) _b=(b); _a>_b?_a:_b; })（GCC 扩展，使用局部变量）。或用 inline 函数。"
+  },
+  {
+    "id": "c-107",
+    "category": "c-language",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "typedef 和 #define 定义别名的区别？\n\ntypedef int *IntPtr;\n#define IntPtr int *",
+    "options": [
+      "完全等价",
+      "typedef 是真正的类型（作用域、语法等级），#define 是文本替换——IntPtr a, b 的语义在两种下不同",
+      "#define 更快",
+      "typedef 不能用于指针"
+    ],
+    "correctAnswer": 1,
+    "explanation": "typedef IntPtr a, b; 声明 a 和 b 都是 int*。但 #define IntPtr int * 展开为 int *a, b; 只有 a 是 int*，b 是 int。typedef 是编译器层面的真正类型别名，遵循作用域规则，可以用于复杂类型（函数指针、数组类型）。#define 是预处理文本替换，可能导致意外结果。typedef 还能用于跨平台类型抽象（如 uint32_t）。除非需要预处理特性（#if 条件编译），类型别名优先用 typedef。"
   }
 ]
