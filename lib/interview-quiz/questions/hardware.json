@@ -661,5 +661,301 @@
     ],
     "correctAnswer": 1,
     "explanation": "翻转 GPIO 的几种方法：① ODR ^= mask——read-modify-write，3 步不原子（小心中断）；② 读 IDR ^ 写 BSRR——原子但较繁琐；③ 某些 MCU 有 Toggle 寄存器（Kinetis 的 PTORn、某些 SAM 的 TGL）一次写入直接翻转所有位——最快最简。HAL 的 HAL_GPIO_TogglePin 内部用 BSRR。典型场景：LED 闪烁、软件 PWM、测试信号。高频翻转（用作时钟信号模拟）建议硬件 PWM 替代。"
+  },
+  {
+    "id": "h-046",
+    "category": "hardware",
+    "type": "single-choice",
+    "difficulty": "easy",
+    "question": "16 位 ADC 相对 12 位 ADC 的优势？",
+    "options": [
+      "没区别",
+      "分辨率更高（16 位 = 65536 级 vs 12 位 4096 级），理论可分辨更小电压变化；但实际精度还要看噪声和 ENOB",
+      "速度快",
+      "功耗低"
+    ],
+    "correctAnswer": 1,
+    "explanation": "ADC 位数决定分辨率：① 12 位：4096 级，3.3V 参考下 LSB = 0.806mV；② 16 位：65536 级，LSB = 50μV。但'有效位数' ENOB（Effective Number of Bits）可能低于标称——噪声、INL/DNL 误差限制实际精度。16 位 ADC 若 ENOB 只有 13 位，实际精度和 12 位差不多。高精度场景（精密测量、医疗）需 16/24 位 + 低噪声设计（数字地模拟地分开、屏蔽、滤波）。"
+  },
+  {
+    "id": "h-047",
+    "category": "hardware",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "12 位 ADC 采样值 2048，Vref=3.3V，对应电压？",
+    "options": [
+      "1.0V",
+      "1.65V",
+      "2.048V",
+      "2.5V"
+    ],
+    "correctAnswer": 1,
+    "explanation": "ADC 输出值对应电压：V = (Sample / Max) × Vref。12 位 ADC 满值 4095（不是 4096）。精确：V = (2048 / 4095) × 3.3 = 1.6502V ≈ 1.65V。简化常用：V = (Sample / 4096) × 3.3 = 1.65V（误差 ~0.02%）。2048 是 12 位 ADC 的中点，对应 1/2 Vref。记忆：12 位 ADC @ 3.3V：每 LSB ≈ 0.806mV，中点 ~1.65V。"
+  },
+  {
+    "id": "h-048",
+    "category": "hardware",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "ADC 采样率（Sampling Rate）与奈奎斯特定理？",
+    "options": [
+      "无关",
+      "采样率必须 > 信号最高频率 × 2，否则出现混叠 (aliasing) 失真，实际设计建议 > 4-10 倍避免滤波器边沿问题",
+      "越快越好",
+      "与带宽无关"
+    ],
+    "correctAnswer": 1,
+    "explanation": "Nyquist-Shannon 定理：采样率 fs > 2 × fmax（信号最高频率分量）才能还原。低于此频率的成分经采样后折叠到低频产生混叠。实际：① 信号源前加抗混叠低通滤波器（截止 = fs/2）；② 理想低通不存在，实际滤波器过渡带有斜率，故 fs 应取 3-10 倍 fmax 余量。音频 CD：fs=44.1kHz > 2×20kHz（人耳极限）。工业 ADC 常用过采样 + 数字滤波提精度。"
+  },
+  {
+    "id": "h-049",
+    "category": "hardware",
+    "type": "single-choice",
+    "difficulty": "hard",
+    "question": "ADC 的 SAR（逐次逼近）架构特点？",
+    "options": [
+      "最快",
+      "中等速度（几十 kHz - 几 MHz），精度 8-16 位，每次转换需 N 个时钟周期完成 N 位转换",
+      "最慢最准",
+      "只适合低分辨率"
+    ],
+    "correctAnswer": 1,
+    "explanation": "SAR ADC 架构特点：① 通过二分法逐位逼近——先判断 MSB，再 MSB-1...LSB；② N 位 ADC 需 N 个时钟周期转换；③ 典型速度 10kHz-5MHz，分辨率 8-16 位；④ 单端/差分输入、精度高、功耗中等；⑤ 广泛用于 MCU 内置 ADC（STM32、ATmega 等）。相比：Flash ADC 最快（GSPS 级）但只能 8 位左右；Sigma-Delta 最准（24 位）但慢（kHz 级）；Pipeline 中速中精度。"
+  },
+  {
+    "id": "h-050",
+    "category": "hardware",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "STM32 ADC 的注入通道（Injected）和规则通道（Regular）区别？",
+    "options": [
+      "相同",
+      "规则通道序列用于周期采样（DMA 友好），注入通道是高优先级事件触发的插入式采样（打断规则序列）",
+      "注入更快",
+      "规则只能 1 通道"
+    ],
+    "correctAnswer": 1,
+    "explanation": "STM32 ADC 两组通道：① Regular（规则通道）最多 16 个通道序列，循环/单次扫描，结果存单一 DR 寄存器（需 DMA 传出）；② Injected（注入通道）最多 4 个通道，可由外部事件或定时器触发，插入规则序列中，结果存独立 JDR1-4 寄存器。用途：规则做周期采样（温度、电压监控），注入做紧急事件采样（如电机控制的过流检测、需要与 PWM 同步的相电流采样）。注入优先级高。"
+  },
+  {
+    "id": "h-051",
+    "category": "hardware",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "ADC 采样时间（Sampling Time）的作用？",
+    "options": [
+      "无用",
+      "ADC 内部采样保持电路对输入信号的'建立时间'——时间不够采样值不准；阻抗高的信号源需更长采样时间",
+      "影响精度的唯一因素",
+      "必须最短"
+    ],
+    "correctAnswer": 1,
+    "explanation": "ADC 采样结构：信号通过开关对内部采样电容（Csample）充电，充到输入电压的 1/2^(N+1) 精度所需时间 = R×C 几个时间常数。Rsource 越大、Csample 越大，充电越慢。STM32 可配置采样周期（ADC_SampleTime_x）：短采样适合低阻抗信号（电源 <1kΩ），长采样（480 cycles）适合高阻抗（>50kΩ 传感器）。错误配置导致读数偏低（没充满）。看 datasheet 阻抗要求。"
+  },
+  {
+    "id": "h-052",
+    "category": "hardware",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "DAC（数模转换）的常见架构？",
+    "options": [
+      "仅一种",
+      "R-2R 梯形电阻网络（最常用）、Sigma-Delta（高精度音频）、PWM+滤波（简单 MCU 实现）",
+      "LCD 显示",
+      "数字输出"
+    ],
+    "correctAnswer": 1,
+    "explanation": "DAC 主要架构：① R-2R 梯形——多个数字位控制梯形网络电阻，线性好，大多数独立 DAC 芯片；② Sigma-Delta——过采样 + 噪声整形，高精度（24 位），用于音频 DAC、精密仪器；③ 电流切换——高速 DAC（视频、通信）；④ PWM + LPF——廉价 MCU 方案，低频低精度（PWM 占空比 = 输出电压比例）；⑤ 电荷再分配。STM32 大多带 12 位 R-2R DAC。"
+  },
+  {
+    "id": "h-053",
+    "category": "hardware",
+    "type": "single-choice",
+    "difficulty": "hard",
+    "question": "STM32 ADC + DMA 连续采样的好处？",
+    "options": [
+      "节省内存",
+      "CPU 零干预，ADC 完成自动 DMA 搬到 RAM 缓冲区，实现高速连续采样不丢数据",
+      "加快 CPU",
+      "简化代码"
+    ],
+    "correctAnswer": 1,
+    "explanation": "ADC + DMA 循环模式：① ADC 连续转换序列通道；② 每次转换完成 DMA 自动搬运到 RAM 缓冲区；③ 缓冲区写满后循环从头开始；④ CPU 只需配置一次，后续仅在 DMA 半传输/完成中断时处理数据；⑤ 吞吐量可达 ADC 最大转换速率（MSps）；⑥ 配合定时器触发实现精确采样率。典型应用：FFT 分析、波形采集、振动监测。没 DMA 需每次 ADC 中断读取，高采样率下 CPU 会被占满。"
+  },
+  {
+    "id": "h-054",
+    "category": "hardware",
+    "type": "single-choice",
+    "difficulty": "easy",
+    "question": "ADC 参考电压 Vref 的作用？",
+    "options": [
+      "无关紧要",
+      "决定 ADC 测量的电压范围和精度基准——输入电压 = 数字值 × Vref / 2^N；Vref 不稳则结果波动",
+      "影响速度",
+      "数字电源"
+    ],
+    "correctAnswer": 1,
+    "explanation": "Vref 是 ADC 精度的核心：① 定义满量程——大于 Vref 的输入饱和为全 1（4095）；② LSB = Vref / 2^N，Vref 越小分辨率越高（但小信号更弱）；③ Vref 稳定性直接决定测量精度——用 VDD 作 Vref 的缺点是 VDD 纹波直接转化为测量误差。高精度应用需要外部精密参考（如 LM4040-2.5V，精度 0.1%、温漂 25ppm/°C），连到 VREF+ 引脚。消费电子常用 VDD 作 Vref（简单）。"
+  },
+  {
+    "id": "h-055",
+    "category": "hardware",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "ADC 分辨率 1LSB = ?",
+    "options": [
+      "1V",
+      "Vref / 2^N，表示 ADC 能分辨的最小电压单位",
+      "采样率",
+      "绝对值"
+    ],
+    "correctAnswer": 1,
+    "explanation": "LSB（Least Significant Bit）是 ADC 量化的最小单位：LSB = Vref / 2^N。例子：12 位 ADC @ Vref 3.3V，LSB = 3.3 / 4096 ≈ 0.806mV。意义：测量值精度理论不能超过 ±0.5 LSB（量化误差）。其他 ADC 精度指标：DNL（Differential Non-Linearity 相邻码差异）、INL（Integral Non-Linearity 累积误差）、Offset/Gain 误差。实际测量精度 = max(量化误差, 其他误差)——常被其他误差主导。"
+  },
+  {
+    "id": "h-056",
+    "category": "hardware",
+    "type": "true-false",
+    "difficulty": "medium",
+    "question": "ADC 过采样可以提高有效分辨率（ENOB），例如 4× 过采样 + 平均可提高 1 位。",
+    "options": [
+      "正确",
+      "错误"
+    ],
+    "correctAnswer": 0,
+    "explanation": "正确。过采样公式：有效分辨率增加 = 0.5 × log2(oversampling_ratio)。4× 过采样平均 → +1 位；16× → +2 位；256× → +4 位。原理：随机噪声平方根降低（√N），量化噪声也被平均。条件：① 噪声必须存在且非相关（否则白噪声模型失效）；② 信号频率 < fs/N（采样后平均）。实际效果受限于：硬件噪声、INL 误差、温漂等。STM32H7 硬件支持过采样 + 右移，减轻 CPU 负担。精密测量常用此技术。"
+  },
+  {
+    "id": "h-057",
+    "category": "hardware",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "ADC 的差分输入 (Differential) 相比单端输入 (Single-Ended) 优势？",
+    "options": [
+      "无优势",
+      "抗共模干扰 (差分测 V+ - V-，共模噪声被抵消)，动态范围翻倍，适合噪声环境",
+      "更简单",
+      "速度快"
+    ],
+    "correctAnswer": 1,
+    "explanation": "差分 ADC 优势：① 抗共模干扰——V+ 和 V- 上的共同噪声（如电源纹波、EMI）被减法抵消，信号只留真正差值；② 动态范围翻倍——可表示 -Vref 到 +Vref（满量程 2×Vref），单端只 0 到 Vref；③ 适合长线传感器（减少线路干扰）；④ 适合噪声环境（电机、电源旁边）。代价：需两个引脚（物理空间）、软件处理稍复杂。单端简单便宜适合安静环境。"
+  },
+  {
+    "id": "h-058",
+    "category": "hardware",
+    "type": "single-choice",
+    "difficulty": "hard",
+    "question": "以下 ADC 输入电路问题？\n\n// 传感器输出 3.5V，直连 3.3V MCU 的 ADC 引脚",
+    "options": [
+      "无问题",
+      "超出 VDDA 会触发 ESD 保护二极管导通，可能损坏 ADC；应分压到 <VREF 或用保护电路",
+      "ADC 自动处理",
+      "电压损失"
+    ],
+    "correctAnswer": 1,
+    "explanation": "ADC 引脚输入不能超过 VDDA（模拟电源，通常 3.3V），否则：① 内部 ESD 保护二极管导通，电流流入 VDDA，长期损坏芯片；② 即使短期不坏，读数饱和为 4095 不准。保护方法：① 电阻分压（R1+R2 大 >100kΩ，减小功耗，但考虑阻抗对 ADC 采样时间要求）；② 运放缓冲（降低阻抗且隔离）；③ 二极管钳位到 VDDA（BAT54S）；④ 专用信号调理。高精度测量选方案 2。"
+  },
+  {
+    "id": "h-059",
+    "category": "hardware",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "DAC 输出的典型用途？",
+    "options": [
+      "数字信号处理",
+      "生成模拟信号：音频播放、控制电机速度/亮度 (需放大)、波形发生、模拟传感器输出",
+      "存储",
+      "数字比较"
+    ],
+    "correctAnswer": 1,
+    "explanation": "DAC 典型应用：① 音频输出——CD 音质 16 位 44.1kHz DAC 播放数字音乐；② 控制信号——生成 0-10V 给控制阀、工业变频器；③ 模拟输出仿真——测试仪器、信号发生器；④ 语音/音效提示；⑤ 电机/LED 控制（通常 PWM 更好，但 DAC + 放大用于精密控制）。STM32 12 位 DAC 输出 0-3.3V，驱动能力弱（几 mA），需运放缓冲驱动较大负载。"
+  },
+  {
+    "id": "h-060",
+    "category": "hardware",
+    "type": "true-false",
+    "difficulty": "easy",
+    "question": "DAC 的建立时间是从数字输入变化到模拟输出稳定所需时间，决定最高更新率。",
+    "options": [
+      "正确",
+      "错误"
+    ],
+    "correctAnswer": 0,
+    "explanation": "正确。DAC Settling Time（建立时间）：数字代码变化后，模拟输出达到规定精度（如 ±1/2 LSB 内）所需时间，决定最高更新率。例：STM32 DAC 建立时间 3μs，理论更新率 < 333kSPS（1/3μs）。音频 DAC 需 44.1-192kSPS。高速 DAC（DDS 直接数字合成）可达 GSPS。建立时间包含放大器摆率限制、输出电容充放电、振铃稳定。选型：音频用低失真 DAC、高速用 DDS 专用。"
+  },
+  {
+    "id": "h-061",
+    "category": "hardware",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "用 PWM + 低通滤波实现 DAC 的原理？",
+    "options": [
+      "随机",
+      "PWM 占空比决定平均电压，低通滤波器（RC 或有源）平滑为稳定模拟值：V_out = Duty × V_高电平",
+      "用 ADC",
+      "软件计算"
+    ],
+    "correctAnswer": 1,
+    "explanation": "PWM-DAC 原理：① MCU 输出 PWM（频率高，如 100kHz）；② RC 低通滤波（截止频率 << PWM 频率，如 1kHz），PWM 方波的高频分量被滤除，直流成分（平均值 = 占空比 × 幅度）通过；③ 输出近似的模拟直流。优缺点：① 优点——几乎所有 MCU 都有 PWM，零成本；② 缺点——低频（受 LPF 限制）、精度低（纹波 + PWM 分辨率）、不适合音频；③ 适合：LED 亮度、电机速度（本来就是过滤作用的电感）、低速控制信号。"
+  },
+  {
+    "id": "h-062",
+    "category": "hardware",
+    "type": "single-choice",
+    "difficulty": "hard",
+    "question": "ADC 噪声低通滤波策略？",
+    "options": [
+      "不滤波",
+      "硬件 RC 低通 + 软件多次平均/滑动平均/中值滤波；硬件滤波抗混叠，软件去随机噪声",
+      "高通",
+      "不需要"
+    ],
+    "correctAnswer": 1,
+    "explanation": "ADC 滤波组合：① 硬件 RC 低通——截止 < fs/2（抗混叠），滤除高频干扰，必不可少；② 软件平均——N 次采样求均值，抑制白噪声（噪声 /√N）；③ 中值滤波——3-5 个采样取中间值，去除尖峰干扰（如电机开关瞬间的毛刺），对脉冲干扰效果好；④ 滑动平均——新样本加权平均，低通特性，响应快；⑤ 更高级：卡尔曼滤波、FIR 数字滤波器。根据噪声类型选择。平均 + 中值组合效果好。"
+  },
+  {
+    "id": "h-063",
+    "category": "hardware",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "测量 0-10V 信号用 3.3V MCU 的 ADC 如何处理？",
+    "options": [
+      "直接连接",
+      "电阻分压降到 3.3V 内（如 R1=6.8kΩ,R2=3.3kΩ 分压比 0.327，10V 变 3.27V），再软件乘回系数还原",
+      "使用 5V",
+      "忽略高电压"
+    ],
+    "correctAnswer": 1,
+    "explanation": "电压调理流程：① 分压：Vadc = Vin × R2/(R1+R2)；设计让 Vadc_max ≤ Vref（留 10% 余量）；② 阻抗考虑——分压网络等效阻抗 = R1||R2，要 << ADC 采样阻抗要求（< 10kΩ 常见），否则延长采样时间；③ 保护——分压后接 TVS 二极管或快速钳位；④ 软件：Vreal = Vadc × (R1+R2)/R2。精度取决于电阻精度（用 1% 精度电阻）。需要隔离时用运放跟随器或隔离 ADC（ISO124）。"
+  },
+  {
+    "id": "h-064",
+    "category": "hardware",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "SAR ADC 的'采样保持电路'（S/H）作用？",
+    "options": [
+      "存储",
+      "在转换期间固定输入电压值（用采样电容 + 开关），使 ADC 转换期间 Vin 变化不影响结果",
+      "放大",
+      "过滤"
+    ],
+    "correctAnswer": 1,
+    "explanation": "Sample & Hold（采样保持）是 ADC 必需的前端电路：① 采样阶段——开关闭合，输入通过采样电容充电（跟随 Vin）；② 保持阶段——开关断开，电容保持电压供 ADC 逐次比较（需要 N 个时钟不变）；③ 期间若 Vin 波动不会影响结果。设计：采样电容（通常 pF 级）+ MOSFET 开关。意义：没有 S/H 的话，快速变化信号在 SAR 转换过程中会波动导致错误。高速 ADC 常将 S/H 集成到一起。"
+  },
+  {
+    "id": "h-065",
+    "category": "hardware",
+    "type": "single-choice",
+    "difficulty": "hard",
+    "question": "ADC 测量交流信号（AC）如何处理？",
+    "options": [
+      "直接测量",
+      "AC 信号需叠加直流偏置（如 Vref/2）使其全部为正，同时测多点做 RMS 计算或峰值检测",
+      "用 DAC",
+      "不能测"
+    ],
+    "correctAnswer": 1,
+    "explanation": "测量交流信号（如音频、市电）：① ADC 通常只支持 0~Vref，负电压会烧；② 叠加直流偏置 Vref/2（中心电位），让 AC 信号摆动在 0~Vref 范围内（AC 耦合电容 + 分压偏置）；③ 采样后软件减去偏置得到双极性 AC 值；④ 计算方式：RMS = √(Σ(xi)²/N)、峰值 = max(|xi|)、THD 失真分析；⑤ 采样率 > 2×信号频率（Nyquist）；⑥ 市电测量需隔离变压器 + 分压保护。整套信号链要精心设计。"
   }
 ]
