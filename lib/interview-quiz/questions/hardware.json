@@ -1255,5 +1255,305 @@
     ],
     "correctAnswer": 1,
     "explanation": "半桥/全桥电路（如电机驱动、逆变器）：上管（high-side）和下管（low-side）交替导通，不能同时（否则电源直接短路地，瞬间烧 MOSFET）。死区时间：MOSFET 关断比开通慢（存储时间 + 米勒平台），若无死区，关断的管子还在部分导通时开通的管子已开始导通，直通。插入死区时间（典型 100ns-1μs，根据 MOSFET 速度）：① 关 A → ② 等死区 → ③ 开 B。STM32 高级定时器硬件生成死区（BDTR 寄存器配置），互补输出 CH1/CH1N 自动满足约束。"
+  },
+  {
+    "id": "h-086",
+    "category": "hardware",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "STM32 时钟树的典型配置：HSE (8MHz) → PLL → ?",
+    "options": [
+      "72MHz (STM32F103)",
+      "168-180MHz (STM32F4 系列)",
+      "400MHz+ (STM32H7)",
+      "取决于系列，F1=72MHz, F4=168MHz, H7=400+MHz"
+    ],
+    "correctAnswer": 3,
+    "explanation": "STM32 各系列最高系统时钟：① F0/F1/L0/L1：48-72MHz（低功耗或低成本）；② F3/F4/L4：72-180MHz（主流）；③ F7：216MHz；④ H7：400-550MHz（高性能 Cortex-M7）；⑤ U5：160MHz（新一代低功耗）。典型配置：HSE 8MHz 晶振 → PLL 倍频 → SYSCLK → AHB Prescaler → HCLK → APB1/APB2 Prescaler → PCLK1/PCLK2。APB1 最大常为 HCLK 的一半（总线限制）。某些外设（定时器）挂 APB1 时有时钟倍增。"
+  },
+  {
+    "id": "h-087",
+    "category": "hardware",
+    "type": "single-choice",
+    "difficulty": "easy",
+    "question": "MCU 的外部晶振为什么常用 8MHz 或 16MHz？",
+    "options": [
+      "颜色好看",
+      "PLL 倍频容易配整数：8MHz × 9 = 72MHz, 8MHz × 21 = 168MHz；且 USB 要求输入频率经 PLL 得 48MHz",
+      "便宜",
+      "速度快"
+    ],
+    "correctAnswer": 1,
+    "explanation": "8/16MHz 晶振优势：① PLL 倍频易得整数目标频率（不产生抖动）；② 8MHz × 6 = 48MHz 正好是 USB 需求；③ 8MHz 也是大多数 STM32 系列推荐频率；④ HSE 范围通常 4-26MHz，8 或 16MHz 在中间平衡启动时间和频率精度；⑤ 常见晶振规格（成本低）。设计时看芯片手册的 PLL 输入范围（如 STM32F4 HSE/M 要 1-2MHz）。USB 需要特别注意晶振精度要求（±50ppm 以内）。"
+  },
+  {
+    "id": "h-088",
+    "category": "hardware",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "RTC 一般用 32.768kHz 晶振原因？",
+    "options": [
+      "便宜",
+      "32768 = 2^15，15 位二进制分频恰好得 1Hz（秒脉冲），频率低功耗极小（μA 级）",
+      "速度快",
+      "抗干扰"
+    ],
+    "correctAnswer": 1,
+    "explanation": "32.768kHz 晶振的特点：① 数值是 2^15，经 15 位分频器得 1Hz 秒信号（电路简单）；② 低频晶振功耗极低（μA 级），适合电池供电 RTC 和待机计时；③ 晶振尺寸小（便于手表、IoT 设备）；④ 温度系数较差（-0.035ppm/°C² 附近室温最准），需温度补偿（TCXO、MEMS）达高精度。缺点：频率低不能作为 CPU 主时钟（需与 HSE/HSI 并行）。STM32 LSE（Low Speed External）专用于 RTC 和低功耗唤醒。"
+  },
+  {
+    "id": "h-089",
+    "category": "hardware",
+    "type": "single-choice",
+    "difficulty": "hard",
+    "question": "时钟源 HSI（内部 RC 振荡器）相比 HSE（外部晶振）的缺点？",
+    "options": [
+      "无缺点",
+      "精度低（±1-2%）、温漂大，不适合 UART 高波特率、USB、CAN 等对时钟精度敏感的通信",
+      "HSI 更快",
+      "HSE 耗电"
+    ],
+    "correctAnswer": 1,
+    "explanation": "HSI 缺点：① 精度差——内部 RC 典型 ±1-2%（生产校准后）；② 温漂——温度变化会漂移更多；③ 绝对频率可能偏离标称 1-2%。影响：① UART 高速通信（115200+）误码率上升；② USB 绝对需要 ±0.5% 精度，HSI 通常不够；③ CAN 有位同步容限但高波特率也吃紧。HSE 优势：晶振典型 ±50ppm = ±0.005%，稳定。选择：低成本/原型用 HSI，量产/通信用 HSE。某些 MCU 有 HSI48（USB 专用）工厂校准到 USB 精度要求。"
+  },
+  {
+    "id": "h-090",
+    "category": "hardware",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "PLL（锁相环）的作用？",
+    "options": [
+      "数据存储",
+      "将输入参考时钟倍频到更高系统时钟（如 HSE 8MHz × 9 = 72MHz），是 MCU 主频的核心",
+      "分频",
+      "加密"
+    ],
+    "correctAnswer": 1,
+    "explanation": "PLL（Phase-Locked Loop）锁相环：① 将参考时钟（HSE 或 HSI）倍频到目标系统时钟；② 原理：鉴相器 + 环路滤波器 + 压控振荡器（VCO）+ 分频器反馈；③ 能实现非整数倍（如 × 9, × 168）；④ 输出可有多个（独立分频给 USB、SAI 等）。STM32 配置：设置 M 分频、N 倍频、P/Q/R 分频器。启用顺序：HSE 就绪 → PLL 配置 → PLL 启用 → PLL 就绪 → 切换 SYSCLK 到 PLL。时钟错误是 MCU 不启动的常见原因。"
+  },
+  {
+    "id": "h-091",
+    "category": "hardware",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "STM32 的 LDO 作用？",
+    "options": [
+      "LED 驱动",
+      "内部线性稳压器，将 VDD（3.3V）降到内核电压（1.2V 或 1.8V）供给内核/外设；可关闭以省电",
+      "加密",
+      "信号放大"
+    ],
+    "correctAnswer": 1,
+    "explanation": "STM32 内部 LDO（Low Dropout regulator）：① MCU 外部供电 1.8-3.6V，内部内核需更低电压（典型 1.2V 或 1.8V，减少动态功耗）；② LDO 将 VDD 降至内核电压；③ 低功耗模式（Stop、Standby）可关闭 LDO 或降低输出；④ 某些低功耗 MCU（L4、U5）有 Switched Mode Power Supply（SMPS）取代 LDO 进一步省电。STM32 手册电源框图显示这些。设计注意 VDD、VDDA、VBAT 独立去耦电容。VREFBUF 独立用于模拟参考。"
+  },
+  {
+    "id": "h-092",
+    "category": "hardware",
+    "type": "single-choice",
+    "difficulty": "easy",
+    "question": "复位电路的两个基本作用？",
+    "options": [
+      "断电",
+      "① 上电复位（POR）确保供电稳定后 CPU 才启动；② 手动/看门狗复位让系统可以恢复到已知初始状态",
+      "加速",
+      "节电"
+    ],
+    "correctAnswer": 1,
+    "explanation": "MCU 复位电路的两个核心功能：① 上电复位（POR）——VDD 上升到稳定阈值前保持 RESET 低，防止不稳定电压下执行代码；② 手动/软件/看门狗复位——可由按键、看门狗、软件命令（NVIC_SystemReset）触发，让系统重启。现代 MCU 内建 POR 电路（不需外部 RC），外部复位键接 NRST 引脚（低有效）。还有 BOR（Brown-Out Reset）监测 VDD 跌落，防止电压不足时运行。"
+  },
+  {
+    "id": "h-093",
+    "category": "hardware",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "STM32 的 BOR（Brown-Out Reset）？",
+    "options": [
+      "无",
+      "监测 VDD 电压，低于设定阈值时强制复位，防止供电不足时代码跑飞或 Flash 损坏",
+      "加速",
+      "加密"
+    ],
+    "correctAnswer": 1,
+    "explanation": "BOR（欠压复位）防护机制：① 持续监测 VDD 电压；② VDD < BOR 阈值（可选 1.8/2.1/2.4/2.7V 几档）时强制保持 RESET，直到 VDD 回升到阈值 + 迟滞；③ 防止：欠压下代码乱跑、Flash 写入损坏、外设异常。设置：选项字节配置 BOR level（需要 ST-Link Utility 或 STM32CubeProg）。无 BOR（禁用）省电但不安全。典型电池供电设备：配置 BOR > 电池截止电压 - 0.1V，确保 MCU 先正常关机而非崩溃。"
+  },
+  {
+    "id": "h-094",
+    "category": "hardware",
+    "type": "single-choice",
+    "difficulty": "hard",
+    "question": "STM32 低功耗 Stop 模式和 Standby 模式的区别？",
+    "options": [
+      "名字不同",
+      "Stop: 保留 SRAM 和寄存器，唤醒后继续执行，唤醒快但功耗较高（μA 级）; Standby: 几乎完全关闭，唤醒后像复位重启，功耗最低（nA 级），但丢失状态",
+      "相同",
+      "Stop 更省电"
+    ],
+    "correctAnswer": 1,
+    "explanation": "STM32 低功耗模式梯度：① Sleep（CPU 停 外设运行，μA 级）；② Stop（SRAM/寄存器保留、时钟关闭、低功耗电压调节器，几 μA），唤醒后从睡前代码继续执行；③ Standby（几乎全关，只 LSE+RTC+备份寄存器+ Wakeup 逻辑，nA 级），唤醒相当于系统复位，从启动代码重新运行；④ Shutdown（更低，极少外设存活）。选择：需保持状态且快速响应用 Stop，超长待机（数天）用 Standby + 状态存 RTC 备份寄存器。IoT 电池设备必用低功耗模式。"
+  },
+  {
+    "id": "h-095",
+    "category": "hardware",
+    "type": "single-choice",
+    "difficulty": "easy",
+    "question": "电解电容的主要特性？",
+    "options": [
+      "高频特性好",
+      "容量大（μF-mF 级）、有极性、ESR 较高、频率特性差（高频失效），主要用于电源滤波",
+      "无极性",
+      "精度高"
+    ],
+    "correctAnswer": 1,
+    "explanation": "电解电容（Electrolytic）：① 容量大（1μF-10000μF）；② 有极性——接反会爆炸（铝壳电解液被电化学破坏）；③ ESR（等效串联电阻）较高，高频下阻抗不小；④ 温度/寿命敏感——每升 10°C 寿命减半；⑤ 主要用途：电源滤波（低频储能）、整流平滑、电机驱动储能；⑥ 不适合高频信号滤波（选陶瓷或钽）。设计注意：耐压留 30%（工作 12V 选 16V）、温度规格、寿命等级（-40°C 特殊规格）。"
+  },
+  {
+    "id": "h-096",
+    "category": "hardware",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "陶瓷电容与电解电容在电路板上的搭配？",
+    "options": [
+      "任选",
+      "并联使用：大电解（如 10μF）处理低频大功率，小陶瓷（如 0.1μF）靠近芯片处理高频；互补覆盖整个频率范围",
+      "不能并联",
+      "只用一种"
+    ],
+    "correctAnswer": 1,
+    "explanation": "电容并联策略——滤波覆盖全频段：① 大电解（10-100μF）低频滤波和储能；② 小陶瓷（0.1μF = 100nF MLCC）高频旁路，必须靠近芯片电源引脚（< 5mm）减少 PCB 寄生电感影响；③ 中等（1μF 陶瓷）中频补充。原因：每种电容在特定频率范围表现最佳，ESR 和 ESL 随频率变化。经典去耦组合：100μF 电解 + 1μF + 0.1μF 陶瓷。关键芯片电源引脚每个都加 0.1μF。"
+  },
+  {
+    "id": "h-097",
+    "category": "hardware",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "示波器探头 10× 衰减档的作用？",
+    "options": [
+      "无用",
+      "将输入信号衰减 10 倍再进示波器，增加带宽和输入阻抗，减少对被测电路影响；但灵敏度降低 10 倍",
+      "放大",
+      "保护设备"
+    ],
+    "correctAnswer": 1,
+    "explanation": "示波器探头 10× 模式：① 10× 衰减网络（9MΩ 串联 + 示波器 1MΩ 形成分压）——信号幅度变 1/10；② 等效输入阻抗变为 10MΩ（更不影响被测电路）；③ 带宽提升（RC 低通频率变高）——能测更高频信号；④ 必须在示波器上选 10× 才能读数正确；⑤ 测低幅度信号改用 1× 档（无衰减、灵敏度高，但输入阻抗低、带宽低）。典型 1× 探头带宽 10-30MHz，10× 探头 100-500MHz。探头补偿：调整探头内的电容使方波边沿最平。"
+  },
+  {
+    "id": "h-098",
+    "category": "hardware",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "MOSFET 用作开关时，栅极为什么需要驱动电路？",
+    "options": [
+      "无需",
+      "栅极有输入电容（Ciss，nF 级），快速开关需要瞬时大电流（A 级）充放电，MCU GPIO 无法提供；需专用驱动 IC 或三极管推挽驱动",
+      "电压高",
+      "只为美观"
+    ],
+    "correctAnswer": 1,
+    "explanation": "MOSFET 栅极电容与驱动需求：① Ciss（输入电容）nF 级，大功率 MOSFET 可 10nF+；② 要 100ns 开关需平均 I = C×dV/dt = 10nF×10V/100ns = 1A 峰值电流；③ MCU GPIO 最多 20-50mA，驱动不动；④ 结果：开关慢、开关损耗大、MOSFET 发热；⑤ 解决：专用驱动 IC（IR2104、UCC27524）提供 1-4A 驱动电流；或三极管推挽（PNP+NPN）成本低。低频（<10kHz）低电流 MOSFET 可直接 GPIO 驱动，高频/高功率必须驱动芯片。"
+  },
+  {
+    "id": "h-099",
+    "category": "hardware",
+    "type": "single-choice",
+    "difficulty": "hard",
+    "question": "运算放大器（Op-Amp）的'虚短'和'虚断'假设？",
+    "options": [
+      "真实短路",
+      "理想运放在负反馈下：V+ ≈ V-（虚短，假设运放增益∞）；输入端无电流（虚断，输入阻抗∞）——这两个假设大幅简化分析",
+      "无意义",
+      "反相"
+    ],
+    "correctAnswer": 1,
+    "explanation": "理想运放分析的两个基本假设（在负反馈电路中成立）：① 虚短（Virtual Short）：V+ 和 V- 电压相等。理论上因开环增益 A → ∞，输出有限则 (V+ - V-) = Vout/A → 0。② 虚断（Virtual Open）：输入端电流为 0。理论上输入阻抗 → ∞。两假设让分析反馈网络变简单——把运放当作输出跟随 V+ 且不吸电流的黑盒。实际运放开环增益 10⁵-10⁷，输入阻抗 MΩ-TΩ，误差 < 1%。非反馈（开环比较器）时不成立。"
+  },
+  {
+    "id": "h-100",
+    "category": "hardware",
+    "type": "single-choice",
+    "difficulty": "easy",
+    "question": "分压电路 Vin=5V, R1=R2=10kΩ (上下等阻值)，Vout=?",
+    "options": [
+      "5V",
+      "2.5V",
+      "1V",
+      "0V"
+    ],
+    "correctAnswer": 1,
+    "explanation": "分压公式：Vout = Vin × R2/(R1+R2) = 5 × 10k/(10k+10k) = 5 × 0.5 = 2.5V。等阻分压器输出恰好一半。分压电路用途：① 从高电压取出小电压（测 24V 用 1/10 分压到 2.4V 给 ADC）；② 生成偏置电压（运放输入、传感器偏置）；③ 测量电池电压状态。注意：① 分压网络的等效阻抗 = R1‖R2 = 5kΩ；② 后级负载阻抗要远大于此（如运放做缓冲）；③ 电阻精度决定输出精度（1% 电阻得到约 1% 输出精度）。"
+  },
+  {
+    "id": "h-101",
+    "category": "hardware",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "上拉电阻配合开漏输出的线与逻辑？",
+    "options": [
+      "复杂运算",
+      "多个开漏输出并联一根线，任一输出拉低则总线为低——实现 AND 逻辑（任一为 0 则 0），用于 I2C、中断共享等",
+      "OR",
+      "NOT"
+    ],
+    "correctAnswer": 1,
+    "explanation": "Wired-AND（线与）原理：开漏输出只能主动拉低（无法主动拉高，高电平靠外部上拉电阻被动实现）。多个开漏输出并联：① 所有器件都释放（高阻态）→ 上拉拉高，总线 = 1；② 任一器件拉低 → 总线 = 0（该器件的 MOSFET 接地）。布尔逻辑上等价于 AND（所有都 1 才 1）。应用：① I2C SDA/SCL；② 多中断共享 IRQ 线；③ 错误指示灯（任一错误点亮）；④ 总线仲裁（多主 I2C、CAN 的显性机制）。推挽输出不能这样用（冲突损坏）。"
+  },
+  {
+    "id": "h-102",
+    "category": "hardware",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "为什么 PCB 要铺地？",
+    "options": [
+      "美观",
+      "提供低阻抗回流路径、降低 EMI 辐射、为信号提供参考平面（重要于高速信号完整性）、增强散热",
+      "增加重量",
+      "省电阻"
+    ],
+    "correctAnswer": 1,
+    "explanation": "PCB 铺地（Ground Plane）作用：① 低阻抗回流——电流总是走最小回路（低阻），完整地平面让信号回流就近返回，减少回路面积和电磁辐射；② 降低 EMI——地平面屏蔽信号间耦合；③ 参考电平稳定——各处地电位接近，减少地弹；④ 信号完整性——高速信号需要连续平面作为参考，阻抗一致；⑤ 散热——铜面积大，帮助散热。最佳实践：多层板专用地层（不被走线割裂）、地过孔密布、数字/模拟地分区并单点连接。"
+  },
+  {
+    "id": "h-103",
+    "category": "hardware",
+    "type": "single-choice",
+    "difficulty": "hard",
+    "question": "差模干扰和共模干扰的区别？",
+    "options": [
+      "相同",
+      "差模：两信号线间差分的干扰，直接叠加到信号上；共模：两线同向同幅变化的噪声，差分接收可抵消——这是差分信号抗干扰的原理",
+      "不能区分",
+      "共模更弱"
+    ],
+    "correctAnswer": 1,
+    "explanation": "干扰分类：① 差模（Differential Mode）：V1 - V2 发生变化，直接干扰信号值——需要滤波器（LC 低通、磁珠）；② 共模（Common Mode）：V1 和 V2 同向同幅变化，两线'一起动'——差分接收直接抵消（Vdiff = V1 - V2 不变），单端信号则完全受害；③ 差分信号（USB、CAN、以太网）抗共模强；④ 共模扼流圈（Common Mode Choke）可抑制共模传导噪声；⑤ 隔离变压器、光耦也阻断共模。接地设计要避免共模电位差。"
+  },
+  {
+    "id": "h-104",
+    "category": "hardware",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "肖特基二极管（Schottky Diode）相比普通二极管的特点？",
+    "options": [
+      "相同",
+      "正向压降低（0.2-0.4V vs 普通 0.6-0.7V）、开关速度快、但反向漏电大",
+      "反向截止电压高",
+      "只能单向"
+    ],
+    "correctAnswer": 1,
+    "explanation": "肖特基二极管特性：① 正向压降低 Vf ≈ 0.2-0.4V（普通硅管 0.6-0.7V）——效率高（整流/开关损耗小）；② 开关速度极快（无少数载流子存储时间）——适合高频整流、OR 逻辑、开关电源；③ 反向漏电流大（几十到几百 μA vs 普通 nA 级）——不适合高要求反向截止；④ 反向击穿电压低（40-100V 为主）——不能替代高压整流。应用：低压整流、开关电源续流、OR 门（电池/USB 供电切换）、逻辑门。设计时权衡正向压降和反向漏电。"
+  },
+  {
+    "id": "h-105",
+    "category": "hardware",
+    "type": "single-choice",
+    "difficulty": "hard",
+    "question": "开关电源（Switching Regulator）相比线性稳压器的优缺点？",
+    "options": [
+      "只有优点",
+      "优：效率高（85-95%），适合大压差大功率；缺：输出纹波大，EMI 辐射强，电路复杂需 LC 滤波和反馈设计",
+      "只有缺点",
+      "无区别"
+    ],
+    "correctAnswer": 1,
+    "explanation": "开关电源 vs 线性稳压（LDO）：① 效率——开关 85-95%（高频开关+LC 储能，无 IR 损耗）；LDO = Vout/Vin（5V→3.3V 仅 66%）；② 热量——开关发热少，LDO 压差大功耗大（5V→3.3V 1A = 1.7W 热）；③ 输出纹波——开关 mV 级纹波（开关频率），LDO μV 级（极低噪声）；④ EMI——开关电源有开关频率及谐波辐射，需认证；⑤ 体积——开关需要电感电容，较大；⑥ 成本——开关高，LDO 低。选择：小压差小电流用 LDO（音频、模拟电路）、大压差大电流用开关（电池设备、功率电路）；两者组合（开关 + LDO）兼顾效率和噪声。"
   }
 ]
