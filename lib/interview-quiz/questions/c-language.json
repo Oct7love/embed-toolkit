@@ -1577,5 +1577,303 @@
     ],
     "correctAnswer": 1,
     "explanation": "typedef IntPtr a, b; 声明 a 和 b 都是 int*。但 #define IntPtr int * 展开为 int *a, b; 只有 a 是 int*，b 是 int。typedef 是编译器层面的真正类型别名，遵循作用域规则，可以用于复杂类型（函数指针、数组类型）。#define 是预处理文本替换，可能导致意外结果。typedef 还能用于跨平台类型抽象（如 uint32_t）。除非需要预处理特性（#if 条件编译），类型别名优先用 typedef。"
+  },
+  {
+    "id": "c-108",
+    "category": "c-language",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "以下声明 signal 函数的原型：\n\nvoid (*signal(int sig, void (*handler)(int)))(int);\n\n它的含义是？",
+    "options": [
+      "signal 是函数指针",
+      "signal 是函数：接受 int 和函数指针参数，返回一个函数指针",
+      "语法错误",
+      "signal 是数组"
+    ],
+    "correctAnswer": 1,
+    "explanation": "这是 C 中最复杂的函数指针声明之一。逐层解析：signal(int, ...) 是函数调用；void (*...)(int) 外层表示返回 void(*)(int) 即函数指针。整体：signal 是函数，参数 (int sig, void (*handler)(int))，返回 void(*)(int)。用于安装信号处理器，返回前一个处理器。用 typedef 能大幅简化：typedef void (*sighandler_t)(int); sighandler_t signal(int sig, sighandler_t handler);。"
+  },
+  {
+    "id": "c-109",
+    "category": "c-language",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "以下代码实现回调的正确方式是？\n\ntypedef void (*Callback)(int);\nvoid do_work(Callback cb) {\n    // 调用回调\n    ??\n}",
+    "options": [
+      "cb(42);",
+      "(*cb)(42);",
+      "以上都正确",
+      "cb.invoke(42);"
+    ],
+    "correctAnswer": 2,
+    "explanation": "C 中函数指针调用有两种等价写法：cb(42) 和 (*cb)(42)。函数指针和函数名可以自动互转（decay/adjust），所以两种都合法。现代 C 代码普遍用 cb(42) 简洁。显式 (*cb) 更明确在调用指针，但冗余。经典 Linux 内核代码常混用。回调模式是 C 实现策略模式、事件驱动的核心：qsort 的比较函数、pthread 的线程函数、中断服务函数注册都用这个模式。"
+  },
+  {
+    "id": "c-110",
+    "category": "c-language",
+    "type": "single-choice",
+    "difficulty": "hard",
+    "question": "下面哪个宏能正确计算数组元素个数？（不是指针）",
+    "options": [
+      "#define ARRAY_SIZE(a) (sizeof(a) / sizeof((a)[0]))",
+      "#define ARRAY_SIZE(a) (sizeof(a) / sizeof(*a))",
+      "#define ARRAY_SIZE(a) (sizeof(a) / sizeof(int))",
+      "A 和 B 都正确"
+    ],
+    "correctAnswer": 3,
+    "explanation": "A 和 B 等价：用总字节数除以单元素字节数。关键：a 必须是数组名而非指针——对指针用此宏得到错误结果（sizeof(pointer)/sizeof(*pointer) = 4/4=1 或 8/N）。选项 C 硬编码 int 类型，对其他类型数组错误。Linux 内核的 ARRAY_SIZE 宏额外做了类型检查 BUILD_BUG_ON(!__builtin_types_compatible_p(typeof(a), typeof(&(a)[0])))，在编译期拒绝传入指针。"
+  },
+  {
+    "id": "c-111",
+    "category": "c-language",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "宏 #define SQR(x) x*x 调用 SQR(2+3) 的展开结果是？",
+    "options": [
+      "25",
+      "11 (展开为 2+3*2+3)",
+      "6",
+      "编译错误"
+    ],
+    "correctAnswer": 1,
+    "explanation": "预处理器做文本替换：SQR(2+3) → 2+3*2+3。按运算符优先级：*先算 3*2=6，然后 2+6+3=11。修复：必须给参数和整个宏加括号：#define SQR(x) ((x)*(x))，这样 SQR(2+3) → ((2+3)*(2+3)) = 25。这是最经典的宏陷阱：'永远给宏参数和整体加括号'。但即使这样，SQR(i++) 仍会自增两次。写成 inline 函数最安全。"
+  },
+  {
+    "id": "c-112",
+    "category": "c-language",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "do { ... } while(0) 在宏定义中的作用？\n\n#define FOO(x) do { f(x); g(x); } while(0)",
+    "options": [
+      "循环一次",
+      "把多语句打包成单个语句，避免在 if/else 中造成语法错误",
+      "保证线程安全",
+      "避免变量冲突"
+    ],
+    "correctAnswer": 1,
+    "explanation": "多语句宏如直接写 { f(x); g(x); }，在 if(cond) FOO(x); else ...; 中展开后 { } 后的 ; 会终止 if，导致 else 语法错误或行为异常。用 do{}while(0) 包裹：宏展开后是单个语句（do{}while(0);），可以跟 ; 完美配合。这是 C 宏的惯用法，几乎所有成熟 C 项目都用这个技巧。注意 while(0) 不会真的循环，编译器会优化掉。"
+  },
+  {
+    "id": "c-113",
+    "category": "c-language",
+    "type": "single-choice",
+    "difficulty": "hard",
+    "question": "以下代码能编译通过吗？\n\ntypedef struct Node Node;\nstruct Node { Node *next; int data; };",
+    "options": [
+      "能，这是 C 中声明自引用结构体的标准模式",
+      "不能，Node 在声明时未定义",
+      "仅 C++ 支持",
+      "需要 extern 关键字"
+    ],
+    "correctAnswer": 0,
+    "explanation": "C 的 typedef 可以前向声明：第一行告诉编译器 Node 是 struct Node 的别名（虽然 struct Node 的完整定义还在后面，但指针只需知道类型名即可）。第二行完成 struct Node 的实际定义。这是实现链表等自引用数据结构的惯用法。注意 struct Node* next; 可以工作因为指针大小固定，不需要完整类型信息。如果是 Node next;（非指针）就必须完整定义。"
+  },
+  {
+    "id": "c-114",
+    "category": "c-language",
+    "type": "single-choice",
+    "difficulty": "easy",
+    "question": "内联函数 inline 和 __inline 有什么区别？",
+    "options": [
+      "没有区别",
+      "inline 是 C99 标准关键字；__inline 是早期编译器（如 MSVC、GCC）的扩展，在 C99 前使用",
+      "inline 更快",
+      "__inline 是 C++ 专用"
+    ],
+    "correctAnswer": 1,
+    "explanation": "inline 关键字在 C99 标准化。之前各编译器提供扩展：GCC 用 __inline__ 或 __inline，MSVC 用 __inline（有时还有 __forceinline 强制内联）。写兼容老编译器的代码需要用 #ifdef 处理，如：#ifndef inline #define inline __inline #endif。C99+ 项目直接用标准 inline。还有 GCC 的 __attribute__((always_inline)) 强制内联、__attribute__((noinline)) 禁止内联。"
+  },
+  {
+    "id": "c-115",
+    "category": "c-language",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "以下代码有什么问题？\n\n#define PI 3.14159\nint area = PI * r * r;",
+    "options": [
+      "无问题",
+      "PI 是浮点数，乘法结果是 double，赋给 int 会截断小数部分（数据丢失）",
+      "宏展开错误",
+      "r 未定义"
+    ],
+    "correctAnswer": 1,
+    "explanation": "PI 是浮点字面量，PI*r*r 结果是 double。赋给 int 类型会发生窄化转换——截断小数部分（不是四舍五入）。如 3.14*2*2=12.56 赋给 int 变 12。编译器通常会警告（-Wconversion）。修复：用 float/double 类型、显式强转 (int)(PI*r*r) 表明意图、或用定点数（嵌入式常见）。常量宏最好用 C 的 const 或 enum 带类型信息，比 #define 安全。"
+  },
+  {
+    "id": "c-116",
+    "category": "c-language",
+    "type": "single-choice",
+    "difficulty": "hard",
+    "question": "预处理的 # 和 ## 运算符分别作用？",
+    "options": [
+      "# 字符串化、## 连接标记",
+      "# 注释、## 分隔符",
+      "都是错误用法",
+      "# 引号转义、## 格式化"
+    ],
+    "correctAnswer": 0,
+    "explanation": "# 字符串化（stringify）：将宏参数转换为字符串字面量。如 #define STR(x) #x，STR(hello) 变 \"hello\"。## 连接（token pasting）：将两个标记拼成一个。如 #define CAT(a,b) a##b，CAT(var, 1) 变 var1。用途：生成变量名、枚举值对应的字符串表、调试宏（#define PRINT(x) printf(#x \" = %d\\n\", x)）。常见 trap：宏参数是另一个宏时需要二层宏展开。"
+  },
+  {
+    "id": "c-117",
+    "category": "c-language",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "typedef 最适合用于哪种情况？",
+    "options": [
+      "给基本类型换名字（没太多好处）",
+      "给复杂类型（函数指针、数组指针、结构体等）定义可读别名，抽象平台依赖（如 uint32_t）",
+      "定义常量",
+      "定义宏"
+    ],
+    "correctAnswer": 1,
+    "explanation": "typedef 的好处：① 简化复杂类型声明（函数指针、多维数组指针等），提升可读性；② 平台抽象：stdint.h 的 uint32_t、size_t 都是 typedef，跨平台尺寸一致；③ 接口稳定性：类型名不变，底层实现可替换（如 FILE、pthread_t）；④ 语义化命名：typedef struct Point Point; 让 C 代码更接近 OO 风格。简单类型如 int 换个名字反而降低可读性。"
+  },
+  {
+    "id": "c-118",
+    "category": "c-language",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "下面哪个是可变参数宏（C99 起）？",
+    "options": [
+      "#define LOG(fmt, ...) printf(fmt, __VA_ARGS__)",
+      "#define LOG(fmt) printf(fmt)",
+      "#define LOG(fmt, args) printf(fmt, args)",
+      "#define LOG() printf()"
+    ],
+    "correctAnswer": 0,
+    "explanation": "C99 引入可变参数宏：用 ... 表示可变部分，__VA_ARGS__ 在替换时展开为传入的可变参数。如 LOG(\"%d %s\", n, s) 展开为 printf(\"%d %s\", n, s)。注意：零参数时 __VA_ARGS__ 为空可能产生多余逗号（printf(fmt,)），GCC 扩展支持 ##__VA_ARGS__ 自动去除前导逗号，C20 标准化为 __VA_OPT__。日志宏是典型用途，包装调试输出和控制开关。"
+  },
+  {
+    "id": "c-119",
+    "category": "c-language",
+    "type": "true-false",
+    "difficulty": "hard",
+    "question": "函数指针的数组和数组的函数指针是同一个东西。",
+    "options": [
+      "正确",
+      "错误"
+    ],
+    "correctAnswer": 1,
+    "explanation": "错误，完全不同。函数指针数组：int (*fps[10])(int); — 10 个元素，每个是函数指针。数组的指针：int (*p)[10]; — 一个指针，指向 10 元素的 int 数组，与函数无关。还有'指向函数指针数组的指针'：int (*(*p)[10])(int);。C 的复杂声明需'从名字开始向外看、优先括号'的规则。用 typedef 拆解可读性大幅提升：typedef int (*FP)(int); FP fps[10]; 清晰表达'10 个 FP'。"
+  },
+  {
+    "id": "c-120",
+    "category": "c-language",
+    "type": "single-choice",
+    "difficulty": "easy",
+    "question": "qsort 的比较函数原型是？",
+    "options": [
+      "int cmp(void *a, void *b);",
+      "int cmp(const void *a, const void *b);",
+      "int cmp(int a, int b);",
+      "int cmp(int *a, int *b);"
+    ],
+    "correctAnswer": 1,
+    "explanation": "qsort 原型：void qsort(void *base, size_t n, size_t size, int (*cmp)(const void*, const void*));。比较函数签名 int(const void*, const void*) 是标准库约定，const 表示不修改。实现时需转换：int my_cmp(const void *a, const void *b){ return *(const int*)a - *(const int*)b; }。注意减法可能整数溢出，严谨写法用 <、> 比较。bsearch 也用同样的比较函数签名。"
+  },
+  {
+    "id": "c-121",
+    "category": "c-language",
+    "type": "single-choice",
+    "difficulty": "hard",
+    "question": "以下回调模式的设计问题？\n\nvoid set_callback(void (*cb)(void));",
+    "options": [
+      "无问题",
+      "回调无 context 参数，无法传递额外数据给回调内部",
+      "指针类型错误",
+      "缺少返回值"
+    ],
+    "correctAnswer": 1,
+    "explanation": "好的回调 API 应该允许传递 void *context 参数：void set_callback(void (*cb)(void *ctx), void *ctx);。这样回调内部可以访问用户数据，避免依赖全局变量。如 pthread_create 的 void *(*start_routine)(void*)、qsort 则无 context 设计不佳（C11 的 qsort_r 修正了这点）。嵌入式场景下 ctx 常用于传入模块实例指针（类似 C++ this），实现面向对象风格。优秀 C API 都遵循此模式。"
+  },
+  {
+    "id": "c-122",
+    "category": "c-language",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "以下两种声明是否等价？\n\nint* a, b;\n// 与\nint* a;\nint* b;",
+    "options": [
+      "等价，都声明两个 int 指针",
+      "不等价，第一行 b 是 int，不是 int*",
+      "第一行语法错误",
+      "依赖编译器"
+    ],
+    "correctAnswer": 1,
+    "explanation": "经典陷阱。int* a, b; 按 C 语法解析，* 绑定到 a（声明符一部分），b 没有 * 所以是普通 int。实际是 int *a, b;，等价于两个声明 int *a; int b;。避免歧义的风格：① 每行只声明一个变量（安全）；② 把 * 靠近变量名：int *a, b; 更显式地暴露问题。许多代码规范（如 Linux）要求 int *a 而非 int* a，强调 * 属于变量而非类型。"
+  },
+  {
+    "id": "c-123",
+    "category": "c-language",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "宏 #define MIN(a,b) ((a) < (b) ? (a) : (b)) 的缺点？",
+    "options": [
+      "无缺点，这是正确写法",
+      "参数可能被求值两次（如 MIN(i++, j) 有副作用），无类型检查",
+      "性能太差",
+      "不能用于整数"
+    ],
+    "correctAnswer": 1,
+    "explanation": "已加括号修复了优先级问题，但剩余两个问题：① 参数可能被求值两次：MIN(i++, j) 展开 ((i++)<(j)?(i++):(j))，根据分支 i 可能自增 1 或 2 次；② 无类型检查：MIN(1.5, 2) 混用类型可能有意外转换。彻底解决方案：GCC typeof + 局部变量宏，或 C11 _Generic 类型分派，或直接用 inline 函数。日常开发用 inline static int min(int a, int b) 更好。"
+  },
+  {
+    "id": "c-124",
+    "category": "c-language",
+    "type": "single-choice",
+    "difficulty": "hard",
+    "question": "函数指针可以相减吗？（如 fp1 - fp2）",
+    "options": [
+      "可以，得到两个函数地址差",
+      "不可以，C 标准不允许对函数指针做加减和比较大小",
+      "只能减去 0",
+      "仅同一函数的不同实例可以减"
+    ],
+    "correctAnswer": 1,
+    "explanation": "C 标准不允许对函数指针做算术运算（加、减、相减差值），不允许比较大小（<、>、<=、>=），只允许赋值、比较相等（==、!=）和解引用调用。原因：函数可能位于不同段、代码可能被重定位、函数指针可能是修饰过的（如 ARM Thumb 的 bit0 标记指令集），算术结果无意义。对象指针（指向数据的指针）反而可以做这些运算（数组内）。这是函数指针和数据指针的重要区别。"
+  },
+  {
+    "id": "c-125",
+    "category": "c-language",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "以下哪种写法不是 inline 函数？",
+    "options": [
+      "inline int add(int a, int b) { return a+b; }",
+      "static inline int add(int a, int b) { return a+b; }",
+      "#define add(a, b) ((a)+(b))",
+      "__attribute__((always_inline)) inline int add(int a, int b) { return a+b; }"
+    ],
+    "correctAnswer": 2,
+    "explanation": "#define 是预处理宏，不是函数——没有类型检查、无函数符号、无调试支持，只是文本替换。inline 是真正的函数（有符号，可调试），编译器 '建议' 展开。static inline 常用于头文件中实现短小工具函数（避免多重定义）。always_inline 强制内联。选项 A 的纯 inline 在 C99 后规则复杂（多个 .c 同时 inline 可能产生多重定义），推荐使用 static inline 更安全。"
+  },
+  {
+    "id": "c-126",
+    "category": "c-language",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "以下代码的问题？\n\n#define SWAP(a, b) { int t = a; a = b; b = t; }\n\nif (x > y) SWAP(x, y); else do_other();",
+    "options": [
+      "无问题",
+      "宏展开后 else 部分会出语法错误（if/{}; 后遇到 else 解析失败）",
+      "变量 t 冲突",
+      "类型必须是 int"
+    ],
+    "correctAnswer": 1,
+    "explanation": "展开后：if (x>y) { int t=x; x=y; y=t; }; else do_other();，if 的 {} 块末尾的 ; 终止 if 语句，后面的 else 变成孤立语句导致语法错误。修复：用 do{}while(0) 包裹多语句宏：#define SWAP(a,b) do{int t=a;a=b;b=t;}while(0)。这是 C 宏最著名的陷阱之一。另一个问题 SWAP 对参数类型硬编码为 int，不通用；GCC typeof 扩展或 C11 _Generic 可解决类型问题。"
+  },
+  {
+    "id": "c-127",
+    "category": "c-language",
+    "type": "single-choice",
+    "difficulty": "hard",
+    "question": "typedef struct { int x; } Point; 与 typedef struct Point { int x; } Point; 的区别？",
+    "options": [
+      "完全等价",
+      "前者是匿名结构体 + typedef；后者有结构体标签，允许自引用（如定义 Point *next）",
+      "前者语法错误",
+      "后者速度更快"
+    ],
+    "correctAnswer": 1,
+    "explanation": "前者结构体没有 tag（标签），只能通过 typedef 名 Point 引用，无法在自身内部声明 Point *next（Point 尚未定义完）。后者有 tag 'struct Point' 和别名 'Point'，可以在定义中使用 struct Point *next 实现自引用（链表、树节点必需）。兼容两者的现代写法：typedef struct Node Node; struct Node { Node *next; int data; }; 前向声明 tag 使 Node 即可使用。"
   }
 ]
