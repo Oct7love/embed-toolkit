@@ -395,5 +395,301 @@
     ],
     "correctAnswer": 1,
     "explanation": "在 FreeRTOS 中，任务优先级数值越大，优先级越高。优先级 0 是最低的（空闲任务），最高优先级为 configMAX_PRIORITIES - 1。这与 ARM Cortex-M 的中断优先级相反（中断优先级数值越小越高）。这种差异容易混淆，开发者需要特别注意。"
+  },
+  {
+    "id": "rtos-028",
+    "category": "rtos",
+    "type": "single-choice",
+    "difficulty": "easy",
+    "question": "FreeRTOS 中创建任务的标准 API 是？",
+    "options": [
+      "vTaskCreate()",
+      "xTaskCreate()",
+      "pthread_create()",
+      "task_start()"
+    ],
+    "correctAnswer": 1,
+    "explanation": "xTaskCreate() 是 FreeRTOS 的动态任务创建 API，返回 pdPASS 或 pdFAIL。参数包括任务函数、任务名（调试用）、栈深度（以字为单位）、传给任务函数的参数、优先级、任务句柄输出指针。vTaskCreate 不存在（v 前缀表示返回 void 的 FreeRTOS 函数）。xTaskCreateStatic() 是静态创建版本（不用堆）。pthread_create 是 POSIX 线程 API。"
+  },
+  {
+    "id": "rtos-029",
+    "category": "rtos",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "FreeRTOS 中优先级数值的规则？",
+    "options": [
+      "数值越大优先级越高",
+      "数值越小优先级越高",
+      "顺序随意",
+      "全部任务同优先级"
+    ],
+    "correctAnswer": 0,
+    "explanation": "FreeRTOS 的约定：数值越大，优先级越高。configMAX_PRIORITIES 定义最高可用数值。优先级 0 保留给空闲任务（最低）。注意这与 ARM Cortex-M 硬件中断优先级相反（硬件中数值小优先级高）。不同 RTOS 约定不同：μC/OS 中数值小为高（与 Cortex 一致）。设计任务优先级时应避免太多任务同优先级（简化调试），并留出余量给未来新增任务。"
+  },
+  {
+    "id": "rtos-030",
+    "category": "rtos",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "FreeRTOS 的时间片轮转调度在什么条件下生效？",
+    "options": [
+      "所有情况",
+      "configUSE_TIME_SLICING=1 且有多个同优先级就绪任务时",
+      "只在单任务时",
+      "需要手动调用调度器"
+    ],
+    "correctAnswer": 1,
+    "explanation": "FreeRTOS 默认 configUSE_TIME_SLICING=1（启用时间片）。触发条件：多个同优先级任务同时就绪时，每个任务运行一个 tick 后切到下一个。若优先级各不相同，高优先级会一直抢占，轮转不生效。关闭时间片可减少上下文切换开销，但需要任务主动让出（taskYIELD）才能切换同级任务。嵌入式实时场景通常避免多任务同优先级以简化推理。"
+  },
+  {
+    "id": "rtos-031",
+    "category": "rtos",
+    "type": "single-choice",
+    "difficulty": "easy",
+    "question": "以下哪个 FreeRTOS API 用于延时？",
+    "options": [
+      "sleep(n)",
+      "vTaskDelay(n)",
+      "msleep(n)",
+      "taskDelay(n)"
+    ],
+    "correctAnswer": 1,
+    "explanation": "vTaskDelay(xTicksToDelay) 让当前任务阻塞指定 tick 数。单位是系统 tick，通常用 pdMS_TO_TICKS(ms) 宏转换毫秒到 tick 更直观。vTaskDelayUntil 是绝对定时（周期性任务推荐，避免累积漂移）。delay 期间任务进入 Blocked 状态，CPU 调度其他任务或进入空闲（低功耗）。不要用 while(count--) 自旋延时——浪费 CPU 且精度差。"
+  },
+  {
+    "id": "rtos-032",
+    "category": "rtos",
+    "type": "single-choice",
+    "difficulty": "hard",
+    "question": "vTaskDelay(100) 和 vTaskDelayUntil(&last, 100) 的核心区别？",
+    "options": [
+      "完全相同",
+      "前者是相对延时（从当前开始数 100 tick），后者是绝对定时（下一次唤醒时间 = last+100）",
+      "前者精度更高",
+      "后者只能用于初始化"
+    ],
+    "correctAnswer": 1,
+    "explanation": "vTaskDelay 相对延时：从调用时刻开始数 n tick 后唤醒，任务处理耗时会累积到下次周期，导致周期漂移。vTaskDelayUntil 绝对延时：维护上次唤醒时间 last，每次在 last+n 唤醒，last 自动更新，保持严格周期。周期性任务（如 100ms 采样）必须用 vTaskDelayUntil。如处理耗时超过周期，vTaskDelayUntil 会立即返回而不等待——需要额外检查。"
+  },
+  {
+    "id": "rtos-033",
+    "category": "rtos",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "FreeRTOS 任务的 5 种状态包括？",
+    "options": [
+      "运行 / 就绪 / 阻塞 / 挂起 / 休眠",
+      "运行 / 就绪 / 阻塞 / 挂起 / 删除",
+      "运行 / 就绪 / 阻塞 / 挂起（+ Running 当前运行中）",
+      "运行 / 就绪 / 结束"
+    ],
+    "correctAnswer": 2,
+    "explanation": "FreeRTOS 任务状态：Running（当前 CPU 上运行，只能一个）、Ready（就绪等待调度）、Blocked（阻塞等待事件/资源/延时）、Suspended（vTaskSuspend 显式挂起，不参与调度）。任务被 vTaskDelete 删除后进入 Inactive（不再存在）。eTaskGetState() 可查询。Blocked 和 Suspended 区别：前者事件到来自动变 Ready，后者必须 vTaskResume 唤醒。"
+  },
+  {
+    "id": "rtos-034",
+    "category": "rtos",
+    "type": "true-false",
+    "difficulty": "medium",
+    "question": "FreeRTOS 的 vTaskSuspend(NULL) 可以挂起当前运行的任务。",
+    "options": [
+      "正确",
+      "错误"
+    ],
+    "correctAnswer": 0,
+    "explanation": "正确。vTaskSuspend(NULL) 是挂起调用者（当前任务）的惯用写法。vTaskSuspend(任务句柄) 挂起指定任务。挂起的任务除非被 vTaskResume 显式唤醒，否则永远不再运行（即使延时期到了也不会唤醒）。注意与 vTaskDelay 区别：delay 是有限期阻塞，到期自动 Ready。Suspend 应慎用，更推荐基于信号量/队列的事件驱动设计。"
+  },
+  {
+    "id": "rtos-035",
+    "category": "rtos",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "关于 FreeRTOS 的空闲任务（Idle Task），以下说法错误的是？",
+    "options": [
+      "优先级为 0（最低）",
+      "由内核自动创建",
+      "完成已删除任务的资源清理",
+      "空闲任务必须由用户显式创建"
+    ],
+    "correctAnswer": 3,
+    "explanation": "错误说法是 D。Idle Task 由内核在 vTaskStartScheduler() 时自动创建，用户不需处理。它的功能：① 为 vTaskDelete 删除的任务做资源清理（Idle 优先级低，确保其他任务运行完再清理）；② 运行 Idle Hook（用户注册的空闲回调，可用于喂狗、低功耗）；③ Tickless Idle 模式下进入 MCU 睡眠省电。因此必须让 Idle Task 有机会运行（不要所有任务都不 sleep）。"
+  },
+  {
+    "id": "rtos-036",
+    "category": "rtos",
+    "type": "single-choice",
+    "difficulty": "hard",
+    "question": "FreeRTOS 任务栈的含义？\n\nxTaskCreate(fn, \"t\", 128, NULL, 2, NULL);",
+    "options": [
+      "128 是字节数",
+      "128 是字（word）数，32 位 MCU 上 = 512 字节",
+      "128 是任务数",
+      "128 是优先级"
+    ],
+    "correctAnswer": 1,
+    "explanation": "FreeRTOS 的栈深度参数是字（StackType_t 类型），在 32 位 MCU 上 1 字 = 4 字节。因此 128 字 = 512 字节。设置栈大小的实际考虑：① 局部变量总大小；② 函数调用深度（每层约 30-60 字节）；③ 中断嵌套上下文保存。开启栈溢出检查（configCHECK_FOR_STACK_OVERFLOW）可运行时发现溢出。uxTaskGetStackHighWaterMark 查询栈使用峰值，余量应 >20%。"
+  },
+  {
+    "id": "rtos-037",
+    "category": "rtos",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "FreeRTOS 启用抢占式调度（configUSE_PREEMPTION=1）后，低优先级任务运行期间，高优先级任务变为 Ready 会怎样？",
+    "options": [
+      "高优先级任务等低优先级任务完成",
+      "立即抢占，切换到高优先级任务执行",
+      "两者轮流运行",
+      "等下一个 tick 切换"
+    ],
+    "correctAnswer": 1,
+    "explanation": "抢占式调度的核心：任何时刻最高优先级的就绪任务总是占据 CPU。当高优先级任务变 Ready（信号量 give、队列 send、delay 到期等），调度器立即切换上下文，抢占当前低优先级任务。实现方式：xYieldRequired 标志在 portYIELD_FROM_ISR 或内核 API 退出时触发 PendSV 中断做上下文切换。协作式调度（=0）则任务必须主动 taskYIELD 才切换，实时性差。"
+  },
+  {
+    "id": "rtos-038",
+    "category": "rtos",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "FreeRTOS 的 uxTaskPriorityGet 和 vTaskPrioritySet 函数作用？",
+    "options": [
+      "获取/设置任务的 tick",
+      "动态查询和修改任务优先级",
+      "获取栈深度",
+      "创建/删除任务"
+    ],
+    "correctAnswer": 1,
+    "explanation": "这两个 API 允许运行时查询和修改任务优先级（需 INCLUDE_uxTaskPriorityGet / INCLUDE_vTaskPrioritySet 编译开关）。典型用途：优先级继承（避免优先级反转，FreeRTOS 的 Mutex 自动实现）、临时提升任务优先级处理紧急事务、实现自定义调度策略。动态改优先级应慎用——破坏静态优先级分配的可预测性，不利于系统分析。"
+  },
+  {
+    "id": "rtos-039",
+    "category": "rtos",
+    "type": "single-choice",
+    "difficulty": "hard",
+    "question": "FreeRTOS 的调度器上下文切换由什么触发？（Cortex-M）",
+    "options": [
+      "SysTick 中断",
+      "PendSV 中断",
+      "SVC 中断",
+      "所有中断"
+    ],
+    "correctAnswer": 1,
+    "explanation": "Cortex-M 上 FreeRTOS 用 PendSV（可挂起 SuperVisor）中断做上下文切换。原因：PendSV 被设置为最低优先级，等所有高优先级中断处理完后才执行，避免在 ISR 中切换导致中断延迟。流程：其他 ISR 或 API 决定需要切换 → 置 PendSV pending 位 → 其他 ISR 结束后 PendSV 执行上下文保存/恢复。SysTick 仅产生系统 tick（推动延时队列）。SVC 用于首次启动调度器（portSVC_START_SCHEDULER）。"
+  },
+  {
+    "id": "rtos-040",
+    "category": "rtos",
+    "type": "true-false",
+    "difficulty": "easy",
+    "question": "FreeRTOS 中 vTaskStartScheduler() 一旦成功调用，函数不会返回。",
+    "options": [
+      "正确",
+      "错误"
+    ],
+    "correctAnswer": 0,
+    "explanation": "正确。vTaskStartScheduler() 启动调度器后，控制权交给任务，函数本身不会返回到 main。只有在内存不足无法创建 Idle Task 或配置错误时才返回。因此 main 末尾常见模式：xTaskCreate(...); vTaskStartScheduler(); for(;;); // should never reach here。若 for(;;) 之后要输出错误，证明调度器启动失败。理解这一点对嵌入式启动流程调试很关键。"
+  },
+  {
+    "id": "rtos-041",
+    "category": "rtos",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "以下哪种情况不会触发 FreeRTOS 任务切换？",
+    "options": [
+      "高优先级任务从 Blocked 变 Ready",
+      "当前任务调用 vTaskDelay",
+      "SysTick 中断触发时间片轮转",
+      "简单的 x = x + 1"
+    ],
+    "correctAnswer": 3,
+    "explanation": "普通 C 语句不涉及内核，不触发切换。切换由内核 API 或中断触发：调用阻塞 API（delay、queue receive 等）、主动 yield、中断中 Give 信号量唤醒高优先级任务、SysTick 时间片到期（多同级任务）。理解这点有助于识别竞态：非原子操作（x++）如被中断或任务切换打断会出问题。对共享资源操作应用临界区或互斥锁保护。"
+  },
+  {
+    "id": "rtos-042",
+    "category": "rtos",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "FreeRTOS 的 configTICK_RATE_HZ 典型值和含义？",
+    "options": [
+      "1 Hz，每秒一个 tick",
+      "1000 Hz，每毫秒一个 tick，是时间分辨率",
+      "72 MHz，CPU 主频",
+      "32768 Hz，RTC 频率"
+    ],
+    "correctAnswer": 1,
+    "explanation": "configTICK_RATE_HZ 定义系统节拍频率，典型 100~1000 Hz。1000 Hz 意味着每毫秒 SysTick 中断一次，时间分辨率 1ms（vTaskDelay(1) 是 1ms）。更高频率：响应更快但中断开销大；更低频率：省功耗但精度差。pdMS_TO_TICKS 宏基于此计算。选型考虑：任务切换频率、精度需求、功耗要求。设为 100 Hz 延时精度只有 10ms。"
+  },
+  {
+    "id": "rtos-043",
+    "category": "rtos",
+    "type": "single-choice",
+    "difficulty": "hard",
+    "question": "什么是 tickless idle 模式？",
+    "options": [
+      "禁用所有中断",
+      "系统空闲时关闭 SysTick 让 MCU 深度睡眠，节省功耗（常用于电池设备）",
+      "降低 tick 频率",
+      "空闲任务不运行"
+    ],
+    "correctAnswer": 1,
+    "explanation": "Tickless Idle（configUSE_TICKLESS_IDLE=1）是 FreeRTOS 的低功耗优化。当空闲任务将要运行时，调度器计算下次任务唤醒时间（最近的 delay 或定时器），编程硬件定时器（如 LPTIM）作为唤醒源，关闭 SysTick 进入深度睡眠。唤醒后根据实际睡眠时长补偿 tick 计数。典型收益：BLE、LoRa 设备平均功耗从 mA 降到 μA。需平台移植支持 portSUPPRESS_TICKS_AND_SLEEP 等接口。"
+  },
+  {
+    "id": "rtos-044",
+    "category": "rtos",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "FreeRTOS 任务函数的正确结构？",
+    "options": [
+      "void task(void *arg) { /* 一次初始化，然后退出 */ }",
+      "void task(void *arg) { for(;;) { /* 工作循环 + delay/阻塞 */ } }",
+      "int main() { ... }",
+      "任务函数无约束"
+    ],
+    "correctAnswer": 1,
+    "explanation": "FreeRTOS 任务函数必须包含无限循环 for(;;){} 或 while(1){}，并在循环中通过 vTaskDelay、队列阻塞等让出 CPU。如果任务函数执行结束返回（直接 return），会触发断言或跳转到 configASSERT 或未定义行为——任务必须显式 vTaskDelete(NULL) 自删除。为什么？RTOS 设计任务为长生命周期实体。一次性操作请在 main 或初始化阶段做，不要开任务。"
+  },
+  {
+    "id": "rtos-045",
+    "category": "rtos",
+    "type": "single-choice",
+    "difficulty": "hard",
+    "question": "FreeRTOS 中 taskYIELD() 的作用？",
+    "options": [
+      "删除任务",
+      "当前任务主动让出 CPU，如有同级或更高就绪任务则切换，否则继续运行",
+      "挂起当前任务",
+      "禁用调度器"
+    ],
+    "correctAnswer": 1,
+    "explanation": "taskYIELD() 请求调度器重新选择任务：若有同优先级就绪任务，给对方运行（类似时间片让出）；若自身仍是最高优先级，继续运行（无切换开销）。用途：CPU 密集型循环中主动让同级任务有机会；协作式调度（非抢占）下必须靠 yield 切换。现代 RTOS 多使用事件驱动（delay/queue 阻塞）而很少需要 yield。过度 yield 会增加切换开销。"
+  },
+  {
+    "id": "rtos-046",
+    "category": "rtos",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "FreeRTOS 的静态创建（xTaskCreateStatic）相对动态创建（xTaskCreate）的优势？",
+    "options": [
+      "编译时确定内存，无运行时分配失败，适合安全关键场景",
+      "运行更快",
+      "占用内存更少",
+      "没有区别"
+    ],
+    "correctAnswer": 0,
+    "explanation": "静态创建由用户提前定义 StaticTask_t 结构体和栈缓冲区（通常全局），创建时传入。优势：① 编译期可确定所有内存使用，map 文件可见；② 无堆依赖，可关闭 malloc（configSUPPORT_DYNAMIC_ALLOCATION=0 节省代码）；③ 无运行时分配失败风险，利于实时性和确定性。适合医疗、汽车等安全关键系统（MISRA、ISO 26262 偏好）。代价是灵活性低（任务数固定）。"
+  },
+  {
+    "id": "rtos-047",
+    "category": "rtos",
+    "type": "single-choice",
+    "difficulty": "hard",
+    "question": "以下关于 FreeRTOS 调度策略的描述，错误的是？",
+    "options": [
+      "始终运行最高优先级的 Ready 任务",
+      "同优先级任务之间采用时间片轮转（若启用）",
+      "高优先级任务阻塞时，低优先级任务可运行",
+      "调度器会根据任务历史使用 CPU 时间调整优先级"
+    ],
+    "correctAnswer": 3,
+    "explanation": "错误描述是 D——FreeRTOS 是静态优先级调度器，不自动调整任务优先级。动态调整优先级由用户主动调用 vTaskPrioritySet（或优先级继承机制）。类似 Linux 的 CFS（Completely Fair Scheduler）会基于虚拟运行时间调整，但 RTOS 不这样做——确定性优先。其他三项描述都正确。区别 Linux 通用 OS 和 RTOS 的调度哲学：RTOS 要求行为可预测，不玩花样。"
   }
 ]
