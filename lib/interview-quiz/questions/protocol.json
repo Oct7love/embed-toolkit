@@ -50,7 +50,10 @@
     "type": "true-false",
     "difficulty": "medium",
     "question": "I2C 协议支持多主机（Multi-Master）模式。",
-    "options": ["正确", "错误"],
+    "options": [
+      "正确",
+      "错误"
+    ],
     "correctAnswer": 0,
     "explanation": "I2C 协议原生支持多主机模式，通过仲裁机制（基于 SDA 线的线与特性）解决总线冲突。当多个主机同时发送时，谁拉低 SDA 谁获胜，输出高电平但检测到低电平的主机自动退出。SPI 则不原生支持多主机。"
   },
@@ -135,7 +138,10 @@
     "type": "true-false",
     "difficulty": "medium",
     "question": "SPI 通信中，时钟极性（CPOL）和时钟相位（CPHA）共有 4 种模式组合。",
-    "options": ["正确", "错误"],
+    "options": [
+      "正确",
+      "错误"
+    ],
     "correctAnswer": 0,
     "explanation": "SPI 有 4 种模式：Mode 0（CPOL=0, CPHA=0，最常用）、Mode 1（CPOL=0, CPHA=1）、Mode 2（CPOL=1, CPHA=0）、Mode 3（CPOL=1, CPHA=1）。CPOL 决定空闲电平，CPHA 决定数据在第一个还是第二个边沿采样。主从必须使用相同模式。"
   },
@@ -205,7 +211,10 @@
     "type": "true-false",
     "difficulty": "easy",
     "question": "以太网 MAC 地址长度为 6 字节（48 位）。",
-    "options": ["正确", "错误"],
+    "options": [
+      "正确",
+      "错误"
+    ],
     "correctAnswer": 0,
     "explanation": "以太网 MAC 地址为 48 位（6 字节），通常以 XX:XX:XX:XX:XX:XX 十六进制表示。前 3 字节是 OUI（厂商标识），后 3 字节是设备序列号。特殊地址：FF:FF:FF:FF:FF:FF 为广播地址。"
   },
@@ -275,7 +284,10 @@
     "type": "true-false",
     "difficulty": "medium",
     "question": "SPI 协议支持全双工通信。",
-    "options": ["正确", "错误"],
+    "options": [
+      "正确",
+      "错误"
+    ],
     "correctAnswer": 0,
     "explanation": "SPI 通过 MOSI 和 MISO 两条独立数据线实现全双工——主从设备可以同时发送和接收。而 I2C 只有一条 SDA 数据线，只能半双工。UART 有独立 TX 和 RX，也是全双工。"
   },
@@ -330,7 +342,10 @@
     "type": "true-false",
     "difficulty": "easy",
     "question": "在 TCP/IP 网络中，ping 命令使用 ICMP 协议。",
-    "options": ["正确", "错误"],
+    "options": [
+      "正确",
+      "错误"
+    ],
     "correctAnswer": 0,
     "explanation": "ping 命令使用 ICMP（Internet Control Message Protocol）协议的 Echo Request/Reply 报文测试连通性。ICMP 是网络层协议，直接封装在 IP 数据报中，与 TCP/UDP 平级。traceroute 也使用 ICMP。"
   },
@@ -378,5 +393,301 @@
     ],
     "correctAnswer": 2,
     "explanation": "常见端口：HTTP 80、HTTPS 443、FTP 21（控制）/20（数据）、SSH 22、Telnet 23、SMTP 25、DNS 53、MQTT 1883（明文）/8883（TLS）、Modbus TCP 502。"
+  },
+  {
+    "id": "p-028",
+    "category": "protocol",
+    "type": "single-choice",
+    "difficulty": "easy",
+    "question": "UART 空闲状态下 TX 线的电平是？",
+    "options": [
+      "低电平",
+      "高电平（逻辑 1）",
+      "交替变化",
+      "无定义"
+    ],
+    "correctAnswer": 1,
+    "explanation": "UART 空闲时 TX 保持高电平（逻辑 1）。起始位是高变低（逻辑 0）的下降沿，这样接收方容易识别。RS232 电平反转（空闲为负电平 -3V 以下）；TTL 电平的 UART 空闲是 3.3V 或 5V。数据位之后是停止位（高电平 1 或 2 位）。理解空闲状态对调试很重要——示波器上 TX 一直低可能是短路、过载或线路反转错误。"
+  },
+  {
+    "id": "p-029",
+    "category": "protocol",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "UART 9600 波特率的标准含义？",
+    "options": [
+      "每秒传 9600 字节",
+      "每秒传 9600 位（符号率）",
+      "9600 kHz 时钟",
+      "波形振荡频率"
+    ],
+    "correctAnswer": 1,
+    "explanation": "波特率指每秒符号数（Baud = symbols/sec）。对于 UART 这种二进制系统，一个符号 = 一个位，9600 bps = 9600 位/秒。每位时长 1/9600 ≈ 104.17 μs。在 8N1 格式下（10 位/字节），有效数据速率 = 9600/10 = 960 字节/秒。更高级调制（如 16QAM）每个符号承载多位，波特率和位率不等。UART 严格就是二进制的，所以波特率 = 位率。"
+  },
+  {
+    "id": "p-030",
+    "category": "protocol",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "UART 常见 8N1 配置的含义是？",
+    "options": [
+      "8 起始位 + 无数据 + 1 停止",
+      "8 数据位 + 无奇偶校验（No parity）+ 1 停止位",
+      "8 位 + 无波特率 + 1 协议",
+      "数据的十六进制字节表示"
+    ],
+    "correctAnswer": 1,
+    "explanation": "8N1 是最常见的 UART 配置：8 Data bits + No parity + 1 Stop bit。完整帧结构：1 起始位 + 8 数据位 + 0 校验位 + 1 停止位 = 10 位。每字节传输总时间 = 10 × 位时长。其他常见：7E1（7 数据位 + 偶校验 + 1 停止）用于某些 Modbus 变体；8N2（双停止位）增强容错性。发送方和接收方必须协议一致，否则帧错误或数据错。"
+  },
+  {
+    "id": "p-031",
+    "category": "protocol",
+    "type": "single-choice",
+    "difficulty": "hard",
+    "question": "UART 采样时钟通常设为波特率的多少倍？",
+    "options": [
+      "1 倍",
+      "8 倍或 16 倍（常见 16 倍过采样）",
+      "100 倍",
+      "1024 倍"
+    ],
+    "correctAnswer": 1,
+    "explanation": "UART 接收方用比波特率高得多的时钟过采样（oversampling），典型 16 倍。原因：接收方用起始位下降沿启动计时，但无法精确对齐 TX 时钟。16 倍过采样让接收方在每位中间（第 8 个采样）取样，对齐误差容忍度 ±3/16 ≈ 18.75%。也可 8 倍（容忍度降但省时钟资源）。STM32 UART 默认 16 倍过采样，可编程为 8 倍。高波特率受限于主时钟——若波特率 > fck/16 则无法采样。"
+  },
+  {
+    "id": "p-032",
+    "category": "protocol",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "UART 两端波特率误差最大容忍多少？",
+    "options": [
+      "5%",
+      "2.5% 左右（累积 10 位后不超过半位时间）",
+      "10%",
+      "0.1%"
+    ],
+    "correctAnswer": 1,
+    "explanation": "UART 是异步的，每个帧自己从起始位开始计时。一帧 10 位（8N1），接收方用中间采样。累积误差到最后一位不能超过 ±0.5 位，即最大误差约 0.5/10 = 5%（理论）。考虑到起始位检测误差、时钟抖动，实际工业建议 <2.5%。所以 UART 对时钟精度要求不高（RC 振荡器也能凑合）。但高波特率（115200+）和长帧时误差更敏感，应用晶振保证精度。"
+  },
+  {
+    "id": "p-033",
+    "category": "protocol",
+    "type": "single-choice",
+    "difficulty": "easy",
+    "question": "UART 奇校验（Odd Parity）的规则是？",
+    "options": [
+      "数据位中 1 的个数为奇数时校验位为 1，偶数时为 0",
+      "数据位中 1 的个数为奇数时校验位为 0，偶数时为 1",
+      "数据位中 0 的个数为奇数",
+      "校验位永远是 1"
+    ],
+    "correctAnswer": 1,
+    "explanation": "奇校验：让数据位 + 校验位中 1 的总数为奇数。若数据中 1 的个数已是奇数，校验位设 0；若是偶数，校验位设 1。偶校验相反（总 1 数为偶）。接收方重新计算并比较。能检测 1 位错误（翻转导致奇偶性变化），不能检测 2 位错误。效率低（1 bit 开销/byte）。Modbus ASCII 常用 7E1（7 数据 + 偶校验），追求可靠性。现代通信更多用 CRC。"
+  },
+  {
+    "id": "p-034",
+    "category": "protocol",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "帧错误（Framing Error）的原因？",
+    "options": [
+      "数据太长",
+      "接收方在预期的停止位位置检测到低电平（而不是高电平），可能是波特率不匹配、线路干扰、断线",
+      "校验和错误",
+      "FIFO 溢出"
+    ],
+    "correctAnswer": 1,
+    "explanation": "帧错误：接收方按配置数位采样后，本应是停止位（高电平 1）的位置却是低电平 0。可能原因：① 波特率不匹配（TX 发比 RX 期望快或慢）；② 数据位数不一致（如 TX 8 位 RX 7 位）；③ 线路持续干扰或短路；④ 接收方丢失同步（未准确识别起始位）。STM32 UART 在 ISR 中通过 USART_SR 的 FE 位报告。处理：清除标志 + 丢弃错误字节或要求重传。"
+  },
+  {
+    "id": "p-035",
+    "category": "protocol",
+    "type": "true-false",
+    "difficulty": "easy",
+    "question": "UART 是全双工的——TX 和 RX 可以同时传输。",
+    "options": [
+      "正确",
+      "错误"
+    ],
+    "correctAnswer": 0,
+    "explanation": "正确。UART 有独立的 TX 和 RX 两条线，双方同时发送和接收互不干扰。对比：I2C 只有一条 SDA，半双工（同一时刻只能一方发）；SPI 通过独立 MOSI/MISO 也是全双工。RS485 基于 UART 但只有一对差分线，是半双工（收发切换）。有些单线 UART（如 NEC 遥控）则是半双工或单工。设计通信协议时注意全/半双工性质影响吞吐和时延。"
+  },
+  {
+    "id": "p-036",
+    "category": "protocol",
+    "type": "single-choice",
+    "difficulty": "hard",
+    "question": "STM32 UART 波特率由哪个公式决定？",
+    "options": [
+      "Baud = fck / 2^USARTDIV",
+      "Baud = fck / (16 × USARTDIV)  (常见 16 倍过采样下)",
+      "Baud = fck × USARTDIV",
+      "Baud = 固定值"
+    ],
+    "correctAnswer": 1,
+    "explanation": "STM32 UART 波特率公式（16 倍过采样）：Baud = fck / (16 × USARTDIV)。USARTDIV 是 BRR 寄存器的分频值，支持小数（整数部分 12 位 + 小数部分 4 位，共 16 位），提供细粒度波特率。8 倍过采样模式公式 Baud = fck / (8 × USARTDIV)，最高可达 fck/8。设置时计算：USARTDIV = fck / (16 × Baud)，HAL 库自动处理。理解这个对 debug 波特率不准问题很有用。"
+  },
+  {
+    "id": "p-037",
+    "category": "protocol",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "硬件流控 RTS/CTS 的作用？",
+    "options": [
+      "加速传输",
+      "接收方缓冲区快满时通过 RTS 告诉发送方暂停，避免缓冲区溢出丢数据",
+      "错误检测",
+      "同步时钟"
+    ],
+    "correctAnswer": 1,
+    "explanation": "硬件流控解决接收方处理不及的问题：接收方通过 RTS（Request To Send）输出'我准备好了/未准备好'状态；发送方读 CTS（Clear To Send）信号（通常是对端的 RTS），CTS 为低时停止发送。结构上 A.RTS → B.CTS 和 B.RTS → A.CTS 交叉连接。软件流控用 XON/XOFF 字节（0x11/0x13）实现类似功能但占带宽且不即时。高速或数据量大场景强烈推荐硬件流控，特别是 UART 无 FIFO 的芯片。"
+  },
+  {
+    "id": "p-038",
+    "category": "protocol",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "UART 的发送为什么需要 FIFO？",
+    "options": [
+      "加密",
+      "硬件缓存多字节发送请求，CPU 可以批量放入不必等每个字节发送完，降低中断率",
+      "安全机制",
+      "不需要"
+    ],
+    "correctAnswer": 1,
+    "explanation": "无 FIFO UART（或 FIFO 深度 1）：每字节发完触发 TXE 中断，CPU 装入下一字节——高波特率下中断频率高（如 1M bps 下每 10μs 一次中断），CPU 负载重。FIFO（如 16 字节）：CPU 可一次放入 16 字节，硬件自动依次发送，仅在 FIFO 空或半空时中断，中断率降 16 倍。STM32F7/L4 等新系列带 FIFO。配合 DMA 更好：CPU 只需启动 DMA 传输，全程零中断，适合大量数据传输。"
+  },
+  {
+    "id": "p-039",
+    "category": "protocol",
+    "type": "single-choice",
+    "difficulty": "hard",
+    "question": "UART + DMA 接收不定长数据的常用技巧？",
+    "options": [
+      "不支持",
+      "启用 IDLE 中断（Line Idle）+ DMA 循环缓冲，IDLE 触发时处理已接收数据；或使用 DMA 半传输/全传输中断",
+      "禁用 DMA",
+      "轮询"
+    ],
+    "correctAnswer": 1,
+    "explanation": "接收不定长帧的挑战：DMA 不知道帧何时结束。技巧：① DMA 配置为循环接收大缓冲（2× 最大帧），CPU 在 IDLE 中断（线路空闲超过一个字符时间）时判断收到多少字节并处理；② 半传输 + 全传输中断，两次中断交替处理两半缓冲，防止覆盖；③ 帧头/帧尾标志 + 状态机。STM32 UART + IDLE 是主流做法。实现方式见 stm32-serial 等开源库。"
+  },
+  {
+    "id": "p-040",
+    "category": "protocol",
+    "type": "single-choice",
+    "difficulty": "easy",
+    "question": "常见 UART 波特率有？",
+    "options": [
+      "1200, 2400, 4800, 9600, 19200, 38400, 57600, 115200",
+      "仅 9600",
+      "1000, 2000, 4000",
+      "只有 MHz 级别"
+    ],
+    "correctAnswer": 0,
+    "explanation": "标准波特率（historical RS232）：300/600/1200/2400/4800/9600/14400/19200/28800/38400/57600/115200。现代 UART 可支持 230400/460800/921600/1M/3M 等更高速率。选择原则：高速对时钟精度要求高（需晶振）、误码率高；低速稳定但慢。工业常用 9600/115200（稳定性好），蓝牙模块常 115200，嵌入式调试常 115200。波特率要双方匹配，否则乱码。"
+  },
+  {
+    "id": "p-041",
+    "category": "protocol",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "UART 为什么被称为'异步'通信？",
+    "options": [
+      "不需要数据",
+      "发送方和接收方没有共享时钟线，靠起始位同步和预定波特率',",
+      "双向传输",
+      "发送需要等待"
+    ],
+    "correctAnswer": 1,
+    "explanation": "异步（Asynchronous）核心含义：无独立时钟线同步。发送方按自己的波特率时钟发数据；接收方靠起始位下降沿启动计时，按预定相同波特率采样。对比同步（Synchronous）协议如 SPI/I2C 有独立 SCK/SCL 时钟线。好处：线数少（只需 2 根 TX/RX + GND）。代价：波特率必须事先约定、时钟精度要求（虽然不高）、不能支持极高速率。UART 的 A 表示 Asynchronous。"
+  },
+  {
+    "id": "p-042",
+    "category": "protocol",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "UART 断开检测（Break Detection）是？",
+    "options": [
+      "线路断线",
+      "收到连续多个位（>1 个帧时间）的低电平，表示对端发送 Break 信号或线路故障",
+      "中止传输",
+      "重启模块"
+    ],
+    "correctAnswer": 1,
+    "explanation": "Break 信号：故意发送全 0 的数据超过 1 帧时间（至少 10 位低电平），破坏正常帧结构。接收方识别为 Break 中断事件。用途：① 强制中止/重置接收方状态；② LIN 总线协议用 Break 作为帧分隔符；③ 诊断线路。STM32 UART 能检测 Break（LIN 模式）。应用协议层可用 Break 做命令或同步点，但要避免与数据帧混淆。"
+  },
+  {
+    "id": "p-043",
+    "category": "protocol",
+    "type": "single-choice",
+    "difficulty": "hard",
+    "question": "以下哪种不是减小 UART 错误率的方法？",
+    "options": [
+      "使用高精度晶振",
+      "启用奇偶校验或 CRC",
+      "使用硬件流控防止溢出",
+      "禁用停止位"
+    ],
+    "correctAnswer": 3,
+    "explanation": "停止位不能禁用——它是帧结束标志。1 位停止是最低配置，2 位停止（8N2）更保险（给接收方更多处理时间）。减错手段：① 高精度时钟（晶振<=50ppm）；② 奇偶校验（1 bit 错）或更强的 CRC（字节/帧级）；③ 硬件流控（RTS/CTS）防接收方溢出；④ 抗干扰硬件（差分信号 RS485、TVS 防静电、光耦隔离）；⑤ 合适波特率（别一味追高）。选 D 绝对错。"
+  },
+  {
+    "id": "p-044",
+    "category": "protocol",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "RS232 和 TTL 电平 UART 的区别？",
+    "options": [
+      "相同",
+      "RS232 使用负电平表示 1（-12V ~ -3V）、正电平表示 0；TTL 用 3.3V/5V 高电平表示 1、0V 表示 0",
+      "协议层不同",
+      "RS232 更快"
+    ],
+    "correctAnswer": 1,
+    "explanation": "电平差异：① RS232：逻辑 1 = -3V 到 -15V；逻辑 0 = +3V 到 +15V（反相且大电平）。抗干扰强、传输远（~15m）。② TTL UART：逻辑 1 = 3.3V/5V 高；逻辑 0 = 0V 低（正相小电平），距离短（<1m 典型）。连接电脑串口（RS232）和 MCU（TTL）需电平转换芯片 MAX3232 或 CH340 USB-TTL。协议层相同但电气层不同——直连会烧芯片！"
+  },
+  {
+    "id": "p-045",
+    "category": "protocol",
+    "type": "true-false",
+    "difficulty": "medium",
+    "question": "UART 可以通过软件模拟（bit-banging）实现，只需两个 GPIO 和精确定时器。",
+    "options": [
+      "正确",
+      "错误"
+    ],
+    "correctAnswer": 0,
+    "explanation": "正确。软件 UART（bit-bang）用 GPIO + 精确定时器：发送时按波特率间隔切换 TX 电平（起始位、8 位数据、停止位）；接收时检测 RX 下降沿启动定时器，中间采样各位。适用场景：MCU UART 外设不够用时额外的 UART；简单协议（低速）。限制：消耗 CPU（中断频率 = 波特率）；波特率受定时器精度和 ISR 延迟限制，通常 ≤ 57600；调试麻烦。Arduino SoftwareSerial 是经典实现。"
+  },
+  {
+    "id": "p-046",
+    "category": "protocol",
+    "type": "single-choice",
+    "difficulty": "medium",
+    "question": "以下哪种情况会导致 UART 接收乱码？",
+    "options": [
+      "波特率不匹配",
+      "数据位/校验位/停止位配置不一致",
+      "线路干扰或电平问题",
+      "以上都可能"
+    ],
+    "correctAnswer": 3,
+    "explanation": "乱码排查清单：① 波特率不匹配（最常见）——示波器量一下一位时长算反推；② 帧格式不一致（8N1 vs 7E1）；③ 电平问题（TTL vs RS232 混接）；④ 接地不好，两端 GND 浮动；⑤ 干扰（强电环境、长线无屏蔽）；⑥ FIFO 溢出（CPU 来不及处理）；⑦ 接收线接反（可用 SR 的 ORE/FE/NE 位区分错误）。示波器 + 逻辑分析仪是调试 UART 的好工具。"
+  },
+  {
+    "id": "p-047",
+    "category": "protocol",
+    "type": "single-choice",
+    "difficulty": "hard",
+    "question": "LIN（Local Interconnect Network）协议与普通 UART 的关系？",
+    "options": [
+      "完全不同",
+      "LIN 基于 UART 框架，增加了 Break 同步、PID、Checksum 字段，是低成本汽车车身网络",
+      "LIN 不存在",
+      "仅用于工业控制"
+    ],
+    "correctAnswer": 1,
+    "explanation": "LIN 是建立在 UART 硬件之上的协议层：主节点发送'同步 break'（13+ 位低电平）+ 同步字节 0x55 + PID（受保护标识符）；从节点响应数据帧 + 校验和。LIN 单主多从（最多 16 从），12-20 kbps 低速，成本比 CAN 低得多。应用：汽车座椅控制、车窗、车灯等非关键网络。LIN 用 UART 外设即可实现，无需专门 LIN 控制器（用 LIN 专用芯片也常见，增加物理层）。"
   }
 ]
