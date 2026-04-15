@@ -100,11 +100,21 @@ export const useQuizStore = create<QuizState>()(
     }),
     {
       name: "embed-toolkit-quiz",
+      version: 2,
       partialize: (state) => ({
         favorites: state.favorites,
         wrongAnswers: state.wrongAnswers,
         stats: state.stats,
       }),
+      // 从 v1 升级时清除可能残留的 session 字段（currentCategory/currentDifficulty/answeredIds）
+      migrate: (persisted) => {
+        const p = (persisted ?? {}) as Partial<QuizState>;
+        return {
+          favorites: p.favorites ?? [],
+          wrongAnswers: p.wrongAnswers ?? [],
+          stats: p.stats ?? emptyStats,
+        } as QuizState;
+      },
     }
   )
 );

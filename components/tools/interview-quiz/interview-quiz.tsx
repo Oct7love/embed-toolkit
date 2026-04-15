@@ -104,6 +104,9 @@ export function InterviewQuiz() {
     }
   }, [currentView, currentQuestion, pool, pickNext]);
 
+  // 同步显示用：pool 有题但 currentQuestion 还没来得及初始化时，取第一题兜底
+  const displayQuestion = currentQuestion ?? (pool.length > 0 ? pool[0] : null);
+
   const handleSubmit = useCallback(() => {
     if (selectedOption === null || !currentQuestion) return;
     const isCorrect = selectedOption === currentQuestion.correctAnswer;
@@ -212,16 +215,16 @@ export function InterviewQuiz() {
           </Card>
 
           {/* Question Card */}
-          {currentQuestion ? (
+          {displayQuestion ? (
             <QuestionCard
-              question={currentQuestion}
+              question={displayQuestion}
               selectedOption={selectedOption}
               setSelectedOption={setSelectedOption}
               showAnswer={showAnswer}
               onSubmit={handleSubmit}
               onNext={handleNext}
-              isFavorite={favorites.includes(currentQuestion.id)}
-              onToggleFavorite={() => toggleFavorite(currentQuestion.id)}
+              isFavorite={favorites.includes(displayQuestion.id)}
+              onToggleFavorite={() => toggleFavorite(displayQuestion.id)}
             />
           ) : pool.length === 0 && answeredIds.length > 0 ? (
             <Card>
