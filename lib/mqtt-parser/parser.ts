@@ -99,9 +99,32 @@ export function parseMqttPacket(bytes: number[]): MqttParseResult {
     );
   }
 
-  // Parse variable header + payload based on packet type
-  const bodyBytes = bytes.slice(headerTotalBytes);
+  // 严格按 Remaining Length 截断，超出部分记为 trailing data
+  const bodyEnd = Math.min(bytes.length, expectedTotal);
+  const bodyBytes = bytes.slice(headerTotalBytes, bodyEnd);
   const bodyOffset = headerTotalBytes;
+
+  if (bytes.length > expectedTotal) {
+    const trailingBytes = bytes.slice(expectedTotal);
+    const trailingHex = trailingBytes
+      .map((b) => b.toString(16).toUpperCase().padStart(2, "0"))
+      .join(" ");
+    errors.push(
+      `有 ${trailingBytes.length} 个额外字节位于 Remaining Length 之外，已忽略`
+    );
+    tree.push({
+      label: "Trailing Data (超出 Remaining Length)",
+      hex: trailingHex,
+      category: "error",
+      byteRange: [expectedTotal, bytes.length],
+    });
+    segments.push({
+      bytes: trailingBytes,
+      hex: trailingHex,
+      label: "trailing",
+      category: "error",
+    });
+  }
 
   switch (fixedHeader.packetType) {
     case 1: // CONNECT
