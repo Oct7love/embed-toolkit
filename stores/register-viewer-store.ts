@@ -1,6 +1,17 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import type { RegisterTemplate, RegisterViewerStore } from "@/types/register-viewer";
+import { isRecord, makeSafeMerge } from "./_schema-guards";
+
+function isValidRegisterTemplate(v: unknown): v is RegisterTemplate {
+  if (!isRecord(v)) return false;
+  return (
+    typeof v.id === "string" &&
+    typeof v.name === "string" &&
+    typeof v.width === "number" &&
+    Array.isArray(v.fields)
+  );
+}
 
 const BUILTIN_TEMPLATES: RegisterTemplate[] = [
   {
@@ -71,6 +82,17 @@ export const useRegisterViewerStore = create<RegisterViewerStore>()(
       partialize: (state) => ({
         templates: state.templates,
         activeTemplateId: state.activeTemplateId,
+      }),
+      merge: makeSafeMerge<RegisterViewerStore>((p) => {
+        if (!isRecord(p)) return null;
+        if (!Array.isArray(p.templates)) return null;
+        const templates = p.templates.filter(isValidRegisterTemplate);
+        const activeTemplateId =
+          typeof p.activeTemplateId === "string" &&
+          templates.some((t) => t.id === p.activeTemplateId)
+            ? p.activeTemplateId
+            : null;
+        return { templates, activeTemplateId };
       }),
     }
   )

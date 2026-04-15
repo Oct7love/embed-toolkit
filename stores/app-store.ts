@@ -1,5 +1,16 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+import { isRecord, isStringArray, makeSafeMerge } from "./_schema-guards";
+
+function isValidRecentTool(v: unknown): v is RecentTool {
+  if (!isRecord(v)) return false;
+  return (
+    typeof v.path === "string" &&
+    typeof v.name === "string" &&
+    typeof v.category === "string" &&
+    typeof v.lastUsed === "number"
+  );
+}
 
 interface RecentTool {
   path: string;
@@ -58,6 +69,17 @@ export const useAppStore = create<AppState>()(
       partialize: (state) => ({
         sidebarCollapsedCategories: state.sidebarCollapsedCategories,
         recentTools: state.recentTools,
+      }),
+      merge: makeSafeMerge<AppState>((p) => {
+        if (!isRecord(p)) return null;
+        return {
+          sidebarCollapsedCategories: isStringArray(p.sidebarCollapsedCategories)
+            ? p.sidebarCollapsedCategories
+            : [],
+          recentTools: Array.isArray(p.recentTools)
+            ? p.recentTools.filter(isValidRecentTool)
+            : [],
+        };
       }),
     }
   )

@@ -6,6 +6,17 @@ import type {
   StateTransition,
   CanvasMode,
 } from "@/types/state-machine";
+import { isRecord, makeSafeMerge } from "./_schema-guards";
+
+function isValidProject(v: unknown): v is StateMachineProject {
+  if (!isRecord(v)) return false;
+  return (
+    typeof v.id === "string" &&
+    typeof v.name === "string" &&
+    Array.isArray(v.states) &&
+    Array.isArray(v.transitions)
+  );
+}
 
 function generateId(): string {
   return Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
@@ -270,6 +281,18 @@ export const useStateMachineStore = create<StateMachineStoreState>()(
       partialize: (state) => ({
         projects: state.projects,
         activeProjectId: state.activeProjectId,
+      }),
+      merge: makeSafeMerge<StateMachineStoreState>((p) => {
+        if (!isRecord(p)) return null;
+        if (!Array.isArray(p.projects)) return null;
+        const projects = p.projects.filter(isValidProject);
+        if (projects.length === 0) return null;
+        const activeProjectId =
+          typeof p.activeProjectId === "string" &&
+          projects.some((pr) => pr.id === p.activeProjectId)
+            ? p.activeProjectId
+            : projects[0].id;
+        return { projects, activeProjectId };
       }),
     }
   )

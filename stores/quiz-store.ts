@@ -5,6 +5,7 @@ import type {
   Difficulty,
   QuizStats,
 } from "@/types/interview-quiz";
+import { isRecord, isStringArray } from "./_schema-guards";
 
 interface QuizState {
   favorites: string[];
@@ -106,14 +107,23 @@ export const useQuizStore = create<QuizState>()(
         wrongAnswers: state.wrongAnswers,
         stats: state.stats,
       }),
-      // 从 v1 升级时清除可能残留的 session 字段（currentCategory/currentDifficulty/answeredIds）
+      // 从 v1 升级 + 对 localStorage 做 schema 校验，字段非法时回退到默认值
       migrate: (persisted) => {
-        const p = (persisted ?? {}) as Partial<QuizState>;
+        if (!isRecord(persisted)) {
+          return { favorites: [], wrongAnswers: [], stats: emptyStats } as unknown as QuizState;
+        }
+        const stats: QuizStats =
+          isRecord(persisted.stats) &&
+          typeof persisted.stats.totalAnswered === "number" &&
+          typeof persisted.stats.correctCount === "number" &&
+          isRecord(persisted.stats.categoryStats)
+            ? (persisted.stats as unknown as QuizStats)
+            : emptyStats;
         return {
-          favorites: p.favorites ?? [],
-          wrongAnswers: p.wrongAnswers ?? [],
-          stats: p.stats ?? emptyStats,
-        } as QuizState;
+          favorites: isStringArray(persisted.favorites) ? persisted.favorites : [],
+          wrongAnswers: isStringArray(persisted.wrongAnswers) ? persisted.wrongAnswers : [],
+          stats,
+        } as unknown as QuizState;
       },
     }
   )

@@ -1,6 +1,16 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import type { JsonBuilderStore, JsonTemplate } from "@/types/json-builder";
+import { isRecord, makeSafeMerge } from "./_schema-guards";
+
+function isValidJsonTemplate(v: unknown): v is JsonTemplate {
+  if (!isRecord(v)) return false;
+  return (
+    typeof v.id === "string" &&
+    typeof v.name === "string" &&
+    Array.isArray(v.fields)
+  );
+}
 
 const BUILTIN_TEMPLATES: JsonTemplate[] = [
   {
@@ -73,6 +83,12 @@ export const useJsonBuilderStore = create<JsonBuilderStore>()(
       name: "embed-toolkit-json-builder",
       partialize: (state) => ({
         templates: state.templates,
+      }),
+      merge: makeSafeMerge<JsonBuilderStore>((p) => {
+        if (!isRecord(p)) return null;
+        if (!Array.isArray(p.templates)) return null;
+        const templates = p.templates.filter(isValidJsonTemplate);
+        return { templates };
       }),
     }
   )

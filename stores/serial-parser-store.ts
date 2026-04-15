@@ -2,6 +2,17 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import type { ProtocolTemplate } from "@/types/serial-parser";
 import { createDefaultTemplate } from "@/lib/serial-parser";
+import { isRecord, makeSafeMerge } from "./_schema-guards";
+
+function isValidTemplate(v: unknown): v is ProtocolTemplate {
+  if (!isRecord(v)) return false;
+  return (
+    typeof v.id === "string" &&
+    typeof v.name === "string" &&
+    Array.isArray(v.fields) &&
+    typeof v.createdAt === "number"
+  );
+}
 
 interface SerialParserState {
   /** All saved templates */
@@ -53,6 +64,18 @@ export const useSerialParserStore = create<SerialParserState>()(
     }),
     {
       name: "embed-toolkit-serial-parser",
+      merge: makeSafeMerge<SerialParserState>((p) => {
+        if (!isRecord(p)) return null;
+        if (!Array.isArray(p.templates)) return null;
+        const templates = p.templates.filter(isValidTemplate);
+        if (templates.length === 0) return null;
+        const activeTemplateId =
+          typeof p.activeTemplateId === "string" &&
+          templates.some((t) => t.id === p.activeTemplateId)
+            ? p.activeTemplateId
+            : templates[0].id;
+        return { templates, activeTemplateId };
+      }),
     }
   )
 );
