@@ -1,20 +1,20 @@
 import type { Metadata } from "next";
 import { BitOperationGenerator } from "@/components/tools/bit-operation/bit-operation-generator";
+import { ToolIntro } from "@/components/shared/tool-intro";
 
 export const metadata: Metadata = {
   title: "位操作代码生成器",
-  description: "可视化勾选 Bit 位，自动生成 C 语言位操作宏和函数",
+  description: "可视化勾选 Bit 位，选择置位/清零/翻转/读取操作，自动生成 C 语言宏和函数",
 };
 
-export default function BitOperationPage() {
+export default function BitOperationGeneratorPage() {
   return (
     <div className="p-4 lg:p-8 max-w-5xl mx-auto">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold tracking-tight">位操作代码生成器</h1>
-        <p className="text-muted-foreground mt-1">
-          可视化勾选 32 位寄存器的 Bit 位，自动生成 C 语言位操作宏定义和内联函数
-        </p>
-      </div>
+      <ToolIntro
+        title="位操作代码生成器"
+        description="可视化勾选 Bit 位，选择置位/清零/翻转/读取操作，自动生成 C 语言宏和函数"
+        example={`需要把 GPIOA->ODR 的 bit3 和 bit7 置 1？勾选后直接生成 GPIOA->ODR |= (1<<3) | (1<<7); 代码。`}
+      />
       <BitOperationGenerator />
     </div>
   );
