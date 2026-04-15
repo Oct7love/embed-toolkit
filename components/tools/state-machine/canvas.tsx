@@ -364,6 +364,12 @@ export function StateMachineCanvas() {
     offsetX: number;
     offsetY: number;
   } | null>(null);
+  // 拖拽期间的临时位置覆盖（避免每次 mousemove 都写 persisted store）
+  const [dragOverride, setDragOverride] = useState<{
+    id: string;
+    x: number;
+    y: number;
+  } | null>(null);
   const [pendingLineEnd, setPendingLineEnd] = useState<{
     x: number;
     y: number;
@@ -385,8 +391,15 @@ export function StateMachineCanvas() {
   const getActiveProject = useStateMachineStore((s) => s.getActiveProject);
 
   const project = getActiveProject();
-  const states = project.states;
+  const rawStates = project.states;
   const transitions = project.transitions;
+
+  // 拖拽期间覆盖目标节点的位置（来自本地临时 state，不走持久化）
+  const states = dragOverride
+    ? rawStates.map((s) =>
+        s.id === dragOverride.id ? { ...s, x: dragOverride.x, y: dragOverride.y } : s
+      )
+    : rawStates;
 
   // Build a map of curve offsets for transitions between same pair of states
   const pairOffsets = new Map<string, number>();
@@ -482,11 +495,12 @@ export function StateMachineCanvas() {
     (e: React.MouseEvent<SVGSVGElement>) => {
       if (dragInfo) {
         const pt = getSvgPoint(e.clientX, e.clientY);
-        moveState(
-          dragInfo.id,
-          Math.round(pt.x - dragInfo.offsetX),
-          Math.round(pt.y - dragInfo.offsetY)
-        );
+        // 拖拽期间只更新本地 override，不写持久化 store
+        setDragOverride({
+          id: dragInfo.id,
+          x: Math.round(pt.x - dragInfo.offsetX),
+          y: Math.round(pt.y - dragInfo.offsetY),
+        });
       }
 
       if (canvasMode === "add-transition" && transitionSourceId) {
@@ -494,12 +508,17 @@ export function StateMachineCanvas() {
         setPendingLineEnd(pt);
       }
     },
-    [dragInfo, canvasMode, transitionSourceId, getSvgPoint, moveState]
+    [dragInfo, canvasMode, transitionSourceId, getSvgPoint]
   );
 
   const handleMouseUp = useCallback(() => {
+    // 释放时一次性提交最终位置到 store（此时触发 localStorage 写入）
+    if (dragOverride) {
+      moveState(dragOverride.id, dragOverride.x, dragOverride.y);
+    }
     setDragInfo(null);
-  }, []);
+    setDragOverride(null);
+  }, [dragOverride, moveState]);
 
   const handleNodeDoubleClick = useCallback(
     (stateId: string, e: React.MouseEvent) => {
