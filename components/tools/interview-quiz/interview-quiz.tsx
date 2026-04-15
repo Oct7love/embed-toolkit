@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useCallback, useEffect } from "react";
+import { useState, useMemo, useCallback } from "react";
 import {
   Card,
   CardHeader,
@@ -98,14 +98,14 @@ export function InterviewQuiz() {
     setShowAnswer(false);
   }, [pool]);
 
-  useEffect(() => {
-    if (currentView === "quiz" && !currentQuestion && pool.length > 0) {
-      pickNext();
+  // 显示用：currentQuestion 为空或不在当前 pool 时（切换分类后），派生一道题兜底
+  // —— 用派生值代替 useEffect 内的 setState 级联，避免 react-hooks/set-state-in-effect
+  const displayQuestion = useMemo(() => {
+    if (currentQuestion && pool.some((q) => q.id === currentQuestion.id)) {
+      return currentQuestion;
     }
-  }, [currentView, currentQuestion, pool, pickNext]);
-
-  // 同步显示用：pool 有题但 currentQuestion 还没来得及初始化时，取第一题兜底
-  const displayQuestion = currentQuestion ?? (pool.length > 0 ? pool[0] : null);
+    return pool.length > 0 ? pickRandomQuestion(pool) : null;
+  }, [currentQuestion, pool]);
 
   const handleSubmit = useCallback(() => {
     if (selectedOption === null || !currentQuestion) return;

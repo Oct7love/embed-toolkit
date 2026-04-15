@@ -94,7 +94,7 @@ function StateNode({
   const y = state.y - STATE_NODE_HEIGHT / 2;
 
   let strokeColor = "var(--color-border)";
-  let fillColor = "var(--color-card)";
+  const fillColor = "var(--color-card)";
   let strokeWidth = 1.5;
 
   if (isSelected) {
