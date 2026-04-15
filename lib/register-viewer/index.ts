@@ -46,8 +46,9 @@ export function getFieldValue(
   const low = Math.min(startBit, endBit);
   const high = Math.max(startBit, endBit);
   const width = high - low + 1;
-  const mask = (1 << width) - 1;
-  return (registerValue >>> low) & mask;
+  // width === 32 时 (1<<32)-1 在 JS 中等于 0，需要特判
+  const mask = width >= 32 ? 0xFFFFFFFF : (1 << width) - 1;
+  return ((registerValue >>> low) & mask) >>> 0;
 }
 
 /**
@@ -62,10 +63,12 @@ export function setFieldValue(
   const low = Math.min(startBit, endBit);
   const high = Math.max(startBit, endBit);
   const width = high - low + 1;
-  const mask = ((1 << width) - 1) << low;
-  const cleared = registerValue & ~mask;
-  const clamped = fieldValue & ((1 << width) - 1);
-  return (cleared | (clamped << low)) >>> 0;
+  // width === 32 时 (1<<32)-1 在 JS 中等于 0，需要特判
+  const widthMask = width >= 32 ? 0xFFFFFFFF : (1 << width) - 1;
+  const mask = (widthMask << low) >>> 0;
+  const cleared = (registerValue & ~mask) >>> 0;
+  const clamped = fieldValue & widthMask;
+  return (cleared | ((clamped << low) >>> 0)) >>> 0;
 }
 
 /**

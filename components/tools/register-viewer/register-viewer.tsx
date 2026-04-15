@@ -39,6 +39,7 @@ import {
   setFieldValue,
   buildFieldColorMap,
   buildFieldLabelMap,
+  validateFields,
   FIELD_COLORS,
 } from "@/lib/register-viewer";
 import { Plus, Trash2, Save } from "lucide-react";
@@ -248,7 +249,7 @@ export function RegisterViewer() {
                   const high = Math.max(field.startBit, field.endBit);
                   const fieldVal = getFieldValue(regValue, field.startBit, field.endBit);
                   const width = high - low + 1;
-                  const maxVal = (1 << width) - 1;
+                  const maxVal = width >= 32 ? 0xFFFFFFFF : (1 << width) - 1;
 
                   return (
                     <FieldRow
@@ -332,6 +333,7 @@ function NewTemplateDialog({
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [fields, setFields] = useState<BitField[]>([]);
+  const [validationErrors, setValidationErrors] = useState<string[]>([]);
 
   const handleAddField = useCallback(() => {
     setFields((prev) => [
@@ -361,6 +363,11 @@ function NewTemplateDialog({
 
   const handleSave = useCallback(() => {
     if (!name.trim()) return;
+    const errors = validateFields(fields, 32);
+    if (errors.length > 0) {
+      setValidationErrors(errors);
+      return;
+    }
     onSave({
       id: `custom-${Date.now()}`,
       name: name.trim(),
@@ -373,6 +380,7 @@ function NewTemplateDialog({
     setName("");
     setDescription("");
     setFields([]);
+    setValidationErrors([]);
   }, [name, description, fields, onSave]);
 
   return (
@@ -478,6 +486,16 @@ function NewTemplateDialog({
           </div>
         </div>
 
+        {validationErrors.length > 0 && (
+          <div className="rounded-md border border-destructive/50 bg-destructive/10 px-3 py-2 text-xs text-destructive">
+            <p className="font-medium mb-1">保存失败：位域校验未通过</p>
+            <ul className="list-disc list-inside space-y-0.5">
+              {validationErrors.map((e, i) => (
+                <li key={i}>{e}</li>
+              ))}
+            </ul>
+          </div>
+        )}
         <DialogFooter>
           <Button variant="outline" onClick={() => setOpen(false)}>
             取消
