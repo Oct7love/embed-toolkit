@@ -119,6 +119,17 @@ export function EndianConverter() {
                   ))}
                 </SelectContent>
               </Select>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  setByteWidth(32);
+                  setHexInput("12345678");
+                  setMode("single");
+                }}
+              >
+                加载示例
+              </Button>
               <Button variant="outline" size="sm" onClick={handleClear}>
                 清空
               </Button>

@@ -163,6 +163,20 @@ export function ChecksumCalculator() {
                 <TabsTrigger value="ascii">ASCII</TabsTrigger>
               </TabsList>
             </Tabs>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                setInputMode("hex");
+                setHexInput("01 03 00 00 00 0A");
+                setAsciiInput("");
+                setUseCustom(false);
+                setAlgorithm("crc");
+                setCrcPreset("CRC-16/MODBUS");
+              }}
+            >
+              加载示例
+            </Button>
             <Button variant="ghost" size="sm" onClick={handleReset}>
               <RotateCcw className="mr-1 h-3.5 w-3.5" />
               清空

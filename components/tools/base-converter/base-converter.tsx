@@ -198,6 +198,13 @@ export function BaseConverter() {
                 </SelectContent>
               </Select>
 
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handleSingleInput("hex", "2A")}
+              >
+                加载示例
+              </Button>
               <Button variant="outline" size="sm" onClick={handleClear}>
                 清空
               </Button>

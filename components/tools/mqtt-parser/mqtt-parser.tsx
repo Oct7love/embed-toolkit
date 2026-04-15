@@ -11,6 +11,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { CopyButton } from "@/components/shared/copy-button";
+import { Button } from "@/components/ui/button";
 import {
   FieldHighlighter,
   type HighlightSegment,
@@ -59,8 +60,25 @@ export function MqttParser() {
     <div className="space-y-4">
       <Card>
         <CardHeader>
-          <CardTitle>数据输入</CardTitle>
-          <CardDescription>粘贴 MQTT 原始字节流（Hex）</CardDescription>
+          <div className="flex items-start justify-between gap-2">
+            <div>
+              <CardTitle>数据输入</CardTitle>
+              <CardDescription>粘贴 MQTT 原始字节流（Hex）</CardDescription>
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() =>
+                setHexInput(
+                  "30 0B 00 04 74 65 73 74 68 65 6C 6C 6F"
+                    .replace(/\s+/g, "")
+                    .replace(/(.{2})(?=.)/g, "$1 ")
+                )
+              }
+            >
+              加载示例
+            </Button>
+          </div>
         </CardHeader>
         <CardContent>
           <div className="space-y-1.5">

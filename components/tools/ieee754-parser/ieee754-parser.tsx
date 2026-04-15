@@ -13,6 +13,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { BitGrid } from "@/components/shared/bit-grid";
 import { CopyButton } from "@/components/shared/copy-button";
+import { Button } from "@/components/ui/button";
 import type { FloatType } from "@/types/ieee754-parser";
 import {
   parseHexToIEEE754,
@@ -130,18 +131,33 @@ export function IEEE754Parser() {
     return formatFloatValue(result.floatValue, result.special);
   }, [result]);
 
+  const handleLoadExample = useCallback(() => {
+    setActiveInput("hex");
+    if (floatType === "float32") {
+      setHexInput("41200000");
+    } else {
+      setHexInput("4024000000000000");
+    }
+    setDecimalInput("");
+  }, [floatType]);
+
   return (
     <div className="space-y-6">
       {/* Type selector */}
-      <Tabs
-        value={floatType}
-        onValueChange={handleFloatTypeChange}
-      >
-        <TabsList>
-          <TabsTrigger value="float32">Float32 (单精度)</TabsTrigger>
-          <TabsTrigger value="float64">Float64 (双精度)</TabsTrigger>
-        </TabsList>
-      </Tabs>
+      <div className="flex items-center justify-between gap-2 flex-wrap">
+        <Tabs
+          value={floatType}
+          onValueChange={handleFloatTypeChange}
+        >
+          <TabsList>
+            <TabsTrigger value="float32">Float32 (单精度)</TabsTrigger>
+            <TabsTrigger value="float64">Float64 (双精度)</TabsTrigger>
+          </TabsList>
+        </Tabs>
+        <Button variant="outline" size="sm" onClick={handleLoadExample}>
+          加载示例
+        </Button>
+      </div>
 
       {/* Input section */}
       <div className="grid gap-4 sm:grid-cols-2">

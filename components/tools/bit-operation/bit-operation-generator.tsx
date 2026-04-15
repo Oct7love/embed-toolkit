@@ -83,8 +83,24 @@ export function BitOperationGenerator() {
       {/* Configuration */}
       <Card>
         <CardHeader className="pb-3">
-          <CardTitle className="text-base">配置</CardTitle>
-          <CardDescription>设置寄存器名称和操作类型</CardDescription>
+          <div className="flex items-start justify-between gap-2">
+            <div>
+              <CardTitle className="text-base">配置</CardTitle>
+              <CardDescription>设置寄存器名称和操作类型</CardDescription>
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                setRegisterName("GPIOA->ODR");
+                setBitValue((1 << 3) | (1 << 7));
+                setOperation("SET");
+                setCodeStyle("macro");
+              }}
+            >
+              加载示例
+            </Button>
+          </div>
         </CardHeader>
         <CardContent>
           <div className="grid gap-4 sm:grid-cols-2">

@@ -121,8 +121,19 @@ export function SerialParser() {
       {/* Input */}
       <Card>
         <CardHeader>
-          <CardTitle>数据输入</CardTitle>
-          <CardDescription>粘贴 Hex 数据帧进行解析</CardDescription>
+          <div className="flex items-start justify-between gap-2">
+            <div>
+              <CardTitle>数据输入</CardTitle>
+              <CardDescription>粘贴 Hex 数据帧进行解析</CardDescription>
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setHexInput("AA 55 03 01 02 03 AB")}
+            >
+              加载示例
+            </Button>
+          </div>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-1.5">

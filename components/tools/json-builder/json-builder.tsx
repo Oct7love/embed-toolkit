@@ -160,6 +160,19 @@ export function JsonBuilder() {
                 fields={fields}
                 onSave={addTemplate}
               />
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() =>
+                  setFields([
+                    { id: `f-${Date.now()}-1`, key: "cmd", type: "string", value: "set_led", children: [] },
+                    { id: `f-${Date.now()}-2`, key: "pin", type: "number", value: 13, children: [] },
+                    { id: `f-${Date.now()}-3`, key: "state", type: "number", value: 1, children: [] },
+                  ])
+                }
+              >
+                加载示例
+              </Button>
               <Button variant="outline" size="sm" onClick={handleClearAll}>
                 <Trash2 className="h-4 w-4 mr-1" />
                 清空
