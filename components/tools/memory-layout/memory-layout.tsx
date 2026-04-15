@@ -121,7 +121,19 @@ export function MemoryLayout() {
     []
   );
 
+  const [parseError, setParseError] = useState<string | null>(null);
+
   const handleParseMap = useCallback(() => {
+    const MAX_MAP_BYTES = 2 * 1024 * 1024; // 2MB
+    // 用 UTF-8 字节数估算（中文或非 ASCII 不一定 1 字符 = 1 字节）
+    const byteLength = new Blob([mapContent]).size;
+    if (byteLength > MAX_MAP_BYTES) {
+      setParseError(
+        `输入过大（${(byteLength / 1024 / 1024).toFixed(2)} MB），上限 2 MB。请裁剪 .map 文件后再粘贴。`
+      );
+      return;
+    }
+    setParseError(null);
     const parsed = parseMapFile(mapContent);
     if (parsed.length > 0) {
       setSections(parsed);
@@ -455,6 +467,12 @@ export function MemoryLayout() {
                 <Upload className="h-3.5 w-3.5" />
                 解析 .map 文件
               </Button>
+              {parseError && (
+                <p className="text-xs text-destructive">{parseError}</p>
+              )}
+              <p className="text-xs text-muted-foreground">
+                最大支持 2 MB；超大文件建议先用 grep/head 裁剪至关键段落后粘贴。
+              </p>
             </CardContent>
           </Card>
         </TabsContent>
