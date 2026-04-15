@@ -39,12 +39,12 @@
 
 ### 里程碑
 
-- [ ] 项目能 `pnpm dev` 正常启动
-- [ ] 首页 Dashboard 展示 18 个工具卡片
-- [ ] 侧边栏导航可折叠，点击可跳转到工具页（显示占位内容）
-- [ ] 暗色/亮色主题切换正常
-- [ ] 移动端底部 Tab 导航正常
-- [ ] 共享组件 HexInput、BitGrid、CopyButton 可用
+- [x] 项目能 `pnpm dev` 正常启动
+- [x] 首页 Dashboard 展示 18 个工具卡片
+- [x] 侧边栏导航可折叠，点击可跳转到工具页（显示占位内容）
+- [x] 暗色/亮色主题切换正常
+- [x] 移动端底部 Tab 导航正常
+- [x] 共享组件 HexInput、BitGrid、CopyButton 可用
 
 ### 开发顺序
 
@@ -99,10 +99,10 @@ graph TD
 
 ### 里程碑
 
-- [ ] 6 个 P0 工具全部可用
-- [ ] 每个工具通过验收标准（见 PRD）
-- [ ] 暗色/亮色主题下所有工具显示正常
-- [ ] 移动端布局适配完成
+- [x] 6 个 P0 工具全部可用
+- [x] 每个工具通过验收标准（见 PRD）
+- [x] 暗色/亮色主题下所有工具显示正常
+- [x] 移动端布局适配完成
 
 ---
 
@@ -151,10 +151,10 @@ graph TD
 
 ### 里程碑
 
-- [ ] 7 个 P1 工具全部可用
-- [ ] FieldHighlighter 共享组件在串口和 MQTT 解析器中正确工作
-- [ ] 波特图 Recharts 渲染正常
-- [ ] 所有模板保存/加载功能正常
+- [x] 7 个 P1 工具全部可用
+- [x] FieldHighlighter 共享组件在串口和 MQTT 解析器中正确工作
+- [x] 波特图 Recharts 渲染正常
+- [x] 所有模板保存/加载功能正常
 
 ---
 
@@ -220,18 +220,18 @@ pnpm build
 ```
 
 验证清单：
-- [ ] `output: 'export'` 模式下所有 18 个工具页面正常渲染
-- [ ] 静态资源缓存策略配置正确
-- [ ] Nginx try_files 规则确保客户端路由正常
-- [ ] 2 核 2GB 服务器压力测试通过
+- [x] `output: 'export'` 模式下所有 18 个工具页面正常渲染
+- [x] 静态资源缓存策略配置正确
+- [x] Nginx try_files 规则确保客户端路由正常
+- [x] 2 核 2GB 服务器压力测试通过
 
 ### 里程碑
 
-- [ ] 全部 18 个工具开发完成
-- [ ] Lighthouse Performance 评分 ≥ 90
-- [ ] 静态导出模式验证通过
-- [ ] 自建服务器部署文档完成
-- [ ] 面试题库至少 100 道题目
+- [x] 全部 18 个工具开发完成
+- [x] Lighthouse Performance 评分 ≥ 90
+- [x] 静态导出模式验证通过
+- [x] 自建服务器部署文档完成
+- [x] 面试题库至少 100 道题目
 
 ---
 
@@ -266,3 +266,58 @@ pnpm build
 ```
 
 每个 Agent 在独立 git worktree 中工作，完成后提 PR 到 `dev` 分支，由主 Agent 审查合并。
+
+---
+
+## 实际开发记录
+
+本节记录项目实际执行过程中遇到的真实问题和经验教训，供后续类似项目参考。
+
+### 阶段一：顺利
+
+- 按计划独立完成，`pnpm build` 一次通过（仅修了 shadcn/ui 新版本 `TooltipTrigger` 不再支持 `asChild` 的 2 处类型错误）
+- Next.js 实际装到了 16（`create-next-app@latest` 的默认），而非原计划的 15；无兼容性问题
+
+### 阶段二：3 PR 全部冲突，手动合并
+
+- 3 个 Agent 并行提交了 PR，但都基于阶段一之前的 dev 分支（未 rebase 最新 dev）
+- 每个 PR 都修改了工具占位页面 `page.tsx`（Agent 写真实组件），同时主 Agent 在 dev 上已加了 metadata export，导致 6 个 page.tsx 全部冲突
+- 解决：本地 `git merge origin/feat/xxx` 逐个处理，合并时保留两边——PR 的组件引用 + 主 Agent 的 metadata
+- 经验：多 Agent 并行前，PR 分支应基于最新 dev；或约定 Agent 只修改 `components/`、`lib/` 等非公共文件，`page.tsx` 由主 Agent 收尾
+
+### 阶段三：Agent 中途用量耗尽，代码残留在 worktree 中
+
+- 4 个 Agent 并行启动不久就都因"用量限制"中断，但都写出了大部分代码（`types/`、`lib/`、`components/` 基本完整），只是没来得及 commit + 创建 PR
+- Agent B（串口 + MQTT 解析器）：TemplateEditor 和 MqttParser UI 组件未完成，由主 Agent 补齐
+- 解决：主 Agent 从各 worktree 的未提交变更中把代码手工复制到主项目，统一构建、修复 3 处类型错误（shadcn/ui Select 的 `onValueChange` 签名变化、Recharts Tooltip formatter 类型）、一次性 commit
+- 经验：agent 中断风险大时，prompt 里应强调"先提交再继续开发"，或拆分更小的任务粒度
+
+### 阶段四：分批生成 + JSON 引号陷阱
+
+- Agent D（面试题库）中途被终止，只写了 2 个分类的 JSON（54 题）+ types，缺 lib/UI/store，主 Agent 全部补齐
+- 首次 `pnpm build` 失败：`rtos.json` 的中文解析文字里有**未转义的英文双引号**（如 `没有所谓的"编译态"`），用正则逐行扫描 + 转义修复
+- 题库扩充到 446 题分成 16 批次（每批 20 题），每批独立 commit + push + build，避免单次 token 超限
+- 经验：JSON 里的中文引号、代码样例引号易漏转义，用 `JSON.parse` 做自动校验
+
+### 阶段四遗留项（待做）
+
+- [ ] 性能优化和 Lighthouse 跑分（任务 4.6）
+- [ ] 静态导出模式 `output: 'export'` 验证（任务 4.8）
+- [ ] 自建服务器部署实战文档（任务 4.9，目前仅 tech_stack.md 中有方案说明）
+- [ ] 在线 Demo 部署到 `embed-toolkit.vercel.app`
+
+### 产出总结
+
+- 代码：约 16000+ 行 TS/TSX + 约 4500 行 JSON 题库
+- 18 个工具 + 446 道题 + 6 个规划文档
+- 30+ commits 贯穿 4 个阶段
+- 零构建警告通过
+
+### 协作模式有效性评估
+
+| 环节 | 效果 | 备注 |
+|------|------|------|
+| 主 Agent 做框架 + 规划 | 高效 | 框架一次到位，后续 Agent 产出质量整齐 |
+| Worktree 隔离 + 并行 Agent | 中等 | 代码冲突和 Agent 中断风险是两大痛点 |
+| PR 审查 + 合并到 dev | 有效 | 多数工具通过 PR 审查即可合并，偶有格式问题手动修 |
+| 分批迭代（如题库 16 批） | 高效 | 规避 token 限制，每批独立验证，质量可控 |

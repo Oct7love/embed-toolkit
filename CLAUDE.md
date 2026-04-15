@@ -8,11 +8,17 @@ Embed Toolkit 是面向嵌入式开发者的浏览器端工具集合平台，纯
 
 ## 技术栈
 
-- Next.js 15 (App Router) + TypeScript
-- Tailwind CSS 4 + shadcn/ui
-- Recharts（图表）
-- Zustand（状态管理，按需使用）
-- pnpm（包管理）
+- Next.js 16 (App Router) + TypeScript 5
+- Tailwind CSS 4 + shadcn/ui（基于 @base-ui/react）
+- Recharts 3（图表）
+- Zustand 5 + localStorage 持久化
+- pnpm 10（包管理）
+
+### 已知差异（注意点）
+
+- shadcn/ui Select 的 `onValueChange` 签名为 `(value: string | null) => void`，需处理 null
+- shadcn/ui Tooltip 的 `TooltipTrigger` 不再支持 `asChild`，改用 `render={<Button ... />}` prop
+- Recharts 3 的 Tooltip `formatter` 签名变为 `(value: unknown, ...)`，需显式类型转换
 
 ## 目录结构
 
@@ -174,13 +180,13 @@ pnpm lint             # 代码检查
 pnpm type-check       # 类型检查
 ```
 
-## 工具分类速查
+## 工具分类速查（共 18 个，全部完成）
 
-| 分类 | 路由前缀 | 工具数量 |
-|------|----------|----------|
-| 数据转换工具 | `/tools/converter/` | 5 |
-| 协议调试工具 | `/tools/protocol/` | 4 |
-| 芯片与硬件工具 | `/tools/hardware/` | 4 |
-| RTOS 可视化工具 | `/tools/rtos/` | 2 |
-| 代码辅助工具 | `/tools/codegen/` | 2 |
-| 学习与求职 | `/tools/learning/` | 1 |
+| 分类 | 路由前缀 | 工具数量 | 具体工具 |
+|------|----------|----------|----------|
+| 数据转换工具 | `/tools/converter/` | 5 | base-converter, ieee754-parser, endian-converter, checksum-calculator, ascii-table |
+| 协议调试工具 | `/tools/protocol/` | 4 | serial-parser, mqtt-parser, json-builder, modbus-generator |
+| 芯片与硬件工具 | `/tools/hardware/` | 4 | register-viewer, gpio-planner, resistor-calculator, rc-calculator |
+| RTOS 可视化工具 | `/tools/rtos/` | 2 | task-scheduler, memory-layout |
+| 代码辅助工具 | `/tools/codegen/` | 2 | bit-operation, state-machine |
+| 学习与求职 | `/tools/learning/` | 1 | interview-quiz（446 道题） |
