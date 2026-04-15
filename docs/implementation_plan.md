@@ -304,7 +304,7 @@ pnpm build
 - [ ] 性能优化和 Lighthouse 跑分（任务 4.6）
 - [ ] 静态导出模式 `output: 'export'` 验证（任务 4.8）
 - [ ] 自建服务器部署实战文档（任务 4.9，目前仅 tech_stack.md 中有方案说明）
-- [ ] 在线 Demo 部署到 `embed-toolkit.vercel.app`
+- [x] 在线 Demo 部署到 <https://embed-toolkit.vercel.app/>（v1.0.0 已上线）
 
 ### 产出总结
 

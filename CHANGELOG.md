@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 首个正式版本 — 18 个嵌入式开发工具 + 446 道面试题库全部完成。
 
+🌐 **Live Demo**：<https://embed-toolkit.vercel.app/>
+
 ### Phase 1: 基础框架搭建
 
 - Initialize Next.js 16 + TypeScript + Tailwind CSS 4 + App Router

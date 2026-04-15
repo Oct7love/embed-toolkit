@@ -8,7 +8,8 @@
 ![Next.js](https://img.shields.io/badge/Next.js-16-black)
 ![License](https://img.shields.io/badge/License-MIT-lightgrey)
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new)
+[![Live Demo](https://img.shields.io/badge/🌐_Live_Demo-embed--toolkit.vercel.app-2563EB?style=for-the-badge)](https://embed-toolkit.vercel.app/)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/Oct7love/embed-toolkit)
 
 ## 项目简介
 
@@ -21,9 +22,20 @@ Embed Toolkit 将嵌入式工程师日常开发中频繁用到的计算、转换
 
 ## 在线体验
 
-🌐 **Demo**：[https://embed-toolkit.vercel.app](https://embed-toolkit.vercel.app)
+🌐 **Live Demo**：**<https://embed-toolkit.vercel.app/>**
 
-> 所有工具均已上线可用，无需注册，打开即用。本地/离线使用见下方「本地开发」章节。
+所有 18 个工具均已上线，无需注册，打开即用：
+
+| 快捷链接 | 工具 |
+|----------|------|
+| [进制转换器](https://embed-toolkit.vercel.app/tools/converter/base-converter) | hex/bin/dec/oct 实时互转 |
+| [校验和计算器](https://embed-toolkit.vercel.app/tools/converter/checksum-calculator) | CRC/XOR/累加和 |
+| [Modbus 帧生成器](https://embed-toolkit.vercel.app/tools/protocol/modbus-generator) | RTU/TCP 帧生成 |
+| [寄存器位域计算器](https://embed-toolkit.vercel.app/tools/hardware/register-viewer) | 32 位 Bit 网格可视化 |
+| [任务调度甘特图](https://embed-toolkit.vercel.app/tools/rtos/task-scheduler) | FreeRTOS 调度模拟 |
+| [嵌入式面试题库](https://embed-toolkit.vercel.app/tools/learning/interview-quiz) | 446 道题刷题 |
+
+> 纯前端应用，所有计算在浏览器本地完成，不上传任何数据。本地/离线使用见下方「本地开发」章节。
 
 ## 功能模块（18 个工具，6 大分类，全部完成 ✅）
 
