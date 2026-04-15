@@ -239,6 +239,7 @@ export function JsonBuilder() {
                       size="icon"
                       className="h-5 w-5"
                       onClick={() => deleteTemplate(t.id)}
+                      aria-label={`删除模板 ${t.name}`}
                     >
                       <Trash2 className="h-3 w-3 text-destructive" />
                     </Button>

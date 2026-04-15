@@ -77,6 +77,7 @@ export function ProjectSelector() {
           setNewName("");
           setShowNewDialog(true);
         }}
+        aria-label="新建状态机项目"
       >
         <PlusIcon className="size-4" />
       </Button>
@@ -88,6 +89,7 @@ export function ProjectSelector() {
           setNewName(activeProject?.name ?? "");
           setShowRenameDialog(true);
         }}
+        aria-label="重命名当前项目"
       >
         <PencilIcon className="size-3.5" />
       </Button>
@@ -97,6 +99,7 @@ export function ProjectSelector() {
           variant="destructive"
           size="icon-sm"
           onClick={() => deleteProject(activeProjectId)}
+          aria-label="删除当前项目"
         >
           <Trash2Icon className="size-3.5" />
         </Button>

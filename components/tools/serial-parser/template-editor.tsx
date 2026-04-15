@@ -145,6 +145,7 @@ export function TemplateEditor({ template, onSave }: TemplateEditorProps) {
                 size="icon"
                 onClick={() => handleRemoveField(field.id)}
                 className="h-7 w-7 text-destructive"
+                aria-label={`删除字段 ${field.name}`}
               >
                 <Trash2 className="h-3.5 w-3.5" />
               </Button>

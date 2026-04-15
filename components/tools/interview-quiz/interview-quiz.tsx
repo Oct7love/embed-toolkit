@@ -530,6 +530,8 @@ function QuestionList({
                   variant="ghost"
                   size="icon"
                   onClick={() => onToggleFavorite(q.id)}
+                  aria-label={favorites.includes(q.id) ? "取消收藏" : "收藏"}
+                  aria-pressed={favorites.includes(q.id)}
                 >
                   <Star
                     className={cn(

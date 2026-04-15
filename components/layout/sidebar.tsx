@@ -34,6 +34,9 @@ export function Sidebar() {
                 <button
                   onClick={() => toggleCategory(category.slug)}
                   className="flex items-center gap-2 w-full px-3 py-2 text-sm font-medium rounded-md hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors"
+                  aria-expanded={!isCollapsed}
+                  aria-controls={`sidebar-category-${category.slug}`}
+                  aria-label={`${category.name}（${isCollapsed ? "展开" : "折叠"}）`}
                 >
                   <CategoryIcon className="h-4 w-4 text-muted-foreground" />
                   <span className="flex-1 text-left">{category.name}</span>
@@ -46,7 +49,10 @@ export function Sidebar() {
                 </button>
 
                 {!isCollapsed && (
-                  <div className="ml-4 mt-0.5 space-y-0.5">
+                  <div
+                    id={`sidebar-category-${category.slug}`}
+                    className="ml-4 mt-0.5 space-y-0.5"
+                  >
                     {category.tools.map((tool) => {
                       const toolPath = `/tools/${category.slug}/${tool.slug}`;
                       const isActive = pathname === toolPath;
