@@ -87,7 +87,7 @@ export function BaseConverter() {
         return;
       }
 
-      const validationError = validateInput(value, base);
+      const validationError = validateInput(value, base, signMode);
       if (validationError) {
         newValues[base] = value;
         setInputValues(newValues);

@@ -51,7 +51,11 @@ function cleanInput(value: string, base: Base): string {
 }
 
 /** Validate input characters for a given base */
-export function validateInput(value: string, base: Base): string | null {
+export function validateInput(
+  value: string,
+  base: Base,
+  signMode: SignMode = "unsigned"
+): string | null {
   const cleaned = cleanInput(value, base);
   if (cleaned === "") return null;
   if (!BASE_REGEX[base].test(cleaned)) {
@@ -62,6 +66,10 @@ export function validateInput(value: string, base: Base): string | null {
       bin: "0, 1",
     };
     return `无效字符，${base.toUpperCase()} 仅允许: ${allowed[base]}`;
+  }
+  // 无符号模式下十进制不接受负数
+  if (base === "dec" && signMode === "unsigned" && cleaned.startsWith("-")) {
+    return "无符号模式下不允许负数，请切换到有符号模式";
   }
   return null;
 }
@@ -86,22 +94,22 @@ function parseToBigInt(
     return n;
   }
 
-  const n = BigInt(`0x${cleaned.length ? cleaned : "0"}`).toString() === "NaN"
-    ? null
-    : (() => {
-        try {
-          const radix = BASE_RADIX[base];
-          let result = 0n;
-          for (const ch of cleaned) {
-            result = result * BigInt(radix) + BigInt(parseInt(ch, radix));
-          }
-          return result;
-        } catch {
-          return null;
-        }
-      })();
-
-  return n;
+  // 非 signed-dec 分支：直接按 base 逐字符累加（无需依赖 BigInt('0x...') 预探测）
+  if (base === "dec" && signMode === "unsigned" && cleaned.startsWith("-")) {
+    return null;
+  }
+  try {
+    const radix = BASE_RADIX[base];
+    let result = 0n;
+    for (const ch of cleaned) {
+      const digit = parseInt(ch, radix);
+      if (Number.isNaN(digit)) return null;
+      result = result * BigInt(radix) + BigInt(digit);
+    }
+    return result;
+  } catch {
+    return null;
+  }
 }
 
 /** Convert an unsigned bigint to all bases */
@@ -158,7 +166,7 @@ export function convert(
     return { hex: "", dec: "", oct: "", bin: "" };
   }
 
-  const validationError = validateInput(value, fromBase);
+  const validationError = validateInput(value, fromBase, signMode);
   if (validationError) {
     return errorResult(validationError);
   }
