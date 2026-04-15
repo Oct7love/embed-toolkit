@@ -44,6 +44,16 @@ export default function DashboardPage() {
 
   return (
     <div className="p-4 lg:p-8 max-w-7xl mx-auto space-y-8">
+      {/* 项目介绍 */}
+      <div className="text-center max-w-2xl mx-auto pt-2">
+        <h1 className="text-2xl lg:text-3xl font-bold tracking-tight">
+          Embed Toolkit
+        </h1>
+        <p className="text-sm lg:text-base text-muted-foreground mt-2">
+          嵌入式开发者的在线工具集，<span className="font-medium text-foreground">18 个工具 + 446 道面试题</span>，浏览器本地运行，免登录免注册。
+        </p>
+      </div>
+
       {/* 搜索栏 */}
       <div className="relative max-w-xl mx-auto">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
