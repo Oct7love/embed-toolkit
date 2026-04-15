@@ -10,15 +10,8 @@ import {
   CardTitle,
   CardDescription,
 } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { toolCategories, getAllTools } from "@/lib/tools-config";
 import { useAppStore } from "@/stores/app-store";
-
-const priorityColor = {
-  P0: "bg-primary text-primary-foreground",
-  P1: "bg-secondary text-secondary-foreground",
-  P2: "bg-muted text-muted-foreground",
-};
 
 export default function DashboardPage() {
   const [search, setSearch] = useState("");
@@ -154,7 +147,6 @@ function ToolCard({
     slug: string;
     description: string;
     icon: React.ComponentType<{ className?: string }>;
-    priority: "P0" | "P1" | "P2";
   };
   categorySlug: string;
   onClick: () => void;
@@ -165,16 +157,8 @@ function ToolCard({
     <Link href={`/tools/${categorySlug}/${tool.slug}`} onClick={onClick}>
       <Card className="h-full hover:border-primary/50 hover:shadow-md transition-all cursor-pointer group">
         <CardHeader className="pb-3">
-          <div className="flex items-start justify-between">
-            <div className="p-2 rounded-md bg-primary/10 text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
-              <Icon className="h-5 w-5" />
-            </div>
-            <Badge
-              variant="outline"
-              className={priorityColor[tool.priority]}
-            >
-              {tool.priority}
-            </Badge>
+          <div className="p-2 rounded-md bg-primary/10 text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-colors w-fit">
+            <Icon className="h-5 w-5" />
           </div>
           <CardTitle className="text-base mt-3">{tool.name}</CardTitle>
           <CardDescription className="text-sm">
