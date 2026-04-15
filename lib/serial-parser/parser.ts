@@ -26,6 +26,21 @@ export function parseFrame(
   const sortedFields = [...template.fields].sort((a, b) => a.offset - b.offset);
 
   for (const field of sortedFields) {
+    // 校验模板字段合法性（拒绝负偏移、非正长度）
+    if (field.offset < 0 || field.length <= 0) {
+      errors.push(
+        `字段 "${field.name}" 参数非法: offset=${field.offset}, length=${field.length}`
+      );
+      parsedFields.push({
+        field,
+        bytes: [],
+        hex: "",
+        valid: false,
+        error: "字段参数非法",
+      });
+      continue;
+    }
+
     const endOffset = field.offset + field.length;
 
     if (field.offset >= bytes.length) {
@@ -40,11 +55,13 @@ export function parseFrame(
       continue;
     }
 
+    // 直接用 endOffset > bytes.length 判断部分越界
+    const isPartiallyOutOfRange = endOffset > bytes.length;
     const actualEnd = Math.min(endOffset, bytes.length);
     const fieldBytes = bytes.slice(field.offset, actualEnd);
     const hex = fieldBytes.map((b) => b.toString(16).toUpperCase().padStart(2, "0")).join(" ");
 
-    if (actualEnd > bytes.length) {
+    if (isPartiallyOutOfRange) {
       errors.push(`字段 "${field.name}" 部分超出数据范围`);
     }
 

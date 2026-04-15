@@ -115,11 +115,12 @@ export function TemplateEditor({ template, onSave }: TemplateEditorProps) {
                 <Input
                   type="number"
                   value={field.offset}
-                  onChange={(e) =>
+                  onChange={(e) => {
+                    const v = parseInt(e.target.value);
                     handleUpdateField(field.id, {
-                      offset: parseInt(e.target.value) || 0,
-                    })
-                  }
+                      offset: Number.isFinite(v) && v >= 0 ? v : 0,
+                    });
+                  }}
                   className="w-16 text-sm font-mono"
                   min={0}
                 />
@@ -129,11 +130,12 @@ export function TemplateEditor({ template, onSave }: TemplateEditorProps) {
                 <Input
                   type="number"
                   value={field.length}
-                  onChange={(e) =>
+                  onChange={(e) => {
+                    const v = parseInt(e.target.value);
                     handleUpdateField(field.id, {
-                      length: parseInt(e.target.value) || 1,
-                    })
-                  }
+                      length: Number.isFinite(v) && v >= 1 ? v : 1,
+                    });
+                  }}
                   className="w-16 text-sm font-mono"
                   min={1}
                 />
