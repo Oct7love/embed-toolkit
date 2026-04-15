@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useEffect } from "react";
 import {
   Card,
   CardHeader,
@@ -25,7 +25,7 @@ import {
 } from "@/components/ui/tabs";
 import { useQuizStore } from "@/stores/quiz-store";
 import {
-  ALL_QUESTIONS,
+  loadQuestions,
   filterQuestions,
   pickRandomQuestion,
   getCategoryCount,
@@ -85,10 +85,27 @@ export function InterviewQuiz() {
   const [currentQuestion, setCurrentQuestion] = useState<Question | null>(null);
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
   const [showAnswer, setShowAnswer] = useState(false);
+  const [loadedPool, setLoadedPool] = useState<Question[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+
+  // 当分类变化时，动态加载对应题库（已加载过的分类会走缓存）
+  useEffect(() => {
+    let cancelled = false;
+    setIsLoading(true);
+    loadQuestions(currentCategory).then((qs) => {
+      if (!cancelled) {
+        setLoadedPool(qs);
+        setIsLoading(false);
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [currentCategory]);
 
   const pool = useMemo(
-    () => filterQuestions(currentCategory, currentDifficulty, answeredIds),
-    [currentCategory, currentDifficulty, answeredIds]
+    () => filterQuestions(loadedPool, currentDifficulty, answeredIds),
+    [loadedPool, currentDifficulty, answeredIds]
   );
 
   const pickNext = useCallback(() => {
@@ -215,7 +232,13 @@ export function InterviewQuiz() {
           </Card>
 
           {/* Question Card */}
-          {displayQuestion ? (
+          {isLoading ? (
+            <Card>
+              <CardContent className="py-12 text-center text-muted-foreground">
+                加载题库中...
+              </CardContent>
+            </Card>
+          ) : displayQuestion ? (
             <QuestionCard
               question={displayQuestion}
               selectedOption={selectedOption}

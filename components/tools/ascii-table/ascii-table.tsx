@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useEffect, useRef } from "react";
 import {
   Card,
   CardHeader,
@@ -23,6 +23,13 @@ export function AsciiTable() {
   const [searchQuery, setSearchQuery] = useState("");
   const [copiedCode, setCopiedCode] = useState<number | null>(null);
   const [copiedField, setCopiedField] = useState<string>("");
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+    };
+  }, []);
 
   const allEntries = useMemo(() => generateAsciiTable(), []);
   const filteredEntries = useMemo(
@@ -35,7 +42,8 @@ export function AsciiTable() {
       await navigator.clipboard.writeText(value);
       setCopiedCode(entry.code);
       setCopiedField(field);
-      setTimeout(() => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+      timerRef.current = setTimeout(() => {
         setCopiedCode(null);
         setCopiedField("");
       }, 1500);

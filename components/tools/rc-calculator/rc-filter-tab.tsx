@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import dynamic from "next/dynamic";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import {
@@ -11,7 +12,19 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { BodePlot } from "./bode-plot";
+
+// Recharts 较大，仅在需要绘图时动态加载
+const BodePlot = dynamic(
+  () => import("./bode-plot").then((m) => m.BodePlot),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="h-[300px] flex items-center justify-center text-sm text-muted-foreground">
+        加载图表中...
+      </div>
+    ),
+  }
+);
 import type {
   ResistanceUnit,
   CapacitanceUnit,
