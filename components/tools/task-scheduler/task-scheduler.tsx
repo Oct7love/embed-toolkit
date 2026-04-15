@@ -271,24 +271,33 @@ export function TaskScheduler() {
               </div>
               <div className="flex items-center gap-1.5">
                 <span className="text-sm text-muted-foreground">
-                  RM 上界:
+                  RM 充分条件上界:
                 </span>
                 <span className="font-mono text-sm">
                   {(schedulability.rmBound * 100).toFixed(1)}%
                 </span>
               </div>
-              {schedulability.isGuaranteed ? (
-                <Badge variant="outline" className="text-green-600">
-                  可调度
-                </Badge>
-              ) : schedulability.utilization <= 1 ? (
-                <Badge variant="outline" className="text-yellow-600">
-                  超出 RM 上界，不保证可调度
-                </Badge>
+              {schedulability.isRateMonotonic ? (
+                schedulability.rmSufficientMet ? (
+                  <Badge variant="outline" className="text-green-600">
+                    满足 RM 充分条件
+                  </Badge>
+                ) : schedulability.utilization <= 1 ? (
+                  <Badge variant="outline" className="text-yellow-600">
+                    超出 RM 充分条件（可能仍可调度，请看仿真结果）
+                  </Badge>
+                ) : (
+                  <Badge variant="destructive">CPU 过载</Badge>
+                )
               ) : (
-                <Badge variant="destructive">CPU 过载</Badge>
+                <Badge variant="outline" className="text-muted-foreground">
+                  非 RM 优先级分配（RM 充分条件不适用）
+                </Badge>
               )}
             </div>
+            <p className="mt-2 text-xs text-muted-foreground">
+              说明：RM 充分条件（Liu &amp; Layland）仅在优先级按周期分配（周期短→优先级高）时有效；同优先级任务按 FIFO 非抢占执行。可调度性以仿真结果为准。
+            </p>
           </CardContent>
         </Card>
       )}

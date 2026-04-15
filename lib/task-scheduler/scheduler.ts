@@ -146,6 +146,24 @@ export function simulateSchedule(
     });
   }
 
+  // 仿真结束时仍在 ready queue 中未完成的实例：记录为 missedDeadlines（不静默丢弃）
+  for (const inst of readyQueue) {
+    if (inst.remainingExec > 0) {
+      const taskDef = tasks.find((tk) => tk.id === inst.taskId);
+      const alreadyRecorded = missedDeadlines.some(
+        (md) => md.taskId === inst.taskId && md.deadline === inst.deadline
+      );
+      if (!alreadyRecorded) {
+        missedDeadlines.push({
+          taskId: inst.taskId,
+          taskName: taskDef?.name ?? inst.taskId,
+          deadline: inst.deadline,
+          completedAt: null,
+        });
+      }
+    }
+  }
+
   // Add "ready" slots for tasks that were waiting (not running) during their ready period
   const readySlots = computeReadySlots(tasks, timeline, simulationTime);
   timeline.push(...readySlots);
