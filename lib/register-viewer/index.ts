@@ -4,7 +4,7 @@ import type { BitField } from "@/types/register-viewer";
  * Parse a hex string to a 32-bit unsigned integer.
  */
 export function parseHexValue(hex: string): number | null {
-  const clean = hex.replace(/[\s0x]/gi, "");
+  const clean = hex.replace(/^0x/i, "").replace(/\s+/g, "");
   if (clean.length === 0 || clean.length > 8) return null;
   if (!/^[0-9a-fA-F]+$/.test(clean)) return null;
   return parseInt(clean, 16) >>> 0;

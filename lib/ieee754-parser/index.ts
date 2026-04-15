@@ -19,7 +19,7 @@ export function parseHexToIEEE754(
   type: FloatType
 ): IEEE754Result | null {
   const config = getConfig(type);
-  const clean = hex.replace(/[\s0x]/gi, "").toUpperCase();
+  const clean = hex.replace(/^0x/i, "").replace(/\s+/g, "").toUpperCase();
   const expectedLen = config.totalBits / 4;
 
   if (clean.length === 0 || clean.length > expectedLen) return null;
@@ -113,7 +113,7 @@ export function floatToHex(value: number, type: FloatType): string {
  * Parse hex to the actual float value using DataView (ground truth).
  */
 export function hexToFloat(hex: string, type: FloatType): number | null {
-  const clean = hex.replace(/[\s0x]/gi, "");
+  const clean = hex.replace(/^0x/i, "").replace(/\s+/g, "");
   const expectedLen = type === "float32" ? 8 : 16;
 
   if (clean.length === 0 || clean.length > expectedLen) return null;
