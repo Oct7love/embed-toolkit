@@ -64,8 +64,9 @@ export function calculateTimerParams(
       const actualFreq = clockFreq / ((psc + 1) * (arr + 1));
       const error = Math.abs(actualFreq - targetFreq) / targetFreq * 100;
 
+      // CCR=ARR 时占空比 100%（CCR 不应超过 ARR，ARR+1 会导致硬件溢出）
       const ccr = Math.round((dutyCycle / 100) * (arr + 1));
-      const clampedCcr = Math.max(0, Math.min(arr + 1, ccr));
+      const clampedCcr = Math.max(0, Math.min(arr, ccr));
 
       results.push({
         psc,
