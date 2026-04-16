@@ -18,6 +18,7 @@ import {
   Palette,
   Router,
   Sigma,
+  SlidersHorizontal,
   Timer,
   Zap,
 } from "lucide-react";
@@ -170,6 +171,13 @@ export const toolCategories: ToolCategory[] = [
         icon: Zap,
         priority: "P1",
       },
+      {
+        name: "时钟树配置器",
+        slug: "clock-tree",
+        description: "可视化 STM32 时钟树，配置 HSI/HSE/PLL/AHB/APB 分频，导出 SystemClock_Config 代码",
+        icon: Network,
+        priority: "P1",
+      },
     ],
   },
   {
@@ -190,6 +198,13 @@ export const toolCategories: ToolCategory[] = [
         description: "手动配置或粘贴 .map 文件，可视化 RAM/Flash 各段分区占用和剩余空间",
         icon: MemoryStick,
         priority: "P2",
+      },
+      {
+        name: "PID 调参模拟器",
+        slug: "pid-simulator",
+        description: "调节 Kp/Ki/Kd 参数，实时仿真阶跃响应曲线，显示上升时间/超调量/稳态误差",
+        icon: SlidersHorizontal,
+        priority: "P1",
       },
     ],
   },
