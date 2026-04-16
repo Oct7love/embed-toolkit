@@ -8,6 +8,7 @@ export interface PinDefinition {
 export interface ChipDefinition {
   id: string;
   name: string;
+  manufacturer?: string;
   package: string;
   pins: PinDefinition[];
 }
