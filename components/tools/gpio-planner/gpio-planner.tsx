@@ -82,14 +82,23 @@ export function GpioPlanner() {
   const [importError, setImportError] = useState("");
 
   // 加载芯片索引
+  const [indexError, setIndexError] = useState("");
   useEffect(() => {
     fetch("/chips/index.json")
       .then((r) => r.json())
       .then((data) => {
-        setChipIndex(data.chips ?? []);
+        if (!Array.isArray(data?.chips)) {
+          setIndexError("加载芯片列表失败：数据格式错误");
+          setIndexLoading(false);
+          return;
+        }
+        setChipIndex(data.chips);
         setIndexLoading(false);
       })
-      .catch(() => setIndexLoading(false));
+      .catch(() => {
+        setIndexError("加载芯片列表失败：网络错误");
+        setIndexLoading(false);
+      });
   }, []);
 
   // 选中芯片后懒加载完整引脚数据
@@ -156,9 +165,25 @@ export function GpioPlanner() {
   const handleImport = useCallback(() => {
     try {
       const parsed = JSON.parse(importJson);
-      if (!parsed.id || !parsed.name || !Array.isArray(parsed.pins)) {
-        setImportError("JSON 需要包含 id、name、pins 字段");
+      if (!parsed.id || typeof parsed.id !== "string") {
+        setImportError("缺少 id 字段（string）");
         return;
+      }
+      if (!parsed.name || typeof parsed.name !== "string") {
+        setImportError("缺少 name 字段（string）");
+        return;
+      }
+      if (!Array.isArray(parsed.pins) || parsed.pins.length === 0) {
+        setImportError("缺少 pins 数组（至少 1 个引脚）");
+        return;
+      }
+      for (let i = 0; i < parsed.pins.length; i++) {
+        const pin = parsed.pins[i];
+        if (typeof pin?.number !== "number" || typeof pin?.name !== "string" ||
+            typeof pin?.defaultFunction !== "string" || !Array.isArray(pin?.alternateFunctions)) {
+          setImportError(`pins[${i}] 格式错误：需要 number/name/defaultFunction/alternateFunctions`);
+          return;
+        }
       }
       setChipData(parsed as ChipDefinition);
       setChipId(parsed.id);
@@ -166,7 +191,7 @@ export function GpioPlanner() {
       setShowImport(false);
       setImportJson("");
     } catch {
-      setImportError("JSON 解析失败");
+      setImportError("JSON 解析失败，请检查格式");
     }
   }, [importJson, setChipId]);
 
