@@ -20,7 +20,6 @@ import {
 } from "@/components/ui/select";
 // Tabs import removed — using manual tab state to avoid Recharts zero-dimension issue
 import {
-  Play,
   RotateCcw,
   ChevronDown,
   ChevronUp,
@@ -33,7 +32,6 @@ import { PID_PRESETS } from "@/lib/pid-simulator/presets";
 import type {
   PIDConfig,
   PlantModel,
-  PIDSimulationResult,
 } from "@/types/pid-simulator";
 
 // Recharts 动态导入
@@ -65,7 +63,6 @@ const PRESET_ICONS = [Zap, Thermometer, Bike] as const;
 
 export function PIDSimulator() {
   const [config, setConfig] = useState<PIDConfig>(DEFAULT_CONFIG);
-  const [result, setResult] = useState<PIDSimulationResult | null>(null);
   const [guideOpen, setGuideOpen] = useState(false);
   const [chartTab, setChartTab] = useState<"response" | "error" | "output">("response");
 
@@ -86,14 +83,8 @@ export function PIDSimulator() {
     []
   );
 
-  const handleRun = useCallback(() => {
-    const res = simulatePID(config);
-    setResult(res);
-  }, [config]);
-
   const handleReset = useCallback(() => {
     setConfig(DEFAULT_CONFIG);
-    setResult(null);
   }, []);
 
   const handlePreset = useCallback(
@@ -108,9 +99,7 @@ export function PIDSimulator() {
         },
       };
       setConfig(newConfig);
-      // 自动运行仿真
-      const res = simulatePID(newConfig);
-      setResult(res);
+      // autoResult 会通过 useMemo 自动重新仿真
     },
     []
   );
@@ -142,8 +131,6 @@ export function PIDSimulator() {
       return null;
     }
   }, [config]);
-
-  const displayResult = result ?? autoResult;
 
   return (
     <div className="space-y-6">
@@ -378,13 +365,9 @@ export function PIDSimulator() {
 
           {/* 操作按钮 */}
           <div className="flex gap-2">
-            <Button onClick={handleRun} className="flex-1">
-              <Play className="size-3.5" data-icon="inline-start" />
-              运行仿真
-            </Button>
-            <Button variant="outline" onClick={handleReset}>
+            <Button variant="outline" onClick={handleReset} className="flex-1">
               <RotateCcw className="size-3.5" data-icon="inline-start" />
-              重置
+              重置默认参数
             </Button>
           </div>
         </div>
@@ -392,31 +375,31 @@ export function PIDSimulator() {
         {/* 右侧：图表 + 指标 */}
         <div className="space-y-4">
           {/* 性能指标 */}
-          {displayResult && (
+          {autoResult && (
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
               <StatCard
                 label="上升时间"
                 value={
-                  displayResult.metrics.riseTime === Infinity
+                  autoResult.metrics.riseTime === Infinity
                     ? "N/A"
-                    : `${displayResult.metrics.riseTime.toFixed(3)} s`
+                    : `${autoResult.metrics.riseTime.toFixed(3)} s`
                 }
               />
               <StatCard
                 label="超调量"
-                value={`${displayResult.metrics.overshoot.toFixed(1)}%`}
+                value={`${autoResult.metrics.overshoot.toFixed(1)}%`}
               />
               <StatCard
                 label="调节时间"
                 value={
-                  displayResult.metrics.settlingTime === Infinity
+                  autoResult.metrics.settlingTime === Infinity
                     ? "N/A"
-                    : `${displayResult.metrics.settlingTime.toFixed(3)} s`
+                    : `${autoResult.metrics.settlingTime.toFixed(3)} s`
                 }
               />
               <StatCard
                 label="稳态误差"
-                value={displayResult.metrics.steadyStateError.toFixed(3)}
+                value={autoResult.metrics.steadyStateError.toFixed(3)}
               />
             </div>
           )}
@@ -440,7 +423,7 @@ export function PIDSimulator() {
                 ))}
               </div>
               <PIDChart
-                data={displayResult?.data ?? []}
+                data={autoResult?.data ?? []}
                 type={chartTab}
               />
             </CardContent>

@@ -131,7 +131,7 @@ export function calculateMetrics(
   data: SimPoint[],
   setpoint: number
 ): PIDMetrics {
-  if (data.length === 0 || setpoint === 0) {
+  if (data.length === 0) {
     return {
       riseTime: Infinity,
       overshoot: 0,
@@ -140,8 +140,10 @@ export function calculateMetrics(
     };
   }
 
-  const threshold90 = setpoint * 0.9;
-  const tolerance = Math.abs(setpoint) * 0.02; // ±2%
+  // setpoint=0 时用绝对阈值
+  const absSetpoint = Math.abs(setpoint);
+  const threshold90 = setpoint === 0 ? 0 : setpoint * 0.9;
+  const tolerance = absSetpoint > 0 ? absSetpoint * 0.02 : 0.02; // ±2%（setpoint=0 时用绝对值 0.02）
 
   // 上升时间：首次达到 90% 目标值
   let riseTime = Infinity;
@@ -162,10 +164,12 @@ export function calculateMetrics(
   } else {
     maxValue = Math.min(...data.map((p) => p.processVariable));
   }
-  const overshoot = Math.max(
-    0,
-    ((Math.abs(maxValue) - Math.abs(setpoint)) / Math.abs(setpoint)) * 100
-  );
+  const overshoot =
+    absSetpoint > 0
+      ? Math.max(0, ((Math.abs(maxValue) - absSetpoint) / absSetpoint) * 100)
+      : Math.abs(maxValue) > tolerance
+        ? Math.abs(maxValue) * 100 // setpoint=0 时用绝对值
+        : 0;
 
   // 调节时间：最后一次偏离 ±2% 的时间
   let settlingTime = Infinity;
