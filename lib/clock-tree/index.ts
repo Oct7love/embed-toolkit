@@ -133,11 +133,8 @@ export function checkViolations(
 
   // VCO output range check (F4/H7)
   if (constraints.vcoRange && freqs.pllInput > 0) {
-    const [vcoMin, vcoMax] = constraints.vcoRange;
-    // 估算 VCO：对 F4 VCO = pllInput * PLLN，对 H7 VCO = pllInput * DIVN
-    // pllOutput = VCO / P，所以 VCO ≈ pllOutput * P （近似检查，基于输出和分频因子）
-    // 更准确：VCO = pllInput * N → 但 N 不在 freqs 中。用 pllOutput 和输入推断。
-    // 简化：如果 pllOutput > vcoMax 则必然 VCO 超限
+    const vcoMax = constraints.vcoRange[1];
+    // 简化检查：如果 pllOutput > vcoMax 则必然 VCO 超限
     if (freqs.pllOutput > vcoMax) {
       violations.push({
         node: "VCO",

@@ -48,6 +48,8 @@ export interface ChipPresetConfig {
   sampleCyclesOptions: number[];
   defaultSampleCycles: number;
   defaultResolution: ADCResolution;
+  /** 该系列支持的分辨率选项 */
+  supportedResolutions: ADCResolution[];
 }
 
 /** Available sample cycle options for STM32F1/F4 */
@@ -68,6 +70,7 @@ export const CHIP_PRESETS: Record<ChipPreset, ChipPresetConfig> = {
     sampleCyclesOptions: SAMPLE_CYCLES_OPTIONS_F1,
     defaultSampleCycles: 1.5,
     defaultResolution: 12,
+    supportedResolutions: [12], // F1 仅支持 12 bit
   },
   stm32f4: {
     label: "STM32F4 (36 MHz)",
@@ -76,6 +79,7 @@ export const CHIP_PRESETS: Record<ChipPreset, ChipPresetConfig> = {
     sampleCyclesOptions: SAMPLE_CYCLES_OPTIONS_F4,
     defaultSampleCycles: 3,
     defaultResolution: 12,
+    supportedResolutions: [8, 10, 12], // F4 不支持 16 bit
   },
   custom: {
     label: "Custom",
@@ -84,6 +88,7 @@ export const CHIP_PRESETS: Record<ChipPreset, ChipPresetConfig> = {
     sampleCyclesOptions: SAMPLE_CYCLES_OPTIONS_F1,
     defaultSampleCycles: 1.5,
     defaultResolution: 12,
+    supportedResolutions: [8, 10, 12, 16], // 自定义全部可选
   },
 };
 

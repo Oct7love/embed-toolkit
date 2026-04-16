@@ -33,7 +33,6 @@ import type {
 } from "@/types/adc-calculator";
 import {
   CHIP_PRESETS,
-  RESOLUTION_OPTIONS,
 } from "@/types/adc-calculator";
 
 const DEFAULT_CONFIG: ADCConfig = {
@@ -228,7 +227,7 @@ export function ADCCalculator() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {RESOLUTION_OPTIONS.map((r) => (
+                  {presetConfig.supportedResolutions.map((r) => (
                     <SelectItem key={r} value={String(r)}>
                       {r} bit
                     </SelectItem>
