@@ -22,14 +22,15 @@ export function calculateADC(config: ADCConfig): ADCResult {
     dmaBufferMultiplier,
   } = config;
 
-  // Guard against division by zero
-  if (adcClock <= 0) {
+  // Guard against invalid inputs
+  if (adcClock <= 0 || channels <= 0) {
     return {
       singleConvTime: 0,
       totalScanTime: 0,
       maxSampleRate: 0,
       lsbVoltage: 0,
       dmaBufferSize: 0,
+      error: adcClock <= 0 ? "ADC 时钟频率必须大于 0" : "通道数必须大于 0",
     };
   }
 

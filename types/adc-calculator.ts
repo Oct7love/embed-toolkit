@@ -36,6 +36,8 @@ export interface ADCResult {
   lsbVoltage: number;
   /** Recommended DMA buffer size in samples */
   dmaBufferSize: number;
+  /** Validation error if inputs are invalid */
+  error?: string;
 }
 
 /** Chip preset configuration */
