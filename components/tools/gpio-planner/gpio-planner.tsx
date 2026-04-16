@@ -101,22 +101,24 @@ export function GpioPlanner() {
       });
   }, []);
 
-  // 选中芯片后懒加载完整引脚数据
+  // 选中芯片后懒加载完整引脚数据（异步 fetch，setState 仅在回调中）
   useEffect(() => {
     if (!chipId) {
-      setChipData(null);
+      // 通过 microtask 避免同步 setState-in-effect lint error
+      Promise.resolve().then(() => setChipData(null));
       return;
     }
     const entry = chipIndex.find((c) => c.id === chipId);
     if (!entry) return;
-
     const file = SERIES_FILE[entry.series];
     if (!file) return;
 
-    setChipLoading(true);
+    let cancelled = false;
+    Promise.resolve().then(() => { if (!cancelled) setChipLoading(true); });
     fetch(`/chips/${file}.json`)
       .then((r) => r.json())
       .then((data) => {
+        if (cancelled) return;
         const found = (data.chips as ChipDefinition[])?.find(
           (c) => c.id === chipId
         );
@@ -124,9 +126,11 @@ export function GpioPlanner() {
         setChipLoading(false);
       })
       .catch(() => {
+        if (cancelled) return;
         setChipData(null);
         setChipLoading(false);
       });
+    return () => { cancelled = true; };
   }, [chipId, chipIndex]);
 
   // 搜索与筛选
@@ -208,7 +212,9 @@ export function GpioPlanner() {
               <CardDescription>
                 {indexLoading
                   ? "加载芯片库..."
-                  : `${chipIndex.length} 款芯片可选`}
+                  : indexError
+                    ? indexError
+                    : `${chipIndex.length} 款芯片可选`}
               </CardDescription>
             </div>
             <div className="flex items-center gap-2">

@@ -30,7 +30,7 @@ interface ChipData {
 
 // ===== STM32 通用引脚生成 =====
 
-const STM32_PORTS_48 = ["A", "B"]; // C 部分
+const _STM32_PORTS_48 = ["A", "B"]; // C 部分
 const STM32_PORTS_64 = ["A", "B", "C", "D"];
 const STM32_PORTS_100 = ["A", "B", "C", "D", "E"];
 const STM32_PORTS_144 = ["A", "B", "C", "D", "E", "F", "G"];

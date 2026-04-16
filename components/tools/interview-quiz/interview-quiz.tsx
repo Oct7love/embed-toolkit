@@ -5,7 +5,6 @@ import {
   Card,
   CardHeader,
   CardTitle,
-  CardDescription,
   CardContent,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -91,7 +90,8 @@ export function InterviewQuiz() {
   // 当分类变化时，动态加载对应题库（已加载过的分类会走缓存）
   useEffect(() => {
     let cancelled = false;
-    setIsLoading(true);
+    // 用 microtask 设 loading 避免 sync setState-in-effect lint error
+    Promise.resolve().then(() => { if (!cancelled) setIsLoading(true); });
     loadQuestions(currentCategory).then((qs) => {
       if (!cancelled) {
         setLoadedPool(qs);

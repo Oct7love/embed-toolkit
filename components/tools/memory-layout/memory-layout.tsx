@@ -29,7 +29,6 @@ import {
 import { parseAddress, parseSize } from "@/lib/memory-layout/format";
 import type {
   MemorySection,
-  MemoryType,
   SectionType,
 } from "@/types/memory-layout";
 import {

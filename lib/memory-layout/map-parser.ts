@@ -78,8 +78,7 @@ export function parseMapFile(content: string): MemorySection[] {
   const stackSize = extractSymbolValue(content, "_Min_Stack_Size");
   const stackTop = extractSymbolValue(content, "_estack");
 
-  // If we found BSS end, place heap/stack after it
-  const bssSection = sections.find((s) => s.type === "bss");
+  // Place heap/stack after the last RAM section
   const lastRamSection = sections
     .filter((s) => s.memoryType === "ram")
     .sort((a, b) => (a.startAddress + a.size) - (b.startAddress + b.size))

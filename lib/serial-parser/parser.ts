@@ -1,5 +1,4 @@
 import type {
-  ProtocolField,
   ProtocolTemplate,
   ParsedField,
   ParseResult,

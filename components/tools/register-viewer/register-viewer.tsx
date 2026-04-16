@@ -55,7 +55,7 @@ export function RegisterViewer() {
     [templates, activeTemplateId]
   );
 
-  const fields = activeTemplate?.fields ?? [];
+  const fields = useMemo(() => activeTemplate?.fields ?? [], [activeTemplate]);
 
   const colorMap = useMemo(() => buildFieldColorMap(fields), [fields]);
   const labelMap = useMemo(() => buildFieldLabelMap(fields), [fields]);

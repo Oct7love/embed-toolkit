@@ -17,7 +17,6 @@ import {
   calculateVoltageDividerForward,
   calculateVoltageDividerReverse,
   formatResistance,
-  findNearestE24,
 } from "@/lib/rc-calculator";
 
 const RESISTANCE_UNITS: ResistanceUnit[] = ["Ω", "kΩ", "MΩ"];

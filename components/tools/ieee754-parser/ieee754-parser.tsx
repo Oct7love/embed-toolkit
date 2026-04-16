@@ -9,7 +9,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { BitGrid } from "@/components/shared/bit-grid";
 import { CopyButton } from "@/components/shared/copy-button";
@@ -18,7 +18,6 @@ import type { FloatType } from "@/types/ieee754-parser";
 import {
   parseHexToIEEE754,
   floatToHex,
-  hexToFloat,
   formatFloatValue,
   buildBitColorMap,
   buildBitLabelMap,
@@ -67,11 +66,6 @@ export function IEEE754Parser() {
     }
     // For float64, show upper 32 bits
     return parseInt(hex.slice(0, 8), 16) >>> 0;
-  }, [result, floatType]);
-
-  const gridValueLow = useMemo(() => {
-    if (!result || floatType === "float32") return 0;
-    return parseInt(result.hexString.slice(8, 16), 16) >>> 0;
   }, [result, floatType]);
 
   const handleHexChange = useCallback(
