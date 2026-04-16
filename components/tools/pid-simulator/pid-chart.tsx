@@ -61,7 +61,7 @@ function ResponseChart({ data }: { data: SimPoint[] }) {
           data={data}
           margin={{ top: 10, right: 20, left: 10, bottom: 20 }}
         >
-          <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
+          <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
           <XAxis
             dataKey="time"
             type="number"
@@ -110,7 +110,7 @@ function ResponseChart({ data }: { data: SimPoint[] }) {
           <Line
             type="monotone"
             dataKey="processVariable"
-            stroke="hsl(var(--chart-1, 220 70% 50%))"
+            stroke="#3b82f6"
             strokeWidth={2}
             dot={false}
             activeDot={{ r: 3 }}
@@ -129,7 +129,7 @@ function ErrorChart({ data }: { data: SimPoint[] }) {
           data={data}
           margin={{ top: 10, right: 20, left: 10, bottom: 20 }}
         >
-          <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
+          <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
           <XAxis
             dataKey="time"
             type="number"
@@ -162,13 +162,13 @@ function ErrorChart({ data }: { data: SimPoint[] }) {
           />
           <ReferenceLine
             y={0}
-            stroke="hsl(var(--border))"
+            stroke="#4b5563"
             strokeDasharray="3 3"
           />
           <Line
             type="monotone"
             dataKey="error"
-            stroke="hsl(var(--chart-4, 280 65% 60%))"
+            stroke="#a855f7"
             strokeWidth={2}
             dot={false}
             activeDot={{ r: 3 }}
@@ -187,7 +187,7 @@ function OutputChart({ data }: { data: SimPoint[] }) {
           data={data}
           margin={{ top: 10, right: 20, left: 10, bottom: 20 }}
         >
-          <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
+          <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
           <XAxis
             dataKey="time"
             type="number"
@@ -220,13 +220,13 @@ function OutputChart({ data }: { data: SimPoint[] }) {
           />
           <ReferenceLine
             y={0}
-            stroke="hsl(var(--border))"
+            stroke="#4b5563"
             strokeDasharray="3 3"
           />
           <Line
             type="monotone"
             dataKey="controlOutput"
-            stroke="hsl(var(--chart-3, 30 80% 55%))"
+            stroke="#f97316"
             strokeWidth={2}
             dot={false}
             activeDot={{ r: 3 }}
