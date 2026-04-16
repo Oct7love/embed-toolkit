@@ -5,8 +5,10 @@ import {
   Calculator,
   ChevronRightSquare,
   CircuitBoard,
+  Clock,
   Cpu,
   FileCode2,
+  Gauge,
   GraduationCap,
   Hash,
   LayoutGrid,
@@ -17,6 +19,7 @@ import {
   Router,
   Sigma,
   Timer,
+  Zap,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
@@ -144,6 +147,27 @@ export const toolCategories: ToolCategory[] = [
         slug: "rc-calculator",
         description: "电阻分压 + RC 低通/高通滤波器，计算截止频率并绘制波特图",
         icon: Calculator,
+        priority: "P1",
+      },
+      {
+        name: "定时器/PWM 计算器",
+        slug: "timer-calculator",
+        description: "输入系统时钟和目标频率，自动计算 PSC/ARR/CCR 所有可行组合，支持 PWM 占空比",
+        icon: Clock,
+        priority: "P1",
+      },
+      {
+        name: "波特率误差计算器",
+        slug: "baudrate-calculator",
+        description: "计算 UART 分频系数和实际波特率误差，支持 8x/16x 过采样和批量对比",
+        icon: Gauge,
+        priority: "P1",
+      },
+      {
+        name: "ADC 采样计算器",
+        slug: "adc-calculator",
+        description: "计算 ADC 转换时间、最大采样率、LSB 精度和 DMA 缓冲区建议",
+        icon: Zap,
         priority: "P1",
       },
     ],
