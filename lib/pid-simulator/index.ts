@@ -171,24 +171,27 @@ export function calculateMetrics(
         ? Math.abs(maxValue) * 100 // setpoint=0 时用绝对值
         : 0;
 
-  // 调节时间：最后一次偏离 ±2% 的时间
+  // 调节时间：最后一个偏离 ±2% 带的时刻之后的时间
+  // 如果最终（最后一个点）仍在 ±2% 带外，视为未收敛 → Infinity
   let settlingTime = Infinity;
-  for (let i = data.length - 1; i >= 0; i--) {
-    if (Math.abs(data[i].processVariable - setpoint) > tolerance) {
-      settlingTime = i < data.length - 1 ? data[i + 1].time : data[i].time;
-      break;
+  const lastPoint = data[data.length - 1];
+  const lastInBand = Math.abs(lastPoint.processVariable - setpoint) <= tolerance;
+
+  if (lastInBand) {
+    // 从末尾向前找最后一次偏离
+    for (let i = data.length - 1; i >= 0; i--) {
+      if (Math.abs(data[i].processVariable - setpoint) > tolerance) {
+        // 进入 band 的时刻 = 下一个点
+        settlingTime = i < data.length - 1 ? data[i + 1].time : lastPoint.time;
+        break;
+      }
     }
-  }
-  // 如果从未偏离 ±2%（初始就在范围内），设为 0
-  if (settlingTime === Infinity) {
-    // 检查是否所有点都在范围内
-    const allInRange = data.every(
-      (p) => Math.abs(p.processVariable - setpoint) <= tolerance
-    );
-    if (allInRange) {
+    // 如果一直在 band 内（包括初始就在范围）
+    if (settlingTime === Infinity) {
       settlingTime = 0;
     }
   }
+  // else: lastInBand = false → settlingTime stays Infinity（未收敛）
 
   // 稳态误差：最后 10% 数据点的平均误差
   const last10Count = Math.max(1, Math.floor(data.length * 0.1));
