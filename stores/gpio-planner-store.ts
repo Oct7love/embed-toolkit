@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import type { GpioPlannerStore } from "@/types/gpio-planner";
+import { isRecord, makeSafeMerge } from "./_schema-guards";
 
 export const useGpioPlannerStore = create<GpioPlannerStore>()(
   persist(
@@ -31,6 +32,13 @@ export const useGpioPlannerStore = create<GpioPlannerStore>()(
       partialize: (state) => ({
         chipId: state.chipId,
         assignments: state.assignments,
+      }),
+      merge: makeSafeMerge<GpioPlannerStore>((p) => {
+        if (!isRecord(p)) return null;
+        return {
+          chipId: typeof p.chipId === "string" ? p.chipId : "",
+          assignments: isRecord(p.assignments) ? (p.assignments as Record<number, string>) : {},
+        };
       }),
     }
   )
