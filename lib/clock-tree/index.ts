@@ -21,26 +21,26 @@ export function formatFreq(hz: number): string {
 
 /* ======================== PLL output calc ========================= */
 
-function calcPllOutput(pll: PllParams, hsi: number, hse: number): { input: number; output: number } {
+function calcPllOutput(pll: PllParams, hsi: number, hse: number): { input: number; output: number; error?: string } {
   const srcFreq = pll.pllSrc === "HSI" ? hsi : hse;
+  if (srcFreq <= 0) return { input: 0, output: 0, error: "时钟源频率为 0" };
 
   switch (pll.type) {
     case "f1": {
-      // F1: PLL input = src / 2 (when HSI) or src (when HSE)
-      // simplified: PLL output = src * PLLMUL
-      // For HSI the input is divided by 2 internally
       const input = pll.pllSrc === "HSI" ? srcFreq / 2 : srcFreq;
+      if (pll.pllMul <= 0) return { input, output: 0, error: "PLLMUL 不能为 0" };
       return { input, output: input * pll.pllMul };
     }
     case "f4": {
-      // VCO_input = src / PLLM, VCO_output = VCO_input * PLLN
-      // PLL_output = VCO_output / PLLP
+      if (pll.pllM <= 0) return { input: 0, output: 0, error: "PLLM 不能为 0（除零）" };
+      if (pll.pllP <= 0) return { input: 0, output: 0, error: "PLLP 不能为 0（除零）" };
       const vcoInput = srcFreq / pll.pllM;
       const vcoOutput = vcoInput * pll.pllN;
       return { input: vcoInput, output: vcoOutput / pll.pllP };
     }
     case "h7": {
-      // ref = src / DIVM, VCO = ref * DIVN, output = VCO / DIVP
+      if (pll.divM <= 0) return { input: 0, output: 0, error: "DIVM 不能为 0（除零）" };
+      if (pll.divP <= 0) return { input: 0, output: 0, error: "DIVP 不能为 0（除零）" };
       const ref = srcFreq / pll.divM;
       const vco = ref * pll.divN;
       return { input: ref, output: vco / pll.divP };
