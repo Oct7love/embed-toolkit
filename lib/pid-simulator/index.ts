@@ -37,10 +37,9 @@ export function simulatePID(config: PIDConfig): PIDSimulationResult {
   let prevError = setpoint - initialValue;
   let integral = 0;
 
-  // 二阶模型需要保存前两步状态
-  let y1 = initialValue; // y[n-1]
-  let y2 = initialValue; // y[n-2]
-  let u1 = 0; // u[n-1]
+  // 二阶状态空间：y1 = 位置（输出），y2 = 速度
+  let y1 = initialValue; // x1 (position / output)
+  let y2 = 0;            // x2 (velocity)
 
   for (let i = 0; i <= steps; i++) {
     const time = i * dt;
@@ -85,30 +84,22 @@ export function simulatePID(config: PIDConfig): PIDSimulationResult {
         break;
       }
       case "second-order": {
-        // 二阶振荡：H(s) = wn^2 / (s^2 + 2*zeta*wn*s + wn^2)
-        // 状态空间离散化（欧拉法）
-        // 令 y'' + 2*zeta*wn*y' + wn^2*y = wn^2 * gain * u
-        // 用差分近似：
-        //   y'' ≈ (y[n+1] - 2*y[n] + y[n-1]) / dt^2
-        //   y'  ≈ (y[n] - y[n-1]) / dt
+        // 二阶振荡：H(s) = gain * wn^2 / (s^2 + 2*zeta*wn*s + wn^2)
+        // 状态空间法：x1 = y, x2 = y'
+        //   x1' = x2
+        //   x2' = wn^2 * gain * u - 2*zeta*wn*x2 - wn^2*x1
+        // 半隐式欧拉（先更新 x2 再更新 x1，数值稳定性更好）
         const wn = plantParams.wn ?? 10;
         const zeta = plantParams.zeta ?? 0.5;
-
         const wn2 = wn * wn;
-        const dt2 = dt * dt;
 
-        // y[n+1] = (wn^2 * gain * u * dt^2 + (2 + 2*zeta*wn*dt)*y[n]  - (1 + 2*zeta*wn*dt - wn^2*dt^2) ... )
-        // 标准差分方程重排：
-        // y[n+1] = (wn^2 * gain * u * dt^2 + 2*y[n] - y[n-1] + 2*zeta*wn*dt*(y[n] - y[n-1]) - wn^2*dt^2*y[n])
-        // 简化：(1) * y[n+1] = wn2*gain*u*dt2 + (2 - wn2*dt2)*y1 - y2 + 2*zeta*wn*dt*(y1 - y2)
-        // 但更精准：用分母为 (1 + 2*zeta*wn*dt + wn2*dt2) 来保证稳定性（双线性近似思路）
-        const denom = 1 + 2 * zeta * wn * dt + wn2 * dt2;
-        const nextY =
-          (wn2 * gain * u * dt2 + (2 + 2 * zeta * wn * dt) * y1 - y2) / denom;
+        // y2 作为 x2（速度），y1 作为 x1（位置）
+        const x2New = y2 + dt * (wn2 * gain * u - 2 * zeta * wn * y2 - wn2 * y1);
+        const x1New = y1 + dt * x2New;
 
-        y2 = y1;
-        y1 = nextY;
-        processVariable = nextY;
+        y1 = x1New;
+        y2 = x2New;
+        processVariable = x1New;
         break;
       }
       case "integrator": {
@@ -119,13 +110,12 @@ export function simulatePID(config: PIDConfig): PIDSimulationResult {
       }
     }
 
-    // 二阶模型用 y1/y2 跟踪，但首次要同步
+    // 非二阶模型：同步 y1（位置）= processVariable，y2（速度）= 0
     if (plantModel !== "second-order") {
       y1 = processVariable;
-      y2 = processVariable;
+      y2 = 0;
     }
 
-    u1 = u;
     prevError = error;
   }
 
