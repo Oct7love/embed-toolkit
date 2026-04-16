@@ -145,8 +145,9 @@ export function BaudrateCalculator() {
           <CardTitle>计算结果</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            <ResultItem label="USARTDIV（整数）" value={String(result.divider)} mono />
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+            <ResultItem label="BRR 寄存器值" value={`0x${result.brrValue.toString(16).toUpperCase().padStart(4, "0")}`} mono />
+            <ResultItem label={`Mantissa[15:4] / Fraction[${oversampling === 16 ? "3:0" : "2:0"}]`} value={`${result.mantissa} / ${result.fraction}`} mono />
             <ResultItem
               label="实际波特率"
               value={`${result.actualBaudrate.toFixed(2)} bps`}

@@ -6,6 +6,9 @@ export interface BaudrateConfig {
 
 export interface BaudrateResult {
   divider: number;
+  brrValue: number;
+  mantissa: number;
+  fraction: number;
   actualBaudrate: number;
   errorPercent: number;
   isAcceptable: boolean;
