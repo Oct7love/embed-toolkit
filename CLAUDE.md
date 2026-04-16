@@ -180,13 +180,13 @@ pnpm lint             # 代码检查
 pnpm type-check       # 类型检查
 ```
 
-## 工具分类速查（共 18 个，全部完成）
+## 工具分类速查（共 23 个，全部完成）
 
 | 分类 | 路由前缀 | 工具数量 | 具体工具 |
 |------|----------|----------|----------|
 | 数据转换工具 | `/tools/converter/` | 5 | base-converter, ieee754-parser, endian-converter, checksum-calculator, ascii-table |
 | 协议调试工具 | `/tools/protocol/` | 4 | serial-parser, mqtt-parser, json-builder, modbus-generator |
-| 芯片与硬件工具 | `/tools/hardware/` | 4 | register-viewer, gpio-planner, resistor-calculator, rc-calculator |
-| RTOS 可视化工具 | `/tools/rtos/` | 2 | task-scheduler, memory-layout |
+| 芯片与硬件工具 | `/tools/hardware/` | 8 | register-viewer, gpio-planner (10 芯片), resistor-calculator, rc-calculator, timer-calculator, baudrate-calculator, adc-calculator, clock-tree |
+| RTOS 可视化工具 | `/tools/rtos/` | 3 | task-scheduler, memory-layout, pid-simulator |
 | 代码辅助工具 | `/tools/codegen/` | 2 | bit-operation, state-machine |
 | 学习与求职 | `/tools/learning/` | 1 | interview-quiz（446 道题） |

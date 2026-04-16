@@ -321,3 +321,38 @@ pnpm build
 | Worktree 隔离 + 并行 Agent | 中等 | 代码冲突和 Agent 中断风险是两大痛点 |
 | PR 审查 + 合并到 dev | 有效 | 多数工具通过 PR 审查即可合并，偶有格式问题手动修 |
 | 分批迭代（如题库 16 批） | 高效 | 规避 token 限制，每批独立验证，质量可控 |
+
+---
+
+## 阶段五：功能扩展（v1.1.0）
+
+### 目标
+
+在 v1.0.0（18 工具）基础上新增 5 个高频需求工具和 8 款芯片数据，覆盖更多实际开发场景。
+
+### 第一批：3 个硬件计算器 + 8 款芯片（4 Agent 并行）
+
+| # | 工具/任务 | Agent | 路由 |
+|---|-----------|-------|------|
+| 5.1 | 定时器/PWM 计算器 | A | `/tools/hardware/timer-calculator` |
+| 5.2 | 波特率误差计算器 | B | `/tools/hardware/baudrate-calculator` |
+| 5.3 | ADC 采样计算器 | C | `/tools/hardware/adc-calculator` |
+| 5.4 | GPIO 芯片扩充 ×8 | D | `lib/gpio-planner/chips/` |
+
+新增芯片：STM32F103RCT6、STM32F103ZET6、STM32F407VET6、STM32F411CEU6、STM32G431RBT6、ESP32-S3、ESP32-C3、GD32F103C8T6
+
+### 第二批：2 个高级工具（2 Agent 并行）
+
+| # | 工具 | Agent | 路由 |
+|---|------|-------|------|
+| 5.5 | 时钟树可视化配置器 | A | `/tools/hardware/clock-tree` |
+| 5.6 | PID 调参模拟器 | B | `/tools/rtos/pid-simulator` |
+
+### 里程碑
+
+- [x] 3 个硬件计算器开发完成
+- [x] 8 款新芯片数据全部就位（总计 10 款）
+- [x] 时钟树配置器（STM32F1/F4/H7 三套约束 + C 代码导出）
+- [x] PID 模拟器（3 种系统模型 + Recharts 图表 + 性能指标）
+- [x] `pnpm build` 27 页面零错误
+- [x] 合并到 main，tagged v1.1.0

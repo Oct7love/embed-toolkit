@@ -5,6 +5,31 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.0] - 2026-04-16
+
+5 个新工具 + 8 款新芯片定义，工具总数从 18 增加到 23，芯片支持从 2 增加到 10。
+
+### 新增工具
+
+- **定时器/PWM 计算器** (`/tools/hardware/timer-calculator`) — 输入系统时钟和目标频率，自动计算 PSC/ARR/CCR 所有可行组合，支持芯片时钟预设（STM32F1/F4/H7/ESP32）
+- **波特率误差计算器** (`/tools/hardware/baudrate-calculator`) — UART 分频系数、实际波特率、误差百分比（颜色编码），支持 8x/16x 过采样和批量对比
+- **ADC 采样计算器** (`/tools/hardware/adc-calculator`) — 计算 ADC 转换时间、最大采样率、LSB 精度和 DMA 缓冲区建议，支持 STM32F1/F4 预设
+- **时钟树配置器** (`/tools/hardware/clock-tree`) — 可视化 STM32 时钟树（F1/F4/H7），配置 HSI/HSE/PLL/AHB/APB 分频，红色警告超限频率，导出 HAL 风格 SystemClock_Config() C 代码
+- **PID 调参模拟器** (`/tools/rtos/pid-simulator`) — Kp/Ki/Kd 滑块实时仿真，3 种系统模型（一阶/二阶/积分），Recharts 阶跃响应图，性能指标（上升时间/超调量/调节时间/稳态误差），3 套预设（电机/温控/平衡车）
+
+### 新增芯片定义（GPIO 引脚分配器）
+
+- **STM32F103RCT6** — LQFP64，3 UART / 2 SPI / 2 I2C
+- **STM32F103ZET6** — LQFP144，5 UART / 3 SPI / 2 I2C，全引出
+- **STM32F407VET6** — LQFP100，F4 系列，DSP + FPU
+- **STM32F411CEU6** — QFN48，黑色药丸板（BlackPill）
+- **STM32G431RBT6** — LQFP64，G4 系列，电机控制
+- **ESP32-S3** — 双核 LX7 + USB OTG + AI 加速
+- **ESP32-C3** — RISC-V 单核 + Wi-Fi/BLE
+- **GD32F103C8T6** — 国产 STM32 替代，AF 标注 GD32 命名差异
+
+---
+
 ## [1.0.0] - 2026-04-15
 
 首个正式版本 — 18 个嵌入式开发工具 + 446 道面试题库全部完成。

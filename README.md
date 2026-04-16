@@ -3,7 +3,8 @@
 > 嵌入式开发者的在线工具箱 — 浏览器端一站式嵌入式开发工具集合
 
 ![Status](https://img.shields.io/badge/Status-Completed-brightgreen)
-![Tools](https://img.shields.io/badge/Tools-18%2F18-blue)
+![Tools](https://img.shields.io/badge/Tools-23-blue)
+![Chips](https://img.shields.io/badge/Chips-10-teal)
 ![Questions](https://img.shields.io/badge/Questions-446-orange)
 ![Next.js](https://img.shields.io/badge/Next.js-16-black)
 ![License](https://img.shields.io/badge/License-MIT-lightgrey)
@@ -37,7 +38,7 @@ Embed Toolkit 将嵌入式工程师日常开发中频繁用到的计算、转换
 
 > 纯前端应用，所有计算在浏览器本地完成，不上传任何数据。本地/离线使用见下方「本地开发」章节。
 
-## 功能模块（18 个工具，6 大分类，全部完成 ✅）
+## 功能模块（23 个工具，6 大分类，全部完成 ✅）
 
 ### 一、数据转换工具
 
@@ -63,9 +64,13 @@ Embed Toolkit 将嵌入式工程师日常开发中频繁用到的计算、转换
 | 工具 | 说明 | 状态 |
 |------|------|:----:|
 | 寄存器位域计算器 | 输入 32 位寄存器值，可视化显示每个 bit 的含义 | ✅ |
-| GPIO 引脚分配表 | 选择芯片型号（STM32F103C8T6/ESP32），拖拽分配复用功能，导出 C 代码 | ✅ |
+| GPIO 引脚分配表 | 选择芯片型号（**10 款**：STM32F1/F4/G4 + ESP32/S3/C3 + GD32），分配复用功能，导出 C 代码 | ✅ |
 | 电阻色环计算器 | 选择色环颜色计算阻值，或输入阻值反查色环 | ✅ |
 | 分压/RC 滤波计算器 | 输入电阻电容参数，计算分压比和截止频率，绘制波特图 | ✅ |
+| 定时器/PWM 计算器 | 输入系统时钟和目标频率，自动计算 PSC/ARR/CCR 所有可行组合 | ✅ |
+| 波特率误差计算器 | UART 分频系数、实际波特率、误差 %，支持 8x/16x 过采样和批量对比 | ✅ |
+| ADC 采样计算器 | 转换时间、最大采样率、LSB 精度、DMA 缓冲区建议 | ✅ |
+| 时钟树配置器 | 可视化 STM32 时钟树（F1/F4/H7），配置 PLL/AHB/APB 分频，导出 C 代码 | ✅ |
 
 ### 四、RTOS 可视化工具
 
@@ -73,6 +78,7 @@ Embed Toolkit 将嵌入式工程师日常开发中频繁用到的计算、转换
 |------|------|:----:|
 | 任务调度甘特图 | 输入任务参数，模拟 FreeRTOS 抢占式调度，生成时序甘特图 | ✅ |
 | 内存布局可视化 | 手动配置或粘贴 .map 文件，可视化 RAM/Flash 分区占用情况 | ✅ |
+| PID 调参模拟器 | Kp/Ki/Kd 实时仿真阶跃响应，3 种系统模型，3 套预设参数 | ✅ |
 
 ### 五、代码辅助工具
 
@@ -85,7 +91,7 @@ Embed Toolkit 将嵌入式工程师日常开发中频繁用到的计算、转换
 
 | 工具 | 说明 | 状态 |
 |------|------|:----:|
-| 嵌入式面试题库 | **446 道题**（C 语言 127 + RTOS 107 + 协议 107 + 硬件 105）+ 收藏 + 错题本 + 统计面板 | ✅ |
+| 嵌入式面试题库 | **446 道题**（C 语言 127 + RTOS 107 + 协议 107 + 硬件 105）+ 收藏 + 错题本 + 统计 | ✅ |
 
 ## 技术栈
 
@@ -184,7 +190,7 @@ embed-toolkit/
   - **阶段二**：6 个 P0 核心工具（3 Agent 并行，3 PR）
   - **阶段三**：7 个 P1 工具（4 Agent 并行，含 Recharts 集成、FieldHighlighter 共享组件）
   - **阶段四**：5 个 P2 工具（4 Agent 并行）+ 446 道面试题库（分 16 批次迭代生成）
-- **产出**：18 个工具、446 道题、6 个规划文档、约 16000+ 行代码、零构建警告
+- **产出**：23 个工具、10 款芯片支持、446 道面试题、6 个规划文档、约 25000+ 行代码、零构建警告
 - **协作经验**：记录在 [docs/implementation_plan.md](./docs/implementation_plan.md#实际开发记录) 的「实际开发记录」章节
 
 ## License
