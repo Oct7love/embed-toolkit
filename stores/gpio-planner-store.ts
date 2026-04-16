@@ -5,7 +5,7 @@ import type { GpioPlannerStore } from "@/types/gpio-planner";
 export const useGpioPlannerStore = create<GpioPlannerStore>()(
   persist(
     (set) => ({
-      chipId: "stm32f103c8t6",
+      chipId: "",
       assignments: {},
 
       setChipId: (chipId) =>

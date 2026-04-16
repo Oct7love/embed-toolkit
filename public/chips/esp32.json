@@ -1,0 +1,1851 @@
+{
+  "chips": [
+    {
+      "id": "esp32-wroom-32",
+      "name": "ESP32-WROOM-32",
+      "manufacturer": "Espressif",
+      "package": "Module",
+      "pins": [
+        {
+          "number": 1,
+          "name": "GPIO0",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "GPIO"
+          ]
+        },
+        {
+          "number": 2,
+          "name": "GPIO1",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "UART0_TX"
+          ]
+        },
+        {
+          "number": 3,
+          "name": "GPIO2",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "ADC2_CH2",
+            "TOUCH2",
+            "LED"
+          ]
+        },
+        {
+          "number": 4,
+          "name": "GPIO3",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "UART0_RX"
+          ]
+        },
+        {
+          "number": 5,
+          "name": "GPIO4",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "ADC2_CH0",
+            "TOUCH0"
+          ]
+        },
+        {
+          "number": 6,
+          "name": "GPIO5",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "SPI_CS"
+          ]
+        },
+        {
+          "number": 7,
+          "name": "GPIO6",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "GPIO"
+          ]
+        },
+        {
+          "number": 8,
+          "name": "GPIO7",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "GPIO"
+          ]
+        },
+        {
+          "number": 9,
+          "name": "GPIO8",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "GPIO"
+          ]
+        },
+        {
+          "number": 10,
+          "name": "GPIO9",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "GPIO"
+          ]
+        },
+        {
+          "number": 11,
+          "name": "GPIO10",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "GPIO"
+          ]
+        },
+        {
+          "number": 12,
+          "name": "GPIO11",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "GPIO"
+          ]
+        },
+        {
+          "number": 13,
+          "name": "GPIO12",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "ADC2_CH5",
+            "HSPI_MISO",
+            "TOUCH5"
+          ]
+        },
+        {
+          "number": 14,
+          "name": "GPIO13",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "ADC2_CH4",
+            "HSPI_MOSI",
+            "TOUCH4"
+          ]
+        },
+        {
+          "number": 15,
+          "name": "GPIO14",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "ADC2_CH6",
+            "HSPI_CLK",
+            "TOUCH6"
+          ]
+        },
+        {
+          "number": 16,
+          "name": "GPIO15",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "ADC2_CH3",
+            "HSPI_CS",
+            "TOUCH3"
+          ]
+        },
+        {
+          "number": 17,
+          "name": "GPIO16",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "UART2_RX"
+          ]
+        },
+        {
+          "number": 18,
+          "name": "GPIO17",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "UART2_TX"
+          ]
+        },
+        {
+          "number": 19,
+          "name": "GPIO18",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "SPI_SCK"
+          ]
+        },
+        {
+          "number": 20,
+          "name": "GPIO19",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "SPI_MISO"
+          ]
+        },
+        {
+          "number": 21,
+          "name": "GPIO20",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "GPIO"
+          ]
+        },
+        {
+          "number": 22,
+          "name": "GPIO21",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "I2C_SDA"
+          ]
+        },
+        {
+          "number": 23,
+          "name": "GPIO22",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "I2C_SCL"
+          ]
+        },
+        {
+          "number": 24,
+          "name": "GPIO23",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "SPI_MOSI"
+          ]
+        },
+        {
+          "number": 25,
+          "name": "GPIO24",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "GPIO"
+          ]
+        },
+        {
+          "number": 26,
+          "name": "GPIO25",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "DAC1"
+          ]
+        },
+        {
+          "number": 27,
+          "name": "GPIO26",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "DAC2"
+          ]
+        },
+        {
+          "number": 28,
+          "name": "GPIO27",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "ADC2_CH7",
+            "TOUCH7"
+          ]
+        },
+        {
+          "number": 29,
+          "name": "GPIO28",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "GPIO"
+          ]
+        },
+        {
+          "number": 30,
+          "name": "GPIO29",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "GPIO"
+          ]
+        },
+        {
+          "number": 31,
+          "name": "GPIO30",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "GPIO"
+          ]
+        },
+        {
+          "number": 32,
+          "name": "GPIO31",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "GPIO"
+          ]
+        },
+        {
+          "number": 33,
+          "name": "GPIO32",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "ADC1_CH4",
+            "TOUCH9"
+          ]
+        },
+        {
+          "number": 34,
+          "name": "GPIO33",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "ADC1_CH5",
+            "TOUCH8"
+          ]
+        },
+        {
+          "number": 35,
+          "name": "GPIO34",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "ADC1_CH6"
+          ]
+        },
+        {
+          "number": 36,
+          "name": "GPIO35",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "ADC1_CH7"
+          ]
+        },
+        {
+          "number": 37,
+          "name": "GPIO36",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "ADC1_CH0",
+            "VP"
+          ]
+        },
+        {
+          "number": 38,
+          "name": "GPIO37",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "GPIO"
+          ]
+        },
+        {
+          "number": 39,
+          "name": "GPIO38",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "GPIO"
+          ]
+        },
+        {
+          "number": 40,
+          "name": "GPIO39",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "ADC1_CH3",
+            "VN"
+          ]
+        },
+        {
+          "number": 41,
+          "name": "3V3",
+          "defaultFunction": "Power",
+          "alternateFunctions": []
+        },
+        {
+          "number": 42,
+          "name": "GND",
+          "defaultFunction": "Power",
+          "alternateFunctions": []
+        },
+        {
+          "number": 43,
+          "name": "EN",
+          "defaultFunction": "Enable",
+          "alternateFunctions": []
+        }
+      ]
+    },
+    {
+      "id": "esp32-s2",
+      "name": "ESP32-S2",
+      "manufacturer": "Espressif",
+      "package": "QFN56",
+      "pins": [
+        {
+          "number": 1,
+          "name": "GPIO0",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "GPIO"
+          ]
+        },
+        {
+          "number": 2,
+          "name": "GPIO1",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "GPIO"
+          ]
+        },
+        {
+          "number": 3,
+          "name": "GPIO2",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "GPIO"
+          ]
+        },
+        {
+          "number": 4,
+          "name": "GPIO3",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "GPIO"
+          ]
+        },
+        {
+          "number": 5,
+          "name": "GPIO4",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "GPIO"
+          ]
+        },
+        {
+          "number": 6,
+          "name": "GPIO5",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "GPIO"
+          ]
+        },
+        {
+          "number": 7,
+          "name": "GPIO6",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "GPIO"
+          ]
+        },
+        {
+          "number": 8,
+          "name": "GPIO7",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "GPIO"
+          ]
+        },
+        {
+          "number": 9,
+          "name": "GPIO8",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "GPIO"
+          ]
+        },
+        {
+          "number": 10,
+          "name": "GPIO9",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "GPIO"
+          ]
+        },
+        {
+          "number": 11,
+          "name": "GPIO10",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "GPIO"
+          ]
+        },
+        {
+          "number": 12,
+          "name": "GPIO11",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "GPIO"
+          ]
+        },
+        {
+          "number": 13,
+          "name": "GPIO12",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "GPIO"
+          ]
+        },
+        {
+          "number": 14,
+          "name": "GPIO13",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "GPIO"
+          ]
+        },
+        {
+          "number": 15,
+          "name": "GPIO14",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "GPIO"
+          ]
+        },
+        {
+          "number": 16,
+          "name": "GPIO15",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "GPIO"
+          ]
+        },
+        {
+          "number": 17,
+          "name": "GPIO16",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "GPIO"
+          ]
+        },
+        {
+          "number": 18,
+          "name": "GPIO17",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "UART1_TX"
+          ]
+        },
+        {
+          "number": 19,
+          "name": "GPIO18",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "UART1_RX"
+          ]
+        },
+        {
+          "number": 20,
+          "name": "GPIO19",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "USB_D-"
+          ]
+        },
+        {
+          "number": 21,
+          "name": "GPIO20",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "USB_D+"
+          ]
+        },
+        {
+          "number": 22,
+          "name": "GPIO21",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "GPIO"
+          ]
+        },
+        {
+          "number": 23,
+          "name": "GPIO22",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "GPIO"
+          ]
+        },
+        {
+          "number": 24,
+          "name": "GPIO23",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "GPIO"
+          ]
+        },
+        {
+          "number": 25,
+          "name": "GPIO24",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "GPIO"
+          ]
+        },
+        {
+          "number": 26,
+          "name": "GPIO25",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "GPIO"
+          ]
+        },
+        {
+          "number": 27,
+          "name": "GPIO26",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "GPIO"
+          ]
+        },
+        {
+          "number": 28,
+          "name": "GPIO27",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "GPIO"
+          ]
+        },
+        {
+          "number": 29,
+          "name": "GPIO28",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "GPIO"
+          ]
+        },
+        {
+          "number": 30,
+          "name": "GPIO29",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "GPIO"
+          ]
+        },
+        {
+          "number": 31,
+          "name": "GPIO30",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "GPIO"
+          ]
+        },
+        {
+          "number": 32,
+          "name": "GPIO31",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "GPIO"
+          ]
+        },
+        {
+          "number": 33,
+          "name": "GPIO32",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "GPIO"
+          ]
+        },
+        {
+          "number": 34,
+          "name": "GPIO33",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "SPI_MOSI"
+          ]
+        },
+        {
+          "number": 35,
+          "name": "GPIO34",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "SPI_MISO"
+          ]
+        },
+        {
+          "number": 36,
+          "name": "GPIO35",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "SPI_CLK"
+          ]
+        },
+        {
+          "number": 37,
+          "name": "GPIO36",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "SPI_CS"
+          ]
+        },
+        {
+          "number": 38,
+          "name": "GPIO37",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "GPIO"
+          ]
+        },
+        {
+          "number": 39,
+          "name": "GPIO38",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "GPIO"
+          ]
+        },
+        {
+          "number": 40,
+          "name": "GPIO39",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "GPIO"
+          ]
+        },
+        {
+          "number": 41,
+          "name": "GPIO40",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "GPIO"
+          ]
+        },
+        {
+          "number": 42,
+          "name": "GPIO41",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "GPIO"
+          ]
+        },
+        {
+          "number": 43,
+          "name": "GPIO42",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "GPIO"
+          ]
+        },
+        {
+          "number": 44,
+          "name": "GPIO43",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "GPIO"
+          ]
+        },
+        {
+          "number": 45,
+          "name": "GPIO44",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "GPIO"
+          ]
+        },
+        {
+          "number": 46,
+          "name": "GPIO45",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "GPIO"
+          ]
+        },
+        {
+          "number": 47,
+          "name": "3V3",
+          "defaultFunction": "Power",
+          "alternateFunctions": []
+        },
+        {
+          "number": 48,
+          "name": "GND",
+          "defaultFunction": "Power",
+          "alternateFunctions": []
+        },
+        {
+          "number": 49,
+          "name": "EN",
+          "defaultFunction": "Enable",
+          "alternateFunctions": []
+        }
+      ]
+    },
+    {
+      "id": "esp32-s3",
+      "name": "ESP32-S3",
+      "manufacturer": "Espressif",
+      "package": "QFN56",
+      "pins": [
+        {
+          "number": 1,
+          "name": "GPIO0",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "GPIO"
+          ]
+        },
+        {
+          "number": 2,
+          "name": "GPIO1",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "UART0_TX"
+          ]
+        },
+        {
+          "number": 3,
+          "name": "GPIO2",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "ADC2_CH2",
+            "TOUCH2",
+            "LED"
+          ]
+        },
+        {
+          "number": 4,
+          "name": "GPIO3",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "UART0_RX"
+          ]
+        },
+        {
+          "number": 5,
+          "name": "GPIO4",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "ADC2_CH0",
+            "TOUCH0"
+          ]
+        },
+        {
+          "number": 6,
+          "name": "GPIO5",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "SPI_CS"
+          ]
+        },
+        {
+          "number": 7,
+          "name": "GPIO6",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "GPIO"
+          ]
+        },
+        {
+          "number": 8,
+          "name": "GPIO7",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "GPIO"
+          ]
+        },
+        {
+          "number": 9,
+          "name": "GPIO8",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "GPIO"
+          ]
+        },
+        {
+          "number": 10,
+          "name": "GPIO9",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "GPIO"
+          ]
+        },
+        {
+          "number": 11,
+          "name": "GPIO10",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "GPIO"
+          ]
+        },
+        {
+          "number": 12,
+          "name": "GPIO11",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "GPIO"
+          ]
+        },
+        {
+          "number": 13,
+          "name": "GPIO12",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "ADC2_CH5",
+            "HSPI_MISO",
+            "TOUCH5"
+          ]
+        },
+        {
+          "number": 14,
+          "name": "GPIO13",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "ADC2_CH4",
+            "HSPI_MOSI",
+            "TOUCH4"
+          ]
+        },
+        {
+          "number": 15,
+          "name": "GPIO14",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "ADC2_CH6",
+            "HSPI_CLK",
+            "TOUCH6"
+          ]
+        },
+        {
+          "number": 16,
+          "name": "GPIO15",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "ADC2_CH3",
+            "HSPI_CS",
+            "TOUCH3"
+          ]
+        },
+        {
+          "number": 17,
+          "name": "GPIO16",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "UART2_RX"
+          ]
+        },
+        {
+          "number": 18,
+          "name": "GPIO17",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "UART2_TX"
+          ]
+        },
+        {
+          "number": 19,
+          "name": "GPIO18",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "SPI_SCK"
+          ]
+        },
+        {
+          "number": 20,
+          "name": "GPIO19",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "USB_D-"
+          ]
+        },
+        {
+          "number": 21,
+          "name": "GPIO20",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "USB_D+"
+          ]
+        },
+        {
+          "number": 22,
+          "name": "GPIO21",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "I2C_SDA"
+          ]
+        },
+        {
+          "number": 23,
+          "name": "GPIO22",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "I2C_SCL"
+          ]
+        },
+        {
+          "number": 24,
+          "name": "GPIO23",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "SPI_MOSI"
+          ]
+        },
+        {
+          "number": 25,
+          "name": "GPIO24",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "GPIO"
+          ]
+        },
+        {
+          "number": 26,
+          "name": "GPIO25",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "DAC1"
+          ]
+        },
+        {
+          "number": 27,
+          "name": "GPIO26",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "DAC2"
+          ]
+        },
+        {
+          "number": 28,
+          "name": "GPIO27",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "ADC2_CH7",
+            "TOUCH7"
+          ]
+        },
+        {
+          "number": 29,
+          "name": "GPIO28",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "GPIO"
+          ]
+        },
+        {
+          "number": 30,
+          "name": "GPIO29",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "GPIO"
+          ]
+        },
+        {
+          "number": 31,
+          "name": "GPIO30",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "GPIO"
+          ]
+        },
+        {
+          "number": 32,
+          "name": "GPIO31",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "GPIO"
+          ]
+        },
+        {
+          "number": 33,
+          "name": "GPIO32",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "ADC1_CH4",
+            "TOUCH9"
+          ]
+        },
+        {
+          "number": 34,
+          "name": "GPIO33",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "ADC1_CH5",
+            "TOUCH8"
+          ]
+        },
+        {
+          "number": 35,
+          "name": "GPIO34",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "ADC1_CH6"
+          ]
+        },
+        {
+          "number": 36,
+          "name": "GPIO35",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "ADC1_CH7"
+          ]
+        },
+        {
+          "number": 37,
+          "name": "GPIO36",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "ADC1_CH0",
+            "VP"
+          ]
+        },
+        {
+          "number": 38,
+          "name": "GPIO37",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "GPIO"
+          ]
+        },
+        {
+          "number": 39,
+          "name": "GPIO38",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "GPIO"
+          ]
+        },
+        {
+          "number": 40,
+          "name": "GPIO39",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "ADC1_CH3",
+            "VN"
+          ]
+        },
+        {
+          "number": 41,
+          "name": "GPIO40",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "GPIO"
+          ]
+        },
+        {
+          "number": 42,
+          "name": "GPIO41",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "GPIO"
+          ]
+        },
+        {
+          "number": 43,
+          "name": "GPIO42",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "GPIO"
+          ]
+        },
+        {
+          "number": 44,
+          "name": "GPIO43",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "UART0_TX"
+          ]
+        },
+        {
+          "number": 45,
+          "name": "GPIO44",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "UART0_RX"
+          ]
+        },
+        {
+          "number": 46,
+          "name": "GPIO45",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "GPIO"
+          ]
+        },
+        {
+          "number": 47,
+          "name": "GPIO46",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "GPIO"
+          ]
+        },
+        {
+          "number": 48,
+          "name": "GPIO47",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "GPIO"
+          ]
+        },
+        {
+          "number": 49,
+          "name": "3V3",
+          "defaultFunction": "Power",
+          "alternateFunctions": []
+        },
+        {
+          "number": 50,
+          "name": "GND",
+          "defaultFunction": "Power",
+          "alternateFunctions": []
+        },
+        {
+          "number": 51,
+          "name": "EN",
+          "defaultFunction": "Enable",
+          "alternateFunctions": []
+        }
+      ]
+    },
+    {
+      "id": "esp32-c3",
+      "name": "ESP32-C3",
+      "manufacturer": "Espressif",
+      "package": "QFN32",
+      "pins": [
+        {
+          "number": 1,
+          "name": "GPIO0",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "GPIO"
+          ]
+        },
+        {
+          "number": 2,
+          "name": "GPIO1",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "GPIO"
+          ]
+        },
+        {
+          "number": 3,
+          "name": "GPIO2",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "SPI_MISO"
+          ]
+        },
+        {
+          "number": 4,
+          "name": "GPIO3",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "GPIO"
+          ]
+        },
+        {
+          "number": 5,
+          "name": "GPIO4",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "I2C_SDA",
+            "ADC1_CH4"
+          ]
+        },
+        {
+          "number": 6,
+          "name": "GPIO5",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "I2C_SCL",
+            "ADC2_CH0"
+          ]
+        },
+        {
+          "number": 7,
+          "name": "GPIO6",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "SPI_SCK"
+          ]
+        },
+        {
+          "number": 8,
+          "name": "GPIO7",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "SPI_MOSI"
+          ]
+        },
+        {
+          "number": 9,
+          "name": "GPIO8",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "GPIO"
+          ]
+        },
+        {
+          "number": 10,
+          "name": "GPIO9",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "GPIO"
+          ]
+        },
+        {
+          "number": 11,
+          "name": "GPIO10",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "SPI_CS"
+          ]
+        },
+        {
+          "number": 12,
+          "name": "GPIO11",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "GPIO"
+          ]
+        },
+        {
+          "number": 13,
+          "name": "GPIO12",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "GPIO"
+          ]
+        },
+        {
+          "number": 14,
+          "name": "GPIO13",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "GPIO"
+          ]
+        },
+        {
+          "number": 15,
+          "name": "GPIO14",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "GPIO"
+          ]
+        },
+        {
+          "number": 16,
+          "name": "GPIO15",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "GPIO"
+          ]
+        },
+        {
+          "number": 17,
+          "name": "GPIO16",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "GPIO"
+          ]
+        },
+        {
+          "number": 18,
+          "name": "GPIO17",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "GPIO"
+          ]
+        },
+        {
+          "number": 19,
+          "name": "GPIO18",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "USB_D-"
+          ]
+        },
+        {
+          "number": 20,
+          "name": "GPIO19",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "USB_D+"
+          ]
+        },
+        {
+          "number": 21,
+          "name": "GPIO20",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "UART0_RX"
+          ]
+        },
+        {
+          "number": 22,
+          "name": "GPIO21",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "UART0_TX"
+          ]
+        },
+        {
+          "number": 23,
+          "name": "3V3",
+          "defaultFunction": "Power",
+          "alternateFunctions": []
+        },
+        {
+          "number": 24,
+          "name": "GND",
+          "defaultFunction": "Power",
+          "alternateFunctions": []
+        },
+        {
+          "number": 25,
+          "name": "EN",
+          "defaultFunction": "Enable",
+          "alternateFunctions": []
+        }
+      ]
+    },
+    {
+      "id": "esp32-c6",
+      "name": "ESP32-C6",
+      "manufacturer": "Espressif",
+      "package": "QFN40",
+      "pins": [
+        {
+          "number": 1,
+          "name": "GPIO0",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "GPIO"
+          ]
+        },
+        {
+          "number": 2,
+          "name": "GPIO1",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "ADC1_CH0"
+          ]
+        },
+        {
+          "number": 3,
+          "name": "GPIO2",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "ADC1_CH1"
+          ]
+        },
+        {
+          "number": 4,
+          "name": "GPIO3",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "ADC1_CH2"
+          ]
+        },
+        {
+          "number": 5,
+          "name": "GPIO4",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "GPIO"
+          ]
+        },
+        {
+          "number": 6,
+          "name": "GPIO5",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "GPIO"
+          ]
+        },
+        {
+          "number": 7,
+          "name": "GPIO6",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "SPI_SCK"
+          ]
+        },
+        {
+          "number": 8,
+          "name": "GPIO7",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "SPI_MOSI"
+          ]
+        },
+        {
+          "number": 9,
+          "name": "GPIO8",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "GPIO"
+          ]
+        },
+        {
+          "number": 10,
+          "name": "GPIO9",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "GPIO"
+          ]
+        },
+        {
+          "number": 11,
+          "name": "GPIO10",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "GPIO"
+          ]
+        },
+        {
+          "number": 12,
+          "name": "GPIO11",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "GPIO"
+          ]
+        },
+        {
+          "number": 13,
+          "name": "GPIO12",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "USB_D-"
+          ]
+        },
+        {
+          "number": 14,
+          "name": "GPIO13",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "USB_D+"
+          ]
+        },
+        {
+          "number": 15,
+          "name": "GPIO14",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "GPIO"
+          ]
+        },
+        {
+          "number": 16,
+          "name": "GPIO15",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "GPIO"
+          ]
+        },
+        {
+          "number": 17,
+          "name": "GPIO16",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "UART0_TX"
+          ]
+        },
+        {
+          "number": 18,
+          "name": "GPIO17",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "UART0_RX"
+          ]
+        },
+        {
+          "number": 19,
+          "name": "GPIO18",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "GPIO"
+          ]
+        },
+        {
+          "number": 20,
+          "name": "GPIO19",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "GPIO"
+          ]
+        },
+        {
+          "number": 21,
+          "name": "GPIO20",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "GPIO"
+          ]
+        },
+        {
+          "number": 22,
+          "name": "GPIO21",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "GPIO"
+          ]
+        },
+        {
+          "number": 23,
+          "name": "GPIO22",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "GPIO"
+          ]
+        },
+        {
+          "number": 24,
+          "name": "GPIO23",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "GPIO"
+          ]
+        },
+        {
+          "number": 25,
+          "name": "GPIO24",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "GPIO"
+          ]
+        },
+        {
+          "number": 26,
+          "name": "GPIO25",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "GPIO"
+          ]
+        },
+        {
+          "number": 27,
+          "name": "GPIO26",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "GPIO"
+          ]
+        },
+        {
+          "number": 28,
+          "name": "GPIO27",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "GPIO"
+          ]
+        },
+        {
+          "number": 29,
+          "name": "GPIO28",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "GPIO"
+          ]
+        },
+        {
+          "number": 30,
+          "name": "GPIO29",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "GPIO"
+          ]
+        },
+        {
+          "number": 31,
+          "name": "GPIO30",
+          "defaultFunction": "GPIO",
+          "alternateFunctions": [
+            "GPIO",
+            "GPIO"
+          ]
+        },
+        {
+          "number": 32,
+          "name": "3V3",
+          "defaultFunction": "Power",
+          "alternateFunctions": []
+        },
+        {
+          "number": 33,
+          "name": "GND",
+          "defaultFunction": "Power",
+          "alternateFunctions": []
+        },
+        {
+          "number": 34,
+          "name": "EN",
+          "defaultFunction": "Enable",
+          "alternateFunctions": []
+        }
+      ]
+    }
+  ]
+}

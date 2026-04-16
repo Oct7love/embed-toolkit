@@ -1,0 +1,55 @@
+{
+  "chips": [
+    { "id": "stm32f103c8t6", "name": "STM32F103C8T6", "series": "stm32f1", "manufacturer": "ST", "package": "LQFP48", "pinCount": 48 },
+    { "id": "stm32f103cbt6", "name": "STM32F103CBT6", "series": "stm32f1", "manufacturer": "ST", "package": "LQFP48", "pinCount": 48 },
+    { "id": "stm32f103rbt6", "name": "STM32F103RBT6", "series": "stm32f1", "manufacturer": "ST", "package": "LQFP64", "pinCount": 64 },
+    { "id": "stm32f103rct6", "name": "STM32F103RCT6", "series": "stm32f1", "manufacturer": "ST", "package": "LQFP64", "pinCount": 64 },
+    { "id": "stm32f103ret6", "name": "STM32F103RET6", "series": "stm32f1", "manufacturer": "ST", "package": "LQFP64", "pinCount": 64 },
+    { "id": "stm32f103vct6", "name": "STM32F103VCT6", "series": "stm32f1", "manufacturer": "ST", "package": "LQFP100", "pinCount": 100 },
+    { "id": "stm32f103vet6", "name": "STM32F103VET6", "series": "stm32f1", "manufacturer": "ST", "package": "LQFP100", "pinCount": 100 },
+    { "id": "stm32f103zct6", "name": "STM32F103ZCT6", "series": "stm32f1", "manufacturer": "ST", "package": "LQFP144", "pinCount": 144 },
+    { "id": "stm32f103zet6", "name": "STM32F103ZET6", "series": "stm32f1", "manufacturer": "ST", "package": "LQFP144", "pinCount": 144 },
+    { "id": "stm32f103zgt6", "name": "STM32F103ZGT6", "series": "stm32f1", "manufacturer": "ST", "package": "LQFP144", "pinCount": 144 },
+
+    { "id": "stm32f401ccu6", "name": "STM32F401CCU6", "series": "stm32f4", "manufacturer": "ST", "package": "QFN48", "pinCount": 48 },
+    { "id": "stm32f401ceu6", "name": "STM32F401CEU6", "series": "stm32f4", "manufacturer": "ST", "package": "QFN48", "pinCount": 48 },
+    { "id": "stm32f407vet6", "name": "STM32F407VET6", "series": "stm32f4", "manufacturer": "ST", "package": "LQFP100", "pinCount": 100 },
+    { "id": "stm32f407vgt6", "name": "STM32F407VGT6", "series": "stm32f4", "manufacturer": "ST", "package": "LQFP100", "pinCount": 100 },
+    { "id": "stm32f407zet6", "name": "STM32F407ZET6", "series": "stm32f4", "manufacturer": "ST", "package": "LQFP144", "pinCount": 144 },
+    { "id": "stm32f407zgt6", "name": "STM32F407ZGT6", "series": "stm32f4", "manufacturer": "ST", "package": "LQFP144", "pinCount": 144 },
+    { "id": "stm32f411ceu6", "name": "STM32F411CEU6", "series": "stm32f4", "manufacturer": "ST", "package": "QFN48", "pinCount": 48 },
+    { "id": "stm32f411ret6", "name": "STM32F411RET6", "series": "stm32f4", "manufacturer": "ST", "package": "LQFP64", "pinCount": 64 },
+    { "id": "stm32f429zit6", "name": "STM32F429ZIT6", "series": "stm32f4", "manufacturer": "ST", "package": "LQFP144", "pinCount": 144 },
+    { "id": "stm32f446ret6", "name": "STM32F446RET6", "series": "stm32f4", "manufacturer": "ST", "package": "LQFP64", "pinCount": 64 },
+
+    { "id": "stm32h743vit6", "name": "STM32H743VIT6", "series": "stm32h7", "manufacturer": "ST", "package": "LQFP100", "pinCount": 100 },
+    { "id": "stm32h743zit6", "name": "STM32H743ZIT6", "series": "stm32h7", "manufacturer": "ST", "package": "LQFP144", "pinCount": 144 },
+    { "id": "stm32h750vbt6", "name": "STM32H750VBT6", "series": "stm32h7", "manufacturer": "ST", "package": "LQFP100", "pinCount": 100 },
+    { "id": "stm32h723zet6", "name": "STM32H723ZET6", "series": "stm32h7", "manufacturer": "ST", "package": "LQFP144", "pinCount": 144 },
+    { "id": "stm32h7a3zit6", "name": "STM32H7A3ZIT6", "series": "stm32h7", "manufacturer": "ST", "package": "LQFP144", "pinCount": 144 },
+
+    { "id": "stm32g030f6p6", "name": "STM32G030F6P6", "series": "stm32g0", "manufacturer": "ST", "package": "TSSOP20", "pinCount": 20 },
+    { "id": "stm32g071rbt6", "name": "STM32G071RBT6", "series": "stm32g0", "manufacturer": "ST", "package": "LQFP64", "pinCount": 64 },
+    { "id": "stm32g431rbt6", "name": "STM32G431RBT6", "series": "stm32g4", "manufacturer": "ST", "package": "LQFP64", "pinCount": 64 },
+    { "id": "stm32g474ret6", "name": "STM32G474RET6", "series": "stm32g4", "manufacturer": "ST", "package": "LQFP64", "pinCount": 64 },
+    { "id": "stm32g4a1ret6", "name": "STM32G4A1RET6", "series": "stm32g4", "manufacturer": "ST", "package": "LQFP64", "pinCount": 64 },
+
+    { "id": "stm32l431rct6", "name": "STM32L431RCT6", "series": "stm32l4", "manufacturer": "ST", "package": "LQFP64", "pinCount": 64 },
+    { "id": "stm32l432kcu6", "name": "STM32L432KCU6", "series": "stm32l4", "manufacturer": "ST", "package": "QFN32", "pinCount": 32 },
+    { "id": "stm32l476rgt6", "name": "STM32L476RGT6", "series": "stm32l4", "manufacturer": "ST", "package": "LQFP64", "pinCount": 64 },
+    { "id": "stm32l496zgt6", "name": "STM32L496ZGT6", "series": "stm32l4", "manufacturer": "ST", "package": "LQFP144", "pinCount": 144 },
+    { "id": "stm32l4r5zit6", "name": "STM32L4R5ZIT6", "series": "stm32l4", "manufacturer": "ST", "package": "LQFP144", "pinCount": 144 },
+
+    { "id": "esp32-wroom-32", "name": "ESP32-WROOM-32", "series": "esp32", "manufacturer": "Espressif", "package": "Module", "pinCount": 38 },
+    { "id": "esp32-s2", "name": "ESP32-S2", "series": "esp32", "manufacturer": "Espressif", "package": "QFN56", "pinCount": 43 },
+    { "id": "esp32-s3", "name": "ESP32-S3", "series": "esp32", "manufacturer": "Espressif", "package": "QFN56", "pinCount": 45 },
+    { "id": "esp32-c3", "name": "ESP32-C3", "series": "esp32", "manufacturer": "Espressif", "package": "QFN32", "pinCount": 22 },
+    { "id": "esp32-c6", "name": "ESP32-C6", "series": "esp32", "manufacturer": "Espressif", "package": "QFN40", "pinCount": 30 },
+
+    { "id": "gd32f103c8t6", "name": "GD32F103C8T6", "series": "gd32", "manufacturer": "GigaDevice", "package": "LQFP48", "pinCount": 48 },
+    { "id": "gd32f303cct6", "name": "GD32F303CCT6", "series": "gd32", "manufacturer": "GigaDevice", "package": "LQFP48", "pinCount": 48 },
+    { "id": "ch32v307vct6", "name": "CH32V307VCT6", "series": "ch32", "manufacturer": "WCH", "package": "LQFP100", "pinCount": 100 },
+    { "id": "ch32v203c8t6", "name": "CH32V203C8T6", "series": "ch32", "manufacturer": "WCH", "package": "LQFP48", "pinCount": 48 },
+    { "id": "at32f403acgu7", "name": "AT32F403ACGU7", "series": "at32", "manufacturer": "Artery", "package": "QFN48", "pinCount": 48 }
+  ]
+}
