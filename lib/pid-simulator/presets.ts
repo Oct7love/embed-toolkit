@@ -9,7 +9,7 @@ export const PID_PRESETS: PIDPreset[] = [
       ki: 0.5,
       kd: 0.1,
       plantModel: "first-order",
-      plantParams: { tau: 0.1, gain: 1 },
+      plantParams: { tau: 0.5, gain: 1 },
       simulationTime: 5,
       samplePeriod: 10,
     },

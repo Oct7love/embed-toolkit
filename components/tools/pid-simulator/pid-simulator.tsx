@@ -18,7 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+// Tabs import removed — using manual tab state to avoid Recharts zero-dimension issue
 import {
   Play,
   RotateCcw,
@@ -51,14 +51,14 @@ const PIDChart = dynamic(
 
 const DEFAULT_CONFIG: PIDConfig = {
   kp: 2,
-  ki: 0.5,
+  ki: 1,
   kd: 0.1,
   setpoint: 100,
   initialValue: 0,
   simulationTime: 5,
   samplePeriod: 10,
   plantModel: "first-order",
-  plantParams: { tau: 0.1, gain: 1 },
+  plantParams: { tau: 0.5, gain: 1 },
 };
 
 const PRESET_ICONS = [Zap, Thermometer, Bike] as const;
@@ -67,6 +67,7 @@ export function PIDSimulator() {
   const [config, setConfig] = useState<PIDConfig>(DEFAULT_CONFIG);
   const [result, setResult] = useState<PIDSimulationResult | null>(null);
   const [guideOpen, setGuideOpen] = useState(false);
+  const [chartTab, setChartTab] = useState<"response" | "error" | "output">("response");
 
   const updateConfig = useCallback(
     (patch: Partial<PIDConfig>) => {
@@ -420,34 +421,28 @@ export function PIDSimulator() {
             </div>
           )}
 
-          {/* 图表 */}
+          {/* 图表 — 用 state 切换而非 Tabs 组件，避免非活跃面板被 unmount 导致 Recharts 零尺寸 */}
           <Card size="sm">
-            <CardContent className="pt-4">
-              <Tabs defaultValue="response">
-                <TabsList>
-                  <TabsTrigger value="response">阶跃响应</TabsTrigger>
-                  <TabsTrigger value="error">误差曲线</TabsTrigger>
-                  <TabsTrigger value="output">控制输出</TabsTrigger>
-                </TabsList>
-                <TabsContent value="response" className="mt-4">
-                  <PIDChart
-                    data={displayResult?.data ?? []}
-                    type="response"
-                  />
-                </TabsContent>
-                <TabsContent value="error" className="mt-4">
-                  <PIDChart
-                    data={displayResult?.data ?? []}
-                    type="error"
-                  />
-                </TabsContent>
-                <TabsContent value="output" className="mt-4">
-                  <PIDChart
-                    data={displayResult?.data ?? []}
-                    type="output"
-                  />
-                </TabsContent>
-              </Tabs>
+            <CardContent className="pt-4 space-y-3">
+              <div className="flex gap-1 rounded-lg border p-1 w-fit">
+                {(["response", "error", "output"] as const).map((t) => (
+                  <button
+                    key={t}
+                    onClick={() => setChartTab(t)}
+                    className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                      chartTab === t
+                        ? "bg-primary text-primary-foreground"
+                        : "text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    {t === "response" ? "阶跃响应" : t === "error" ? "误差曲线" : "控制输出"}
+                  </button>
+                ))}
+              </div>
+              <PIDChart
+                data={displayResult?.data ?? []}
+                type={chartTab}
+              />
             </CardContent>
           </Card>
 

@@ -27,10 +27,10 @@ const TOOLTIP_STYLE = {
 };
 
 export function PIDChart({ data, type }: PIDChartProps) {
-  if (data.length === 0) {
+  if (!data || data.length === 0) {
     return (
-      <div className="flex h-64 items-center justify-center rounded-lg border text-muted-foreground text-sm">
-        点击"运行仿真"查看结果
+      <div className="flex h-72 items-center justify-center rounded-lg border text-muted-foreground text-sm">
+        暂无仿真数据
       </div>
     );
   }
@@ -99,7 +99,7 @@ function ResponseChart({ data }: { data: SimPoint[] }) {
           />
           <ReferenceLine
             y={setpoint}
-            stroke="hsl(var(--chart-2, 160 60% 45%))"
+            stroke="#ef4444"
             strokeDasharray="5 5"
             label={{
               value: `目标: ${setpoint}`,
