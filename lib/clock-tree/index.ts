@@ -118,6 +118,36 @@ export function checkViolations(
     });
   }
 
+  // PLL input frequency range check
+  if (constraints.pllInputRange && freqs.pllInput > 0) {
+    const [min, max] = constraints.pllInputRange;
+    if (freqs.pllInput < min || freqs.pllInput > max) {
+      violations.push({
+        node: "PLL Input",
+        actual: freqs.pllInput,
+        max,
+        message: `PLL 输入频率 ${formatFreq(freqs.pllInput)} 不在合法范围 ${formatFreq(min)}-${formatFreq(max)}`,
+      });
+    }
+  }
+
+  // VCO output range check (F4/H7)
+  if (constraints.vcoRange && freqs.pllInput > 0) {
+    const [vcoMin, vcoMax] = constraints.vcoRange;
+    // 估算 VCO：对 F4 VCO = pllInput * PLLN，对 H7 VCO = pllInput * DIVN
+    // pllOutput = VCO / P，所以 VCO ≈ pllOutput * P （近似检查，基于输出和分频因子）
+    // 更准确：VCO = pllInput * N → 但 N 不在 freqs 中。用 pllOutput 和输入推断。
+    // 简化：如果 pllOutput > vcoMax 则必然 VCO 超限
+    if (freqs.pllOutput > vcoMax) {
+      violations.push({
+        node: "VCO",
+        actual: freqs.pllOutput,
+        max: vcoMax,
+        message: `PLL 输出 ${formatFreq(freqs.pllOutput)} 可能导致 VCO 超出 ${formatFreq(vcoMax)} 范围`,
+      });
+    }
+  }
+
   return violations;
 }
 

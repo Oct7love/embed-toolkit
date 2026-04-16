@@ -36,6 +36,14 @@ export interface ClockConstraints {
   divMRange?: [number, number];
   divNRange?: [number, number];
   divPRange?: [number, number];
+
+  /** PLL input frequency constraints (Hz) */
+  pllInputRange?: [number, number]; // F4: 1-2MHz, H7: 1-16MHz
+  /** VCO output range (Hz) */
+  vcoRange?: [number, number]; // F4: 192-432MHz, H7: 192-836MHz
+
+  /** Flash wait-state table: [[maxFreq, waitStates], ...] sorted ascending */
+  flashLatencyTable?: [number, number][];
 }
 
 /* ---------- PLL params per family ---------- */
