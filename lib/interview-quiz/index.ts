@@ -61,6 +61,25 @@ export function pickRandomQuestion(pool: Question[]): Question | null {
   return pool[idx];
 }
 
+/**
+ * 决定要展示给用户的题目。
+ *
+ * 关键约束：用户已在看的 currentQuestion，即便提交后被加入 answeredIds 从
+ * 过滤后的 pool 里消失，仍要继续展示它（这样"显示对错+解析"才不会被替换
+ * 成另一道题，连带泄露下一题答案）。只有当分类切换导致 currentQuestion
+ * 不再属于 loadedPool 时，才从 pool 兜底重选。
+ */
+export function selectDisplayQuestion(
+  currentQuestion: Question | null,
+  loadedPool: Question[],
+  pool: Question[]
+): Question | null {
+  if (currentQuestion && loadedPool.some((q) => q.id === currentQuestion.id)) {
+    return currentQuestion;
+  }
+  return pool.length > 0 ? pickRandomQuestion(pool) : null;
+}
+
 /** 题库静态元信息（各分类题数）。硬编码以避免加载 JSON 仅为计数。 */
 export const CATEGORY_COUNTS: Record<QuestionCategory, number> = {
   "c-language": 127,

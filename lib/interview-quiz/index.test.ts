@@ -1,11 +1,19 @@
 import { describe, it, expect } from "vitest";
-import { filterQuestions, pickRandomQuestion } from "./index";
-import type { Question } from "@/types/interview-quiz";
+import {
+  filterQuestions,
+  pickRandomQuestion,
+  selectDisplayQuestion,
+} from "./index";
+import type { Question, QuestionCategory } from "@/types/interview-quiz";
 
-function makeQ(id: string, difficulty: Question["difficulty"] = "easy"): Question {
+function makeQ(
+  id: string,
+  difficulty: Question["difficulty"] = "easy",
+  category: QuestionCategory = "c-language"
+): Question {
   return {
     id,
-    category: "c-language",
+    category,
     difficulty,
     question: "test",
     options: ["a", "b", "c", "d"],
@@ -59,5 +67,42 @@ describe("filterQuestions", () => {
     const filtered = filterQuestions(pool, "all", []);
     expect(filtered.length).toBeGreaterThan(0);
     expect(pickRandomQuestion(filtered)).not.toBeNull();
+  });
+});
+
+describe("selectDisplayQuestion (回归守护：提交后不跳题)", () => {
+  const q1 = makeQ("q1");
+  const q2 = makeQ("q2");
+  const q3 = makeQ("q3");
+  const loadedPool = [q1, q2, q3];
+
+  it("提交当前题后 currentQuestion 仍属 loadedPool，但已被 answeredIds 从 pool 过滤 → 仍返回当前题（不跳到 pool 里另一道）", () => {
+    // 这是 commit 8f0e6d7 引入回归的核心场景：
+    // 提交 q1 → answeredIds=[q1] → pool = [q2, q3]
+    // 旧实现校验 pool.some(q.id===q1) → false → 跳到 pool 中另一题，叠加 showAnswer=true 暴露答案
+    const poolAfterAnswer = [q2, q3];
+    expect(selectDisplayQuestion(q1, loadedPool, poolAfterAnswer)).toBe(q1);
+  });
+
+  it("currentQuestion === null + pool 非空 → 兜底选 pool 内一题（首屏首题）", () => {
+    const picked = selectDisplayQuestion(null, loadedPool, loadedPool);
+    expect(picked).not.toBeNull();
+    expect(loadedPool).toContain(picked);
+  });
+
+  it("currentQuestion 不属 loadedPool（分类切换）→ 从新 pool 兜底", () => {
+    const newLoadedPool = [makeQ("r1", "easy", "rtos"), makeQ("r2", "easy", "rtos")];
+    const picked = selectDisplayQuestion(q1, newLoadedPool, newLoadedPool);
+    expect(picked).not.toBeNull();
+    expect(newLoadedPool).toContain(picked);
+    expect(picked).not.toBe(q1);
+  });
+
+  it("pool 为空 + currentQuestion 不属 loadedPool → 返回 null", () => {
+    expect(selectDisplayQuestion(q1, [], [])).toBeNull();
+  });
+
+  it("pool 为空但 currentQuestion 仍属 loadedPool（本轮做完最后一题）→ 仍展示当前题", () => {
+    expect(selectDisplayQuestion(q1, loadedPool, [])).toBe(q1);
   });
 });

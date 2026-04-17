@@ -27,6 +27,7 @@ import {
   loadQuestions,
   filterQuestions,
   pickRandomQuestion,
+  selectDisplayQuestion,
   getCategoryCount,
   getQuestionById,
 } from "@/lib/interview-quiz";
@@ -115,14 +116,12 @@ export function InterviewQuiz() {
     setShowAnswer(false);
   }, [pool]);
 
-  // 显示用：currentQuestion 为空或不在当前 pool 时（切换分类后），派生一道题兜底
-  // —— 用派生值代替 useEffect 内的 setState 级联，避免 react-hooks/set-state-in-effect
-  const displayQuestion = useMemo(() => {
-    if (currentQuestion && pool.some((q) => q.id === currentQuestion.id)) {
-      return currentQuestion;
-    }
-    return pool.length > 0 ? pickRandomQuestion(pool) : null;
-  }, [currentQuestion, pool]);
+  // 校验用 loadedPool（不随 answeredIds 变化），避免提交后当前题被认定"无效"导致跳题。
+  // 见 lib/interview-quiz/index.ts:selectDisplayQuestion 注释
+  const displayQuestion = useMemo(
+    () => selectDisplayQuestion(currentQuestion, loadedPool, pool),
+    [currentQuestion, loadedPool, pool]
+  );
 
   const handleSubmit = useCallback(() => {
     // 首次进入时 currentQuestion 仍是 null，但 displayQuestion 已通过 pool 兜底渲染；
