@@ -21,7 +21,7 @@ export function Sidebar() {
         </Link>
       </div>
 
-      <ScrollArea className="flex-1 py-2">
+      <ScrollArea className="flex-1 min-h-0 py-2">
         <nav className="px-2">
           {toolCategories.map((category) => {
             const isCollapsed = sidebarCollapsedCategories.includes(

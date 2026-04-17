@@ -280,10 +280,10 @@ export function GpioPlanner() {
             </span>
           </div>
 
-          {/* 芯片卡片列表 */}
-          <ScrollArea className="max-h-[240px]">
+          {/* 芯片卡片列表：max-h + overflow-y-auto，全部 45 款都可滚动可见 */}
+          <div className="max-h-[60vh] overflow-y-auto rounded-md border border-border/50 p-1">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
-              {filteredChips.slice(0, 30).map((c) => (
+              {filteredChips.map((c) => (
                 <button
                   key={c.id}
                   onClick={() => handleChipSelect(c.id)}
@@ -304,13 +304,13 @@ export function GpioPlanner() {
                   </div>
                 </button>
               ))}
-              {filteredChips.length > 30 && (
-                <div className="col-span-full text-xs text-muted-foreground text-center py-2">
-                  还有 {filteredChips.length - 30} 款，请缩小搜索范围
+              {filteredChips.length === 0 && (
+                <div className="col-span-full text-xs text-muted-foreground text-center py-6">
+                  没有匹配的芯片，请调整搜索或筛选条件
                 </div>
               )}
             </div>
-          </ScrollArea>
+          </div>
 
           {/* 自定义导入 */}
           {showImport && (
