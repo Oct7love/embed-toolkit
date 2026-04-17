@@ -98,7 +98,7 @@ export function generateRingBuffer(c: RingBufferConfig): GeneratedSources {
   headerLines.push(`#endif /* ${upper}_H */`);
 
   const tsEnter = c.threadSafe
-    ? "    /* enter critical section */\n    uint32_t __primask = __get_PRIMASK();\n    __disable_irq();\n"
+    ? "    /* enter critical section (ISR-safe via PRIMASK) */\n    uint32_t __primask = __get_PRIMASK();\n    __disable_irq();\n"
     : "";
   const tsExit = c.threadSafe
     ? "    /* leave critical section */\n    __set_PRIMASK(__primask);\n"
@@ -106,10 +106,19 @@ export function generateRingBuffer(c: RingBufferConfig): GeneratedSources {
 
   const sourceLines: string[] = [];
   sourceLines.push(`#include "${name}.h"`);
+  sourceLines.push("");
+  sourceLines.push("/*");
+  sourceLines.push(" * 本实现仅保证单写单读场景下的 ISR 安全：一个生产者 + 一个消费者");
+  sourceLines.push(" *（典型如 UART RX ISR 推入、任务循环弹出）。");
+  sourceLines.push(" *");
+  sourceLines.push(" * 多写或多读场景必须改用 FreeRTOS StreamBuffer / MessageBuffer，");
+  sourceLines.push(" * 或在 push/pop 外层加 Mutex 保护。head/tail 的 volatile 与内存序约束");
+  sourceLines.push(" * 仅对 Cortex-M 的 strong memory model 成立。");
+  sourceLines.push(" */");
   if (c.threadSafe) {
     sourceLines.push("");
-    sourceLines.push("/* Thread-safe variant: relies on Cortex-M PRIMASK helpers. */");
-    sourceLines.push("/* Replace __disable_irq / __get_PRIMASK with your platform primitives. */");
+    sourceLines.push("/* ISR-safe variant: 通过 PRIMASK 关中断保护 head/tail 更新。");
+    sourceLines.push(" * Replace __disable_irq / __get_PRIMASK with your platform primitives. */");
   }
   sourceLines.push("");
   sourceLines.push(`void ${name}_init(${name}_t *rb) {`);
@@ -308,6 +317,18 @@ export function generateSwTimer(c: SwTimerConfig): GeneratedSources {
 
   const sourceLines: string[] = [];
   sourceLines.push(`#include "${prefix}.h"`);
+  sourceLines.push("");
+  sourceLines.push("/*");
+  sourceLines.push(" * 协作式软件定时器：回调在 tick ISR 上下文执行。");
+  sourceLines.push(" *");
+  sourceLines.push(" * ⚠️ 回调内禁止：");
+  sourceLines.push(" *   - 阻塞 / vTaskDelay / osDelay");
+  sourceLines.push(" *   - 非 FromISR 版本的 FreeRTOS API（xQueueSend → xQueueSendFromISR）");
+  sourceLines.push(" *   - printf / malloc / 浮点运算（无 FPU 保存）");
+  sourceLines.push(" *");
+  sourceLines.push(" * 复杂回调逻辑请改用 FreeRTOS xTimerCreate + xTimerPendFunctionCall，");
+  sourceLines.push(" * 回调在守护任务上下文执行，上述限制全部解除。");
+  sourceLines.push(" */");
   sourceLines.push("");
   sourceLines.push(`static ${prefix}_t timers[${PREFIX}_MAX];`);
   sourceLines.push("");

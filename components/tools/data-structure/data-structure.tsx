@@ -200,7 +200,10 @@ function RingBufferPanel() {
             htmlFor="rb-threadsafe"
             className="text-sm cursor-pointer select-none"
           >
-            线程安全（critical section 包裹）
+            单写单读 ISR 安全（PRIMASK critical section 包裹）
+            <span className="block text-xs text-muted-foreground mt-0.5">
+              典型：UART RX ISR 生产 + 任务消费。多写多读请改用 StreamBuffer 或加 Mutex
+            </span>
           </label>
         </div>
       </div>
