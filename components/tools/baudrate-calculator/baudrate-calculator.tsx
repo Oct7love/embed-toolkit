@@ -261,14 +261,14 @@ export function BaudrateCalculator() {
             <code className="font-mono bg-muted px-1 rounded ml-1">
               BRR = round(f_clk / baudrate)
             </code>
-            ；mantissa = BRR[15:4]，fraction = BRR[3:0]
+            ；mantissa = BRR[15:4]，fraction = BRR[3:0]（4 bit）；实际波特率 = f_clk / BRR
           </p>
           <p>
             <strong>OVER8：</strong>
             <code className="font-mono bg-muted px-1 rounded ml-1">
-              USARTDIV = f_clk / (8 × baudrate)
+              BRR = round(f_clk × 2 / baudrate)
             </code>
-            ；fraction 仅 3 位（BRR[2:0]），BRR[3] 必须为 0
+            ；mantissa = BRR[15:4]，fraction = BRR[2:0]（3 bit），BRR[3] 必须为 0；实际波特率 = f_clk × 2 / BRR
           </p>
           <p>
             示例：72MHz / 115200 / OVER16 → BRR = 0x0271（mantissa=39, fraction=1），实际 115200.00 bps，误差 0.00%
