@@ -196,7 +196,8 @@ function generateESP32Code(
   lines.push(`// Chip: ${chip.name} (${chip.package ?? ""})`);
   lines.push(`// Date: ${new Date().toISOString().slice(0, 10)}`);
   lines.push("");
-  lines.push("#include <Arduino.h>");
+  lines.push("#include \"driver/gpio.h\"");
+  lines.push("#include <Arduino.h>  // 也支持 Arduino-ESP32 风格");
   lines.push("");
 
   // Define pin constants
