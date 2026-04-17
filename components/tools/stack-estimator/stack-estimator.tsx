@@ -366,7 +366,7 @@ export function StackEstimator() {
                 <code className="font-mono bg-muted px-1 rounded">
                   uxTaskGetStackHighWaterMark(NULL)
                 </code>{" "}
-                获取"历史最低剩余 words"。推荐栈大小 ≈ 历史最低 × 1.3。
+                获取&ldquo;历史最低剩余 words&rdquo;。推荐栈大小 ≈ 历史最低 × 1.3。
               </p>
               <CodeBlock
                 language="c"
