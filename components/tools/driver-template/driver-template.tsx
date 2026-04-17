@@ -40,7 +40,7 @@ import type {
   TimConfig,
   PwmConfig,
 } from "@/types/driver-template";
-import { Wrench, Cpu, FileCode } from "lucide-react";
+import { Wrench, Cpu, FileCode, AlertTriangle } from "lucide-react";
 
 const MCU_OPTIONS: { value: McuFamily; label: string }[] = [
   { value: "stm32f1", label: "STM32F1" },
@@ -285,7 +285,27 @@ export function DriverTemplate() {
               </Tabs>
             </div>
           </CardHeader>
-          <CardContent>
+          <CardContent className="space-y-3">
+            <div className="rounded-md border border-yellow-500/40 bg-yellow-500/10 px-3 py-2 text-xs leading-relaxed text-yellow-900 dark:text-yellow-200">
+              <div className="flex items-start gap-2">
+                <AlertTriangle className="size-4 shrink-0 mt-0.5" />
+                <div className="space-y-1">
+                  <p className="font-medium">
+                    这是驱动 <strong>脚手架</strong>，不是即插即用代码。
+                  </p>
+                  <p>
+                    HAL 路径已验证稳定；LL / ESP-IDF 路径提供骨架 + <code className="font-mono">TODO</code> 注释，需要按以下事项适配：
+                  </p>
+                  <ul className="list-disc pl-5 space-y-0.5">
+                    <li>板卡的 GPIO 复用 / RCC 时钟使能 / DMA 通道必须由 board init 预置</li>
+                    <li>STM32 LL I2C 主机收发仍是 TODO（待完善状态机），临时需求请切到 HAL 风格</li>
+                    <li>ESP32 Arduino 风格使用默认引脚映射，非默认板卡需显式传 RX/TX 引脚</li>
+                    <li>SPI 的 <code className="font-mono">CS_LOW()/CS_HIGH()</code> 宏是占位，需实连到 GPIO 写</li>
+                    <li>中断优先级、NVIC 分组按项目实际配置，这里用的是保守默认值</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
             <Tabs value={activeTab}>
               <TabsContent value="header">
                 <CodeBlock code={files.header} language="c" />

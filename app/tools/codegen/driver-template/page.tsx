@@ -5,7 +5,7 @@ import { DriverTemplate } from "@/components/tools/driver-template/driver-templa
 export const metadata: Metadata = {
   title: "外设驱动模板生成器",
   description:
-    "按 MCU 系列（STM32F1/F4/H7/G0/L4、ESP32）与外设（UART/SPI/I2C/ADC/TIM/PWM）生成可编译的 .h/.c 驱动模板，支持 HAL/LL/Arduino 风格",
+    "生成外设驱动脚手架（初始化 / 收发 / 中断框架），覆盖 STM32F1/F4/H7/G0/L4 + ESP32 常见 HAL/LL/ESP-IDF 场景。生成后需根据具体硬件和 RTOS 做少量适配。",
 };
 
 export default function Page() {
@@ -13,8 +13,8 @@ export default function Page() {
     <div className="p-4 lg:p-8 max-w-6xl mx-auto">
       <ToolIntro
         title="外设驱动模板生成器"
-        description="按 MCU 系列与外设类型一键生成可编译的 .h / .c 驱动模板，STM32 走 HAL/LL，ESP32 走 ESP-IDF/Arduino。常见陷阱以注释形式嵌入。"
-        example="选择 STM32F4 + SPI + Mode 0，立即得到 SPI_POLARITY_LOW / SPI_PHASE_1EDGE 的完整 spi1_driver.h/.c，复制粘贴即可编译。"
+        description="生成外设驱动脚手架（初始化 / 收发 / 中断框架），覆盖常见 HAL / LL / ESP-IDF 场景。HAL 路径成熟稳定；LL 与 ESP-IDF 路径提供骨架 + TODO 注释，需根据具体板卡、时钟、DMA 通道做少量适配。"
+        example="选择 STM32F4 + SPI + Mode 0，得到 SPI_POLARITY_LOW / SPI_PHASE_1EDGE 的 spi1_driver.h/.c 脚手架，配合板卡的 GPIO 复用与 CS 引脚即可投入使用。"
       />
       <DriverTemplate />
     </div>
