@@ -9,7 +9,13 @@ import type {
   ClockViolation,
   PllParams,
 } from "@/types/clock-tree";
-import { getConstraintsById } from "./constraints";
+import { getConstraintsById, getFlashLatency } from "./constraints";
+
+/** generateCode 返回值：成功返回 code，违规返回 error */
+export interface CodeGenResult {
+  code: string;
+  error?: string;
+}
 
 /* ======================== Frequency helpers ======================== */
 
@@ -179,7 +185,20 @@ export function createDefaultConfig(chipId: string): ClockConfig {
 
 /* ======================== C code generation ======================== */
 
-export function generateCode(config: ClockConfig, freqs: ClockFrequencies): string {
+export function generateCode(
+  config: ClockConfig,
+  freqs: ClockFrequencies,
+  violations: ClockViolation[] = []
+): CodeGenResult {
+  // 闭环：有违规直接拒绝，避免用户复制错误代码到固件
+  if (violations.length > 0) {
+    const summary = violations.map((v) => `- ${v.message}`).join("\n");
+    return {
+      code: "",
+      error: `存在 ${violations.length} 处配置违规，请先修复后再导出：\n${summary}`,
+    };
+  }
+
   const constraints = getConstraintsById(config.chipId);
   const lines: string[] = [];
 
@@ -281,10 +300,19 @@ export function generateCode(config: ClockConfig, freqs: ClockFrequencies): stri
   lines.push(`  RCC_ClkInitStruct.APB2CLKDivider = ${apbDivMap[config.apb2Div] ?? "RCC_HCLK_DIV1"};`);
   lines.push("");
 
-  // Flash latency
-  const latency = freqs.ahb <= 24_000_000 ? 0 : freqs.ahb <= 48_000_000 ? 1 : freqs.ahb <= 72_000_000 ? 2 : freqs.ahb <= 100_000_000 ? 3 : freqs.ahb <= 150_000_000 ? 4 : freqs.ahb <= 200_000_000 ? 5 : freqs.ahb <= 250_000_000 ? 6 : 7;
+  // Flash latency 按系列查表（fallback 到通用阈值）
+  const tableLatency = getFlashLatency(constraints, freqs.ahb);
+  const latency = tableLatency ?? (
+    freqs.ahb <= 24_000_000 ? 0 :
+    freqs.ahb <= 48_000_000 ? 1 :
+    freqs.ahb <= 72_000_000 ? 2 :
+    freqs.ahb <= 100_000_000 ? 3 :
+    freqs.ahb <= 150_000_000 ? 4 :
+    freqs.ahb <= 200_000_000 ? 5 :
+    freqs.ahb <= 250_000_000 ? 6 : 7
+  );
   lines.push(`  HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_${latency});`);
 
   lines.push("}");
-  return lines.join("\n");
+  return { code: lines.join("\n") };
 }

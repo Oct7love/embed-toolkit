@@ -62,7 +62,10 @@ export function ClockTree() {
     () => checkViolations(freqs, constraints),
     [freqs, constraints]
   );
-  const code = useMemo(() => generateCode(config, freqs), [config, freqs]);
+  const codeResult = useMemo(
+    () => generateCode(config, freqs, violations),
+    [config, freqs, violations]
+  );
 
   const violationSet = useMemo(
     () => new Set(violations.map((v) => v.node)),
@@ -673,7 +676,13 @@ export function ClockTree() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <CodeBlock code={code} language="c" />
+          {codeResult.error ? (
+            <div className="rounded-md border border-destructive/50 bg-destructive/10 px-3 py-2 text-sm text-destructive whitespace-pre-line">
+              {codeResult.error}
+            </div>
+          ) : (
+            <CodeBlock code={codeResult.code} language="c" />
+          )}
         </CardContent>
       </Card>
     </div>
