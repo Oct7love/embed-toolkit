@@ -14,13 +14,23 @@ describe("traverseTree", () => {
     expect(node?.id).toBe(DECISION_TREE.id);
   });
 
-  it("path mutex → yes lands on Mutex with PI recommendation", () => {
-    const node = traverseTree(["mutex", "yes"]);
+  it("path mutex lands directly on Mutex with PI (互斥保护无条件推荐 Mutex，不再额外问 PI)", () => {
+    const node = traverseTree(["mutex"]);
     expect(node).not.toBeNull();
     expect(node?.kind).toBe("recommendation");
     if (node?.kind === "recommendation") {
       expect(node.api).toBe("xSemaphoreCreateMutex");
       expect(node.id).toBe("rec-mutex-pi");
+    }
+  });
+
+  it("path ipc → signal-only → multi lands on Binary Semaphore (ISR → 多任务同步，不是互斥)", () => {
+    const node = traverseTree(["ipc", "signal-only", "multi"]);
+    expect(node).not.toBeNull();
+    expect(node?.kind).toBe("recommendation");
+    if (node?.kind === "recommendation") {
+      expect(node.api).toBe("xSemaphoreCreateBinary");
+      expect(node.id).toBe("rec-binary-sem");
     }
   });
 

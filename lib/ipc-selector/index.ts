@@ -48,29 +48,35 @@ const REC_BINARY_SEM: RecommendationNode = {
   title: "Binary Semaphore（二值信号量）",
   api: "xSemaphoreCreateBinary",
   scenario:
-    "互斥保护，且不存在多优先级竞争场景；或用于 ISR → 任务的简单同步通知。比 Mutex 轻量，无优先级继承开销。",
+    "ISR → 任务的单向同步通知：中断里 xSemaphoreGiveFromISR，任务里 xSemaphoreTake 阻塞等待。⚠️ 不是互斥保护的合适选择——互斥请用 Mutex。",
   codeExample: {
     language: "c",
-    code: `SemaphoreHandle_t xSem = xSemaphoreCreateBinary();
-xSemaphoreGive(xSem); // 初始置 1（互斥用法需手动初始化）
+    code: `SemaphoreHandle_t xSyncSem = xSemaphoreCreateBinary();
+
+// ISR 中：
+void EXTI0_IRQHandler(void) {
+    BaseType_t woken = pdFALSE;
+    xSemaphoreGiveFromISR(xSyncSem, &woken);
+    portYIELD_FROM_ISR(woken);
+}
 
 // 任务中：
-xSemaphoreTake(xSem, portMAX_DELAY);
-// 临界区
-xSemaphoreGive(xSem);`,
+xSemaphoreTake(xSyncSem, portMAX_DELAY);
+// 处理事件`,
   },
   pitfalls: [
-    "无优先级继承机制，存在优先级反转风险。多优先级竞争时务必改用 Mutex。",
-    "创建后初始值为 0，作为互斥锁使用时必须先 Give 一次。",
+    "⚠️ 不要用作互斥锁：没有优先级继承，会触发优先级反转。互斥保护务必用 xSemaphoreCreateMutex。",
+    "创建后初始值为 0，首次 Take 会阻塞直到有 Give。",
+    "ISR 必须用 FromISR 版本并处理 xHigherPriorityTaskWoken。",
   ],
   alternatives: [
     {
-      api: "xSemaphoreCreateMutex",
-      difference: "带优先级继承，避免优先级反转，适合多优先级竞争场景。",
+      api: "xTaskNotifyGive / ulTaskNotifyTake",
+      difference: "更轻量（~45% 更快）的 ISR→任务同步，无需额外 Semaphore 对象。首选方案。",
     },
     {
-      api: "xSemaphoreCreateCounting",
-      difference: "可计数版本，用于资源池管理（如 N 个空闲缓冲区）。",
+      api: "xSemaphoreCreateMutex",
+      difference: "互斥保护请用 Mutex，带优先级继承。Binary Semaphore 不是互斥的正确工具。",
     },
   ],
 };
@@ -323,6 +329,27 @@ xSemaphoreGive(xPool);`,
 /*                              决策树根                                       */
 /* -------------------------------------------------------------------------- */
 
+/** Q3a: ISR → 任务信号通知场景，1 对 1 还是 1 对多？ */
+const Q3A_SIGNAL_FANOUT: QuestionNode = {
+  kind: "question",
+  id: "q3a-signal-fanout",
+  question: "信号通知是单任务接收还是多任务共享？",
+  options: [
+    {
+      value: "single",
+      label: "1 对 1（ISR → 单个任务）",
+      hint: "Task Notification 最轻量",
+      next: REC_TASK_NOTIFY,
+    },
+    {
+      value: "multi",
+      label: "1 对多（多个任务需同步等待）",
+      hint: "Binary Semaphore 可共享",
+      next: REC_BINARY_SEM,
+    },
+  ],
+};
+
 /** Q3: 数据大小？ */
 const Q3_DATA_SIZE: QuestionNode = {
   kind: "question",
@@ -345,7 +372,7 @@ const Q3_DATA_SIZE: QuestionNode = {
       value: "signal-only",
       label: "仅触发信号 / 32-bit 值",
       hint: "如 ISR 通知任务处理",
-      next: REC_TASK_NOTIFY,
+      next: Q3A_SIGNAL_FANOUT,
     },
     {
       value: "resource-pool",
@@ -356,26 +383,6 @@ const Q3_DATA_SIZE: QuestionNode = {
   ],
 };
 
-/** Q2: 是否担心优先级反转？ */
-const Q2_PRIORITY_INVERSION: QuestionNode = {
-  kind: "question",
-  id: "q2-priority-inversion",
-  question: "存在多个不同优先级任务竞争该资源吗？",
-  options: [
-    {
-      value: "yes",
-      label: "是，需防止优先级反转",
-      hint: "推荐 Mutex with PI",
-      next: REC_MUTEX_PI,
-    },
-    {
-      value: "no",
-      label: "否，仅同优先级或单消费者",
-      hint: "可用更轻量的方案",
-      next: REC_BINARY_SEM,
-    },
-  ],
-};
 
 /** Q4: 周期触发方式 */
 const Q4_PERIODIC: QuestionNode = {
@@ -407,8 +414,8 @@ export const DECISION_TREE: QuestionNode = {
     {
       value: "mutex",
       label: "互斥保护共享资源",
-      hint: "如总线、链表、文件句柄",
-      next: Q2_PRIORITY_INVERSION,
+      hint: "如总线、链表、文件句柄 → Mutex with PI",
+      next: REC_MUTEX_PI,
     },
     {
       value: "ipc",
