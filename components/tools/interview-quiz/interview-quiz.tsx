@@ -141,8 +141,12 @@ export function InterviewQuiz() {
   }, [pickNext]);
 
   const handleReset = useCallback(() => {
+    // 重置本轮：必须连同 selectedOption / showAnswer 一起清，
+    // 否则上一题的"已提交+答案视图"会粘到新一轮的第一题上
     resetSession();
     setCurrentQuestion(null);
+    setSelectedOption(null);
+    setShowAnswer(false);
   }, [resetSession]);
 
   const accuracy =
@@ -350,6 +354,8 @@ export function InterviewQuiz() {
                   if (confirm("确定要清除所有答题记录、收藏和错题吗？此操作不可撤销。")) {
                     resetAllData();
                     setCurrentQuestion(null);
+                    setSelectedOption(null);
+                    setShowAnswer(false);
                   }
                 }}
               >
