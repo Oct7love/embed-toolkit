@@ -352,6 +352,41 @@ export function StackEstimator() {
               <CodeBlock code={result.codeSnippet} language="c" />
             </CardContent>
           </Card>
+
+          <Card size="sm">
+            <CardHeader>
+              <CardTitle>用动态测量校准</CardTitle>
+              <CardDescription>
+                上面的估算是起点，真实值请用 FreeRTOS 内置 API 测
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                任务跑稳后调用{" "}
+                <code className="font-mono bg-muted px-1 rounded">
+                  uxTaskGetStackHighWaterMark(NULL)
+                </code>{" "}
+                获取"历史最低剩余 words"。推荐栈大小 ≈ 历史最低 × 1.3。
+              </p>
+              <CodeBlock
+                language="c"
+                code={`/* 在任务主循环的关键路径后调用 */
+void measure_stack(void)
+{
+    /* 传 NULL 测当前任务；或传 TaskHandle_t 测他人 */
+    UBaseType_t free_words = uxTaskGetStackHighWaterMark(NULL);
+    printf("stack free: %u words (min over lifetime)\\n",
+           (unsigned)free_words);
+    /* 剩余过小（< 32 words）→ 增加 StackSize；
+       长期富余 > 50% → 可下调节省 RAM。 */
+}`}
+              />
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                ⚠️ 必须让任务跑过所有 <strong>最深调用分支</strong>（含异常路径、
+                printf、DMA 完成回调等）才能得到可信水位。
+              </p>
+            </CardContent>
+          </Card>
         </div>
       </div>
     </div>
