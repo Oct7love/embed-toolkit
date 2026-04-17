@@ -26,16 +26,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **侧边栏滚动**：`ScrollArea` 补 `min-h-0`，flex-1 才能实际把 Viewport 收缩到视口内触发 overflow（base-ui ScrollArea.Root 不加 min-h-0 时 Viewport 被内容撑开）
 - **GPIO 芯片列表滚动**：去掉 `filteredChips.slice(0, 30)` 硬截断，把 ScrollArea 换成 `max-h-[60vh] overflow-y-auto` 原生 div，45 款芯片现在全部可见
-- **interview-quiz 提交跳题**：`displayQuestion` memo 用 `pool.some()` 校验，pool 又被 answeredIds 过滤——提交后当前题立刻无效，回落 pickRandom 选了一道全新的题，叠加 showAnswer=true 暴露下一题答案。抽出纯函数 `selectDisplayQuestion` 用 `loadedPool` 校验
-- **interview-quiz 重置粘连**：`handleReset` 与"清除所有数据"按钮补清 `selectedOption` + `showAnswer`，否则上一题的"已提交+答案视图"会粘到新一轮的第一题
-- **interview-quiz 首题无响应**：`handleSubmit` 改用 `displayQuestion` 作为权威题目并同步 `currentQuestion`，覆盖首屏首题与重置后第一题两种场景
+- **interview-quiz 提交跳题**（commit `a08f6f4`）：`displayQuestion` memo 用 `pool.some()` 校验，pool 又被 answeredIds 过滤——提交后当前题立刻无效，回落 pickRandom 选了一道全新的题，叠加 showAnswer=true 暴露下一题答案。抽出纯函数 `selectDisplayQuestion` 用 `loadedPool` 校验
+- **interview-quiz 重置粘连**（commit `710ce51`）：`handleReset` 与"清除所有数据"按钮补清 `selectedOption` + `showAnswer`，否则上一题的"已提交+答案视图"会粘到新一轮的第一题
+- **interview-quiz 首题无响应**（commit `8f0e6d7`）：`handleSubmit` 改用 `displayQuestion` 作为权威题目并同步 `currentQuestion`，覆盖首屏首题与重置后第一题两种场景
+- **stack-estimator 未转义双引号**（commit `cff3285`）：JSX 内中文引号触发 `react/no-unescaped-entities`，换成 `&ldquo;/&rdquo;`
 
-### Changed
+### Changed — engineering-honest 口径修正（Codex v1.3.0 审查驱动）
+
+- **driver-template** 定位从"一键生成可编译代码"改为"驱动脚手架"。ToolIntro 与生成结果页顶部增加黄色 banner，列出 5 条已知限制（LL I2C 主机收发 TODO、ESP32 引脚映射依赖板型、SPI CS 宏占位、NVIC 优先级保守默认、RCC/GPIO 需 board init 预置）
+- **data-structure** 环形缓冲区从"线程安全"改为**单写单读 ISR 安全**（SPSC），多写多读场景明确指向 FreeRTOS StreamBuffer / Mutex。软件定时器补协作式 + tick ISR 上下文限制（禁止阻塞 / 非 FromISR API / printf / malloc / 浮点）
+- **stack-estimator** 加免责说明：结果仅作起点参考，必须用 `uxTaskGetStackHighWaterMark()` 动态测量验证。结果页底部新增"用动态测量校准"卡片含示例代码与最深分支提示
+- **ipc-selector** 决策树重排：`Q1.mutex` 直接推荐 Mutex with PI（不再走"是否担心 PI"问答），Binary Semaphore 改挂在 `Q3.signal-only → Q3a.multi` 分支（ISR → 多任务共享通知），文案/示例/pitfalls/alternatives 全部改写口径
+
+### Changed — 其他
 
 - **package.json version 1.2.0 → 1.3.0**
-- **README/CHANGELOG 计数同步**：30 工具 / 45 芯片 / 446 题 / 180 测试
-- 测试 82 → 180（+98），代码量约 25000 → 30000+ 行
+- **计数同步（README / CHANGELOG / CLAUDE.md）**：30 工具 / 45 芯片 / 446 题 / 181 测试
+- 测试 82 → 181（+99），代码量约 25000 → 30000+ 行
 - tools-config.ts 注册 7 个新工具图标：`Layers / GitBranch / ShieldCheck / Wrench / BellRing / Boxes / BookOpen`
+
+### Security
+
+- **hono 中危告警**：shadcn（CLI 工具，运行时不依赖）从 `dependencies` 移到 `devDependencies`，hono 不再进入生产依赖树。同时加 `pnpm.overrides` 锁 hono ≥ 4.12.14 作为防御性修复。CLI 仍可通过 `pnpm dlx shadcn add ...` 或本地 devDep 正常使用
 
 ---
 

@@ -5,7 +5,7 @@
 ![Status](https://img.shields.io/badge/Status-Completed-brightgreen)
 ![Tools](https://img.shields.io/badge/Tools-30-blue)
 ![Chips](https://img.shields.io/badge/Chips-45-teal)
-![Tests](https://img.shields.io/badge/Tests-180-success)
+![Tests](https://img.shields.io/badge/Tests-181-success)
 ![Questions](https://img.shields.io/badge/Questions-446-orange)
 ![Next.js](https://img.shields.io/badge/Next.js-16-black)
 ![License](https://img.shields.io/badge/License-MIT-lightgrey)
@@ -198,7 +198,7 @@ embed-toolkit/
   - **阶段二**：6 个 P0 核心工具（3 Agent 并行，3 PR）
   - **阶段三**：7 个 P1 工具（4 Agent 并行，含 Recharts 集成、FieldHighlighter 共享组件）
   - **阶段四**：5 个 P2 工具（4 Agent 并行）+ 446 道面试题库（分 16 批次迭代生成）
-- **产出**：30 个工具、45 款芯片支持、446 道面试题、180 单元测试、6 个规划文档、约 30000+ 行代码、零构建警告
+- **产出**：30 个工具、45 款芯片支持、446 道面试题、181 单元测试、6 个规划文档、约 30000+ 行代码、零构建警告
 - **协作经验**：记录在 [docs/implementation_plan.md](./docs/implementation_plan.md#实际开发记录) 的「实际开发记录」章节
 
 ## License

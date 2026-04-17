@@ -356,3 +356,86 @@ pnpm build
 - [x] PID 模拟器（3 种系统模型 + Recharts 图表 + 性能指标）
 - [x] `pnpm build` 27 页面零错误
 - [x] 合并到 main，tagged v1.1.0
+
+---
+
+## 阶段六：工程诚实 + 生产力工具扩展（v1.2.0 → v1.3.0）
+
+Claude Code + Codex 双 agent 审查驱动的两次发布。v1.2.0 聚焦"准确性闭环"，v1.3.0 聚焦"工具规模 + 口径工程诚实"。
+
+### v1.2.0（2026-04-17）— 准确性闭环
+
+**背景**：Codex 对 v1.1.0 做安全/正确性审查，给出 P1/P2/P3 三级改进清单。主 agent 串行修复 + 验证 + 发版。
+
+| 类别 | 关键修复 | 决策点 |
+|------|----------|--------|
+| **芯片扩容** | GPIO 引脚分配器从 10 款扩到 45 款（STM32F1/F4/G0/G4/H7/L4 全系 + ESP32 全系 + GD32/CH32/AT32 国产线） | chip 数据迁移到 `public/chips/*.json` 按需 fetch，减小首屏 bundle。`scripts/generate-chips.ts` 从 STM32_PORTS_{64,100,144} 模板 + F1_AF/F4_AF mapping 批量生成 |
+| **波特率编码** | USARTDIV 整数分频器 → 完整 BRR mantissa/fraction 编码 | OVER16: BRR[15:4]+BRR[3:0]（4 bit fraction）；OVER8: 3 bit fraction，BRR[3]=0。UI + 公式说明 + 复制按钮全部改走 BRR 口径 |
+| **时钟树 VCO** | `checkViolations` 用 `freqs.pllOutput`（PLLP 分频后）校验 VCO → 漏检低频场景 | 在 `calcPllOutput` 中显式保留 VCO 频率并透传到 `ClockFrequencies.vco`，`checkViolations` 双向校验 `vcoRange`。F4 [192, 432] MHz / H7 [192, 836] MHz |
+| **Register viewer 32-bit 掩码** | `(1 << 32) - 1 === 0` JS 位运算陷阱 | `width >= 32 ? 0xFFFFFFFF : ((1 << width) - 1)` |
+| **HexInput 0x 前缀** | `/[\s0x]/gi` 吞掉所有 `0` 字符 | 改为 `/^0x/i + /\s+/g` 顺序处理 |
+| **Store schema 守卫** | 篡改过的 localStorage 导致运行时崩溃 | `stores/_schema-guards.ts` 共享 `isRecord / isStringArray`，6 个持久化 store 接入 `makeSafeMerge` |
+| **闭环 generateCode** | 时钟树违规时仍能导出 C 代码，用户可能把错误配置烧进硬件 | 存在违规时 `generateCode` 直接返回 error，不再产出 SystemClock_Config() |
+
+**里程碑**
+- 10 芯片 → 45 芯片，3 个持久化 store 加 schema 守卫
+- 测试 35 → 82（+47），新增 clock-tree VCO / baudrate BRR / gpio-planner code generator / adc-calculator
+- `pnpm build` 30+ 页面零错误，合并到 main，tagged `v1.2.0` at commit `1696871`
+
+### v1.2.0 → v1.3.0 过渡期 — 线上反馈修复
+
+用户 Vercel 实测反馈 3 个运行时 bug，独立 commit 修掉：
+
+- `8f0e6d7` **interview-quiz 首题无响应** — `displayQuestion` 兜底选题但 `currentQuestion` 仍 null，`handleSubmit` 早 return。改用 displayQuestion 作为权威题目 + 同步 currentQuestion
+- `710ce51` **interview-quiz 重置粘连** — `handleReset` 漏清 `selectedOption` / `showAnswer`，上一题的"已提交"视图粘到新轮第一题
+- `a08f6f4` **interview-quiz 提交跳题** — `displayQuestion` memo 用 `pool.some()` 校验，pool 又被 answeredIds 过滤 → 提交后当前题"无效"回落 pickRandom 选新题，叠加 `showAnswer=true` 暴露下一题答案。抽出纯函数 `selectDisplayQuestion(currentQuestion, loadedPool, pool)` 用 `loadedPool`（不随 answeredIds 变化）校验
+- `1433103` 侧边栏 `ScrollArea` 补 `min-h-0` + GPIO 芯片列表去掉 `slice(0, 30)` 硬截断
+
+### v1.3.0（2026-04-17）— 工具规模 + 工程诚实
+
+**背景**：用户要求把 RTOS 从 3 → 6、代码辅助从 2 → 6，真正把工具站做成"解决开发痛点"的生产力平台。
+
+#### Batch 2：3 个 RTOS 工具（3 Agent 并行 worktree-less）
+
+| # | 工具 | 路由 | 核心算法 |
+|---|------|------|----------|
+| 6.1 | 任务栈深度估算器 | `/tools/rtos/stack-estimator` | 调用链字节累加 + ISR 32B 压栈 + printf 512B 修正 + 30% 余量，向上取整到 configMINIMAL_STACK_SIZE 整数倍，支持 FreeRTOS / RT-Thread / 通用 3 套预设 |
+| 6.2 | IPC 选型决策树 | `/tools/rtos/ipc-selector` | 交互式决策树，9 个推荐叶节点（Mutex with PI / Binary / Counting Semaphore / Queue / Stream Buffer / Task Notification / Event Group / Software Timer / vTaskDelayUntil），每叶带 API 签名 + 代码示例 + 陷阱 + 替代方案 |
+| 6.3 | 优先级反转可视化 | `/tools/rtos/priority-inversion` | 3 任务 + 1 mutex 的 1ms tick 调度状态机仿真，对比 PIP on/off 的甘特图（Recharts via next/dynamic）与 high 任务等待时间差 |
+
+3 个 agent 各写各的 types / lib / lib-test / component / page，互不冲突。主 agent 等全部完成后统一更新 `lib/tools-config.ts` + 引入新图标（Layers / GitBranch / ShieldCheck）。commit `c2d9957`。
+
+#### Batch 3：4 个代码辅助工具（4 Agent 并行）
+
+| # | 工具 | 路由 | 核心数据规模 |
+|---|------|------|----------|
+| 6.4 | 外设驱动模板生成器 | `/tools/codegen/driver-template` | 6 外设（UART/SPI/I2C/ADC/TIM/PWM）× 6 MCU（STM32F1/F4/H7/G0/L4 + ESP32）× 3 风格（HAL/LL/Arduino），generators/ 按外设拆分 6 个子模块 |
+| 6.5 | 中断服务程序模板 | `/tools/codegen/isr-template` | 8 种 ISR × 5 STM32 系列，HAL 差异已适配（F1/F4 EXTI 单宏 vs H7/G0 双宏、DMA Stream vs Channel 等），3 种任务通知机制 + 临界区开关 |
+| 6.6 | 嵌入式数据结构生成器 | `/tools/codegen/data-structure` | 4 种结构：Ring buffer（power-of-two 校验）/ 状态机宏（双层 switch）/ 软件定时器数组 / 事件 Pub/Sub |
+| 6.7 | API 速查卡 | `/tools/codegen/api-cheatsheet` | FreeRTOS 30 条 + STM32 HAL 30 条，含签名 / 参数 / 用法代码 / 常见陷阱，按 library+category 筛选 + 模糊搜索 |
+
+4 个 agent 并行。主 agent 统一更新 `lib/tools-config.ts` + 新图标（Wrench / BellRing / Boxes / BookOpen）+ 版本号 1.2.0 → 1.3.0 + README / CLAUDE.md / CHANGELOG 计数同步。commit `f301a61`，tagged `v1.3.0` at `6bc5708`。
+
+#### Codex v1.3.0 审查 → engineering-honest 口径修正
+
+Codex 指出 4 个工具"承诺过头"，不符合"工程诚实"原则。主 agent 串行 5 commit 回应：
+
+| Commit | 工具 | 修正 |
+|--------|------|------|
+| `e027d6d` | driver-template | 定位从"一键生成可编译代码"改为"**驱动脚手架**"。生成结果页顶部加黄色 warning banner 列 5 条已知限制：LL I2C 主机收发 TODO、ESP32 引脚映射依赖板型、SPI CS 宏占位、NVIC 优先级保守默认、RCC/GPIO 需 board init 预置 |
+| `fe96a68` | data-structure | Ring buffer "线程安全" → **单写单读 ISR 安全**（SPSC）。多写多读明确指向 StreamBuffer 或 Mutex。Software timer 协作式 + tick ISR 上下文限制（禁止阻塞 / 非 FromISR / printf / malloc / 浮点） |
+| `1f25ac9` | stack-estimator | ToolIntro 加免责：结果仅作起点参考，必须用 `uxTaskGetStackHighWaterMark` 动态测量验证。结果页底部新增"用动态测量校准"卡片含示例代码与最深分支提示 |
+| `493b6fa` | ipc-selector | 决策树重排：`Q1.mutex` 直接推荐 Mutex with PI（不再问"是否担心 PI"），Binary Semaphore 改挂在 `Q3.signal-only → Q3a.multi` 分支（ISR→多任务共享通知），文案/示例/pitfalls/alternatives 全部改写口径 |
+| `14f017d` | package.json | shadcn（CLI 工具）从 `dependencies` 移到 `devDependencies` + `pnpm.overrides` 锁 hono ≥ 4.12.14，消除 hono 中危告警 |
+
+随后 `cff3285` 修 stack-estimator 新增文本里的未转义中文引号（react/no-unescaped-entities）。v1.3.0 tag 移到 `cff3285` 作为最终 release commit（方案 A：tag 指向最终功能 commit，post-release 纯文档 fixup 不再移动 tag）。
+
+### v1.3.0 里程碑
+
+- [x] RTOS 工具数 3 → 6，代码辅助工具数 2 → 6，总工具数 23 → 30
+- [x] 7 个新工具各自 types / lib / lib-test / component / page 五件套齐全，覆盖 99 个新单元测试
+- [x] 测试总数 82 → 181（+99，+121%），`pnpm build` 37 页面零警告
+- [x] Codex v1.3.0 审查 engineering-honest 口径修正全部落地（5 commits）
+- [x] hono 中危告警修复（devDeps 迁移 + pnpm override）
+- [x] 合并到 main，tagged `v1.3.0` at commit `cff3285`
+- [x] 部署至 Vercel（<https://embed-toolkit.vercel.app/>）
