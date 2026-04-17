@@ -3,9 +3,9 @@
 > 嵌入式开发者的在线工具箱 — 浏览器端一站式嵌入式开发工具集合
 
 ![Status](https://img.shields.io/badge/Status-Completed-brightgreen)
-![Tools](https://img.shields.io/badge/Tools-23-blue)
+![Tools](https://img.shields.io/badge/Tools-30-blue)
 ![Chips](https://img.shields.io/badge/Chips-45-teal)
-![Tests](https://img.shields.io/badge/Tests-82-success)
+![Tests](https://img.shields.io/badge/Tests-180-success)
 ![Questions](https://img.shields.io/badge/Questions-446-orange)
 ![Next.js](https://img.shields.io/badge/Next.js-16-black)
 ![License](https://img.shields.io/badge/License-MIT-lightgrey)
@@ -26,7 +26,7 @@ Embed Toolkit 将嵌入式工程师日常开发中频繁用到的计算、转换
 
 🌐 **Live Demo**：**<https://embed-toolkit.vercel.app/>**
 
-所有 23 个工具均已上线（含 45 款芯片支持），无需注册，打开即用：
+所有 30 个工具均已上线（含 45 款芯片支持），无需注册，打开即用：
 
 | 快捷链接 | 工具 |
 |----------|------|
@@ -39,7 +39,7 @@ Embed Toolkit 将嵌入式工程师日常开发中频繁用到的计算、转换
 
 > 纯前端应用，所有计算在浏览器本地完成，不上传任何数据。本地/离线使用见下方「本地开发」章节。
 
-## 功能模块（23 个工具，6 大分类，全部完成 ✅）
+## 功能模块（30 个工具，6 大分类，全部完成 ✅）
 
 ### 一、数据转换工具
 
@@ -80,6 +80,9 @@ Embed Toolkit 将嵌入式工程师日常开发中频繁用到的计算、转换
 | 任务调度甘特图 | 输入任务参数，模拟 FreeRTOS 抢占式调度，生成时序甘特图 | ✅ |
 | 内存布局可视化 | 手动配置或粘贴 .map 文件，可视化 RAM/Flash 分区占用情况 | ✅ |
 | PID 调参模拟器 | Kp/Ki/Kd 实时仿真阶跃响应，3 种系统模型，3 套预设参数 | ✅ |
+| 任务栈深度估算器 | 调用链 + ISR/printf 修正 + 30% 安全余量，按 RTOS 取整到 minimal stack 整数倍 | ✅ |
+| IPC 选型决策树 | 9 个推荐叶节点（Mutex/Semaphore/Queue/Stream Buffer/Notification/Event Group...）+ 代码 + 陷阱 | ✅ |
+| 优先级反转可视化 | 3 任务 + Mutex 仿真，对比 PIP on/off 的甘特图与 high 等待时间 | ✅ |
 
 ### 五、代码辅助工具
 
@@ -87,6 +90,10 @@ Embed Toolkit 将嵌入式工程师日常开发中频繁用到的计算、转换
 |------|------|:----:|
 | 位操作代码生成器 | 勾选 bit 位，选择操作类型，自动生成 C 语言宏和函数 | ✅ |
 | 状态机编辑器 | 可视化拖拽绘制状态转移图，导出 C 语言 switch-case 框架代码 | ✅ |
+| 外设驱动模板生成器 | 选 MCU + 外设（UART/SPI/I2C/ADC/TIM/PWM）+ 风格，生成可编译 .h/.c 双文件 | ✅ |
+| 中断服务程序模板 | 选中断类型（EXTI/TIM/UART/ADC/DMA/SysTick）+ 通知机制，生成 ISR 框架与陷阱注释 | ✅ |
+| 嵌入式数据结构生成器 | 环形缓冲区 / 状态机宏 / 软件定时器 / 事件 Pub/Sub 四种结构一键生成 | ✅ |
+| API 速查卡 | FreeRTOS + STM32 HAL 共 60+ 常用 API，按分类筛选 + 搜索 + 典型用法 + 常见陷阱 | ✅ |
 
 ### 六、学习与求职
 
@@ -191,7 +198,7 @@ embed-toolkit/
   - **阶段二**：6 个 P0 核心工具（3 Agent 并行，3 PR）
   - **阶段三**：7 个 P1 工具（4 Agent 并行，含 Recharts 集成、FieldHighlighter 共享组件）
   - **阶段四**：5 个 P2 工具（4 Agent 并行）+ 446 道面试题库（分 16 批次迭代生成）
-- **产出**：23 个工具、45 款芯片支持、446 道面试题、82 单元测试、6 个规划文档、约 25000+ 行代码、零构建警告
+- **产出**：30 个工具、45 款芯片支持、446 道面试题、180 单元测试、6 个规划文档、约 30000+ 行代码、零构建警告
 - **协作经验**：记录在 [docs/implementation_plan.md](./docs/implementation_plan.md#实际开发记录) 的「实际开发记录」章节
 
 ## License

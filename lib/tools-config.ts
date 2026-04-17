@@ -1,6 +1,9 @@
 import {
   ArrowLeftRight,
+  BellRing,
   Binary,
+  BookOpen,
+  Boxes,
   Cable,
   Calculator,
   ChevronRightSquare,
@@ -23,6 +26,7 @@ import {
   Sigma,
   SlidersHorizontal,
   Timer,
+  Wrench,
   Zap,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
@@ -249,6 +253,34 @@ export const toolCategories: ToolCategory[] = [
         slug: "state-machine",
         description: "拖拽绘制状态转移图，标注事件和动作，自动导出 C 语言 switch-case 框架",
         icon: FileCode2,
+        priority: "P2",
+      },
+      {
+        name: "外设驱动模板生成器",
+        slug: "driver-template",
+        description: "选 MCU 系列 + 外设（UART/SPI/I2C/ADC/TIM/PWM）+ 风格（HAL/LL/Arduino），生成可编译 .h/.c 双文件",
+        icon: Wrench,
+        priority: "P2",
+      },
+      {
+        name: "中断服务程序模板",
+        slug: "isr-template",
+        description: "选中断类型（EXTI/TIM/UART/ADC/DMA/SysTick）+ 通知机制，生成 ISR 框架，含临界区与陷阱注释",
+        icon: BellRing,
+        priority: "P2",
+      },
+      {
+        name: "嵌入式数据结构生成器",
+        slug: "data-structure",
+        description: "环形缓冲区 / 状态机宏 / 软件定时器 / 事件 Pub/Sub 四种数据结构一键生成 .h/.c",
+        icon: Boxes,
+        priority: "P2",
+      },
+      {
+        name: "API 速查卡",
+        slug: "api-cheatsheet",
+        description: "FreeRTOS + STM32 HAL 共 60+ 常用 API，按分类筛选 + 搜索 + 典型用法 + 常见陷阱",
+        icon: BookOpen,
         priority: "P2",
       },
     ],

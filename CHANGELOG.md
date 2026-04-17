@@ -5,6 +5,40 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.0] - 2026-04-17
+
+工具集从 23 → 30，重点扩充 RTOS 与代码辅助两大类，加上线上反馈的滚动 bug 修复。
+
+### Added — RTOS 工具（3 → 6）
+
+- **任务栈深度估算器** (`/tools/rtos/stack-estimator`) — 调用链字节累加 + ISR 32B 压栈 + printf 512B 修正 + 30% 安全余量，向上取整到 configMINIMAL_STACK_SIZE 整数倍，支持 FreeRTOS / RT-Thread / 通用 3 套预设
+- **IPC 选型决策树** (`/tools/rtos/ipc-selector`) — 交互式问答推荐 9 种 FreeRTOS API（Mutex with PI / Binary / Counting Semaphore / Queue / Stream Buffer / Task Notification / Event Group / Software Timer / vTaskDelayUntil），每个叶节点带 API 签名 + 典型代码 + 使用陷阱 + 替代方案
+- **优先级反转可视化** (`/tools/rtos/priority-inversion`) — 3 任务 + 1 mutex 的 1ms tick 仿真，对比 PIP on/off 的 Recharts 甘特图和 high 任务等待时间差，PIP 模型为高被锁阻塞时低临时抬升优先级
+
+### Added — 代码辅助工具（2 → 6）
+
+- **外设驱动模板生成器** (`/tools/codegen/driver-template`) — 6 外设（UART/SPI/I2C/ADC/TIM/PWM）× 6 MCU（STM32F1/F4/H7/G0/L4 + ESP32）× 3 风格（HAL/LL/Arduino），生成可编译 .h/.c 双文件，含 6 套预设场景，关键陷阱嵌入 ⚠️ 注释
+- **中断服务程序模板** (`/tools/codegen/isr-template`) — 8 种 ISR（EXTI/TIM Update/TIM CCR/UART RX/UART RX IDLE+DMA/ADC EOC/DMA TC/SysTick）× 5 STM32 系列，可选 3 种任务通知机制（Task Notification/Queue/Binary Semaphore）+ 临界区，含中断向量注册说明
+- **嵌入式数据结构生成器** (`/tools/codegen/data-structure`) — 4 种结构：环形缓冲区（power-of-two 校验、可选 critical section）/ 状态机宏（双层 switch 框架）/ 软件定时器数组（O(N) 扫描，period/counter/active/callback）/ 事件 Pub/Sub（静态数组分发）
+- **API 速查卡** (`/tools/codegen/api-cheatsheet`) — 60+ 条常用 API：FreeRTOS 30（Task 8 / Semaphore 6 / Queue 6 / Timer 4 / Stream Buffer 3 / Event Group 3）+ STM32 HAL 30（GPIO 6 / UART 6 / I2C 4 / SPI 4 / TIM 5 / ADC 3 / DMA 2），含签名 / 参数 / 用法代码 / 常见陷阱，分类筛选 + 模糊搜索
+
+### Fixed
+
+- **侧边栏滚动**：`ScrollArea` 补 `min-h-0`，flex-1 才能实际把 Viewport 收缩到视口内触发 overflow（base-ui ScrollArea.Root 不加 min-h-0 时 Viewport 被内容撑开）
+- **GPIO 芯片列表滚动**：去掉 `filteredChips.slice(0, 30)` 硬截断，把 ScrollArea 换成 `max-h-[60vh] overflow-y-auto` 原生 div，45 款芯片现在全部可见
+- **interview-quiz 提交跳题**：`displayQuestion` memo 用 `pool.some()` 校验，pool 又被 answeredIds 过滤——提交后当前题立刻无效，回落 pickRandom 选了一道全新的题，叠加 showAnswer=true 暴露下一题答案。抽出纯函数 `selectDisplayQuestion` 用 `loadedPool` 校验
+- **interview-quiz 重置粘连**：`handleReset` 与"清除所有数据"按钮补清 `selectedOption` + `showAnswer`，否则上一题的"已提交+答案视图"会粘到新一轮的第一题
+- **interview-quiz 首题无响应**：`handleSubmit` 改用 `displayQuestion` 作为权威题目并同步 `currentQuestion`，覆盖首屏首题与重置后第一题两种场景
+
+### Changed
+
+- **package.json version 1.2.0 → 1.3.0**
+- **README/CHANGELOG 计数同步**：30 工具 / 45 芯片 / 446 题 / 180 测试
+- 测试 82 → 180（+98），代码量约 25000 → 30000+ 行
+- tools-config.ts 注册 7 个新工具图标：`Layers / GitBranch / ShieldCheck / Wrench / BellRing / Boxes / BookOpen`
+
+---
+
 ## [1.2.0] - 2026-04-17
 
 GPIO 芯片库扩容（10 → 45 款）+ Codex v1.2.0 安全/正确性审查闭环。
