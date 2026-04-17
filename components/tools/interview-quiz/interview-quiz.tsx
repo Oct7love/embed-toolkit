@@ -125,11 +125,16 @@ export function InterviewQuiz() {
   }, [currentQuestion, pool]);
 
   const handleSubmit = useCallback(() => {
-    if (selectedOption === null || !currentQuestion) return;
-    const isCorrect = selectedOption === currentQuestion.correctAnswer;
-    recordAnswer(currentQuestion.id, currentQuestion.category, isCorrect);
+    // 首次进入时 currentQuestion 仍是 null，但 displayQuestion 已通过 pool 兜底渲染；
+    // 必须以 displayQuestion 为准，否则用户感知"提交答案无反应"
+    if (selectedOption === null || !displayQuestion) return;
+    if (currentQuestion?.id !== displayQuestion.id) {
+      setCurrentQuestion(displayQuestion);
+    }
+    const isCorrect = selectedOption === displayQuestion.correctAnswer;
+    recordAnswer(displayQuestion.id, displayQuestion.category, isCorrect);
     setShowAnswer(true);
-  }, [selectedOption, currentQuestion, recordAnswer]);
+  }, [selectedOption, displayQuestion, currentQuestion, recordAnswer]);
 
   const handleNext = useCallback(() => {
     pickNext();
