@@ -213,7 +213,7 @@ export function BaudrateCalculator() {
                 <thead>
                   <tr className="border-b bg-muted/50">
                     <th className="px-3 py-2 text-left font-medium">波特率</th>
-                    <th className="px-3 py-2 text-left font-medium font-mono">USARTDIV</th>
+                    <th className="px-3 py-2 text-left font-medium font-mono">BRR</th>
                     <th className="px-3 py-2 text-left font-medium">实际波特率</th>
                     <th className="px-3 py-2 text-left font-medium">误差</th>
                     <th className="px-3 py-2 text-center font-medium">状态</th>
@@ -225,7 +225,7 @@ export function BaudrateCalculator() {
                       <td className="px-3 py-2 font-mono font-medium">
                         {formatBaudrate(baudrate)}
                       </td>
-                      <td className="px-3 py-2 font-mono">{r.divider}</td>
+                      <td className="px-3 py-2 font-mono">0x{r.brrValue.toString(16).toUpperCase().padStart(4, "0")}</td>
                       <td className="px-3 py-2 font-mono">
                         {r.actualBaudrate.toFixed(2)}
                       </td>
@@ -255,9 +255,23 @@ export function BaudrateCalculator() {
       {/* 公式说明 */}
       <Card>
         <CardContent className="pt-4 text-sm text-muted-foreground space-y-2">
-          <p className="font-medium text-foreground">公式说明</p>
+          <p className="font-medium text-foreground">公式说明（STM32 BRR 编码）</p>
           <p>
-            <code className="font-mono bg-muted px-1 rounded">USARTDIV = f_clk / (oversampling × baudrate)</code>
+            <strong>OVER16：</strong>
+            <code className="font-mono bg-muted px-1 rounded ml-1">
+              BRR = round(f_clk / baudrate)
+            </code>
+            ；mantissa = BRR[15:4]，fraction = BRR[3:0]
+          </p>
+          <p>
+            <strong>OVER8：</strong>
+            <code className="font-mono bg-muted px-1 rounded ml-1">
+              USARTDIV = f_clk / (8 × baudrate)
+            </code>
+            ；fraction 仅 3 位（BRR[2:0]），BRR[3] 必须为 0
+          </p>
+          <p>
+            示例：72MHz / 115200 / OVER16 → BRR = 0x0271（mantissa=39, fraction=1），实际 115200.00 bps，误差 0.00%
           </p>
           <p>
             16× 过采样（默认）精度更高；8× 过采样可支持更高波特率但容错性降低。
