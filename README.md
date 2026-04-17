@@ -4,7 +4,8 @@
 
 ![Status](https://img.shields.io/badge/Status-Completed-brightgreen)
 ![Tools](https://img.shields.io/badge/Tools-23-blue)
-![Chips](https://img.shields.io/badge/Chips-10-teal)
+![Chips](https://img.shields.io/badge/Chips-45-teal)
+![Tests](https://img.shields.io/badge/Tests-79%2B-success)
 ![Questions](https://img.shields.io/badge/Questions-446-orange)
 ![Next.js](https://img.shields.io/badge/Next.js-16-black)
 ![License](https://img.shields.io/badge/License-MIT-lightgrey)
@@ -25,7 +26,7 @@ Embed Toolkit 将嵌入式工程师日常开发中频繁用到的计算、转换
 
 🌐 **Live Demo**：**<https://embed-toolkit.vercel.app/>**
 
-所有 18 个工具均已上线，无需注册，打开即用：
+所有 23 个工具均已上线（含 45 款芯片支持），无需注册，打开即用：
 
 | 快捷链接 | 工具 |
 |----------|------|
@@ -64,7 +65,7 @@ Embed Toolkit 将嵌入式工程师日常开发中频繁用到的计算、转换
 | 工具 | 说明 | 状态 |
 |------|------|:----:|
 | 寄存器位域计算器 | 输入 32 位寄存器值，可视化显示每个 bit 的含义 | ✅ |
-| GPIO 引脚分配表 | 选择芯片型号（**10 款**：STM32F1/F4/G4 + ESP32/S3/C3 + GD32），分配复用功能，导出 C 代码 | ✅ |
+| GPIO 引脚分配表 | 选择芯片型号（**45 款**：STM32F1/F4/G0/G4/H7/L4 全系 + ESP32 全系 + GD32/CH32/AT32 国产线），分配复用功能，导出 C 代码 | ✅ |
 | 电阻色环计算器 | 选择色环颜色计算阻值，或输入阻值反查色环 | ✅ |
 | 分压/RC 滤波计算器 | 输入电阻电容参数，计算分压比和截止频率，绘制波特图 | ✅ |
 | 定时器/PWM 计算器 | 输入系统时钟和目标频率，自动计算 PSC/ARR/CCR 所有可行组合 | ✅ |
@@ -190,7 +191,7 @@ embed-toolkit/
   - **阶段二**：6 个 P0 核心工具（3 Agent 并行，3 PR）
   - **阶段三**：7 个 P1 工具（4 Agent 并行，含 Recharts 集成、FieldHighlighter 共享组件）
   - **阶段四**：5 个 P2 工具（4 Agent 并行）+ 446 道面试题库（分 16 批次迭代生成）
-- **产出**：23 个工具、10 款芯片支持、446 道面试题、6 个规划文档、约 25000+ 行代码、零构建警告
+- **产出**：23 个工具、45 款芯片支持、446 道面试题、79+ 单元测试、6 个规划文档、约 25000+ 行代码、零构建警告
 - **协作经验**：记录在 [docs/implementation_plan.md](./docs/implementation_plan.md#实际开发记录) 的「实际开发记录」章节
 
 ## License

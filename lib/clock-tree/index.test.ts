@@ -35,6 +35,7 @@ describe("checkViolations", () => {
       hsi: 16_000_000,
       hse: 8_000_000,
       pllInput: 1_000_000,
+      vco: 400_000_000,
       pllOutput: 200_000_000,
       sysclk: 200_000_000,
       ahb: 200_000_000,
@@ -55,6 +56,39 @@ describe("checkViolations", () => {
     const violations = checkViolations(freqs, constraints);
     // PLL input = 8MHz / 1 = 8MHz, exceeds [1, 2]MHz range
     expect(violations.some((v) => v.node === "PLL Input")).toBe(true);
+  });
+
+  it("F4 PLLM=2 PLLN=200 → VCO=800MHz violates upper bound (>432MHz)", () => {
+    // HSE 8MHz / PLLM=2 = 4MHz × PLLN=200 = VCO 800MHz, 超出 [192, 432]
+    const config = createDefaultConfig("stm32f4");
+    config.pll = { type: "f4", pllM: 2, pllN: 200, pllP: 2, pllQ: 7, pllSrc: "HSE" };
+    const freqs = calculateFrequencies(config);
+    expect(freqs.vco).toBe(800_000_000);
+    const constraints = getConstraintsById("stm32f4");
+    const violations = checkViolations(freqs, constraints);
+    expect(violations.some((v) => v.node === "VCO")).toBe(true);
+  });
+
+  it("F4 PLLM=8 PLLN=50 → VCO=50MHz violates lower bound (<192MHz)", () => {
+    // HSE 8MHz / PLLM=8 = 1MHz × PLLN=50 = VCO 50MHz, 低于 192MHz
+    const config = createDefaultConfig("stm32f4");
+    config.pll = { type: "f4", pllM: 8, pllN: 50, pllP: 2, pllQ: 7, pllSrc: "HSE" };
+    const freqs = calculateFrequencies(config);
+    expect(freqs.vco).toBe(50_000_000);
+    const constraints = getConstraintsById("stm32f4");
+    const violations = checkViolations(freqs, constraints);
+    expect(violations.some((v) => v.node === "VCO")).toBe(true);
+  });
+
+  it("F4 PLLM=8 PLLN=336 → VCO=336MHz is legal (no VCO violation)", () => {
+    // HSE 8MHz / PLLM=8 = 1MHz × PLLN=336 = VCO 336MHz, 在 [192, 432] 内
+    const config = createDefaultConfig("stm32f4");
+    config.pll = { type: "f4", pllM: 8, pllN: 336, pllP: 2, pllQ: 7, pllSrc: "HSE" };
+    const freqs = calculateFrequencies(config);
+    expect(freqs.vco).toBe(336_000_000);
+    const constraints = getConstraintsById("stm32f4");
+    const violations = checkViolations(freqs, constraints);
+    expect(violations.some((v) => v.node === "VCO")).toBe(false);
   });
 });
 

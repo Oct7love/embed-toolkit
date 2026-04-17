@@ -27,29 +27,31 @@ export function formatFreq(hz: number): string {
 
 /* ======================== PLL output calc ========================= */
 
-function calcPllOutput(pll: PllParams, hsi: number, hse: number): { input: number; output: number; error?: string } {
+function calcPllOutput(pll: PllParams, hsi: number, hse: number): { input: number; vco: number; output: number; error?: string } {
   const srcFreq = pll.pllSrc === "HSI" ? hsi : hse;
-  if (srcFreq <= 0) return { input: 0, output: 0, error: "时钟源频率为 0" };
+  if (srcFreq <= 0) return { input: 0, vco: 0, output: 0, error: "时钟源频率为 0" };
 
   switch (pll.type) {
     case "f1": {
       const input = pll.pllSrc === "HSI" ? srcFreq / 2 : srcFreq;
-      if (pll.pllMul <= 0) return { input, output: 0, error: "PLLMUL 不能为 0" };
-      return { input, output: input * pll.pllMul };
+      if (pll.pllMul <= 0) return { input, vco: 0, output: 0, error: "PLLMUL 不能为 0" };
+      // F1 没有独立 VCO 概念，pllOutput 即为 PLL 输出
+      const out = input * pll.pllMul;
+      return { input, vco: out, output: out };
     }
     case "f4": {
-      if (pll.pllM <= 0) return { input: 0, output: 0, error: "PLLM 不能为 0（除零）" };
-      if (pll.pllP <= 0) return { input: 0, output: 0, error: "PLLP 不能为 0（除零）" };
+      if (pll.pllM <= 0) return { input: 0, vco: 0, output: 0, error: "PLLM 不能为 0（除零）" };
+      if (pll.pllP <= 0) return { input: 0, vco: 0, output: 0, error: "PLLP 不能为 0（除零）" };
       const vcoInput = srcFreq / pll.pllM;
       const vcoOutput = vcoInput * pll.pllN;
-      return { input: vcoInput, output: vcoOutput / pll.pllP };
+      return { input: vcoInput, vco: vcoOutput, output: vcoOutput / pll.pllP };
     }
     case "h7": {
-      if (pll.divM <= 0) return { input: 0, output: 0, error: "DIVM 不能为 0（除零）" };
-      if (pll.divP <= 0) return { input: 0, output: 0, error: "DIVP 不能为 0（除零）" };
+      if (pll.divM <= 0) return { input: 0, vco: 0, output: 0, error: "DIVM 不能为 0（除零）" };
+      if (pll.divP <= 0) return { input: 0, vco: 0, output: 0, error: "DIVP 不能为 0（除零）" };
       const ref = srcFreq / pll.divM;
       const vco = ref * pll.divN;
-      return { input: ref, output: vco / pll.divP };
+      return { input: ref, vco, output: vco / pll.divP };
     }
   }
 }
@@ -61,7 +63,7 @@ export function calculateFrequencies(config: ClockConfig): ClockFrequencies {
   const hsi = constraints.hsiFreq;
   const hse = config.hseFreq;
 
-  const { input: pllInput, output: pllOutput } = calcPllOutput(config.pll, hsi, hse);
+  const { input: pllInput, vco, output: pllOutput } = calcPllOutput(config.pll, hsi, hse);
 
   let sysclk: number;
   switch (config.sysclkSource) {
@@ -80,7 +82,7 @@ export function calculateFrequencies(config: ClockConfig): ClockFrequencies {
   const apb1 = ahb / config.apb1Div;
   const apb2 = ahb / config.apb2Div;
 
-  return { hsi, hse, pllInput, pllOutput, sysclk, ahb, apb1, apb2 };
+  return { hsi, hse, pllInput, vco, pllOutput, sysclk, ahb, apb1, apb2 };
 }
 
 /* =================== Constraint violation check =================== */
@@ -137,16 +139,15 @@ export function checkViolations(
     }
   }
 
-  // VCO output range check (F4/H7)
-  if (constraints.vcoRange && freqs.pllInput > 0) {
-    const vcoMax = constraints.vcoRange[1];
-    // 简化检查：如果 pllOutput > vcoMax 则必然 VCO 超限
-    if (freqs.pllOutput > vcoMax) {
+  // VCO output range check (F4/H7) — 校验真实 VCO 频率（PLLP 分频前）
+  if (constraints.vcoRange && freqs.vco > 0) {
+    const [vcoMin, vcoMax] = constraints.vcoRange;
+    if (freqs.vco < vcoMin || freqs.vco > vcoMax) {
       violations.push({
         node: "VCO",
-        actual: freqs.pllOutput,
+        actual: freqs.vco,
         max: vcoMax,
-        message: `PLL 输出 ${formatFreq(freqs.pllOutput)} 可能导致 VCO 超出 ${formatFreq(vcoMax)} 范围`,
+        message: `VCO 频率 ${formatFreq(freqs.vco)} 不在合法范围 ${formatFreq(vcoMin)}-${formatFreq(vcoMax)}`,
       });
     }
   }

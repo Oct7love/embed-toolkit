@@ -91,6 +91,8 @@ export interface ClockFrequencies {
   hsi: number;
   hse: number;
   pllInput: number;
+  /** VCO output frequency, before PLLP/DIVP divider */
+  vco: number;
   pllOutput: number;
   sysclk: number;
   ahb: number;

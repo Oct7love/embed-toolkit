@@ -5,6 +5,39 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.0] - 2026-04-17
+
+GPIO 芯片库扩容（10 → 45 款）+ Codex v1.2.0 安全/正确性审查闭环。
+
+### Added
+
+- **GPIO 引脚分配器扩容到 45 款芯片**（覆盖 STM32F1/F4/G0/G4/H7/L4 全系 + ESP32 全系 + GD32/CH32/AT32 国产线）
+- **波特率计算器引入完整 BRR 编码**（OVER16: BRR[15:4]+BRR[3:0]；OVER8: 3-bit fraction，BRR[3]=0）
+- **clock-tree 增加 VCO 频率独立校验**（F4 [192, 432] MHz、H7 [192, 836] MHz 双向边界检查）
+- 79+ 单元测试（vitest）覆盖 BRR 编码、PID 二阶仿真、GPIO 代码生成、时钟树违规闭环
+- `lib/clock-tree/constraints.ts` 增加 `flashLatencyTable` 与 `getFlashLatency()` 工具函数
+- `stores/_schema-guards.ts` 共享类型守卫（6 个持久化 store 复用）
+- `scripts/generate-chips.ts` 批量芯片定义生成脚本（独立于构建）
+
+### Fixed
+
+- **(P1) clock-tree VCO 校验改为校验真实 VCO 频率**（PLLP 分频前），同时检查上下边界，避免低频 VCO 因 PLLP=2/4/8 后落入合法 SYSCLK 区间而漏检
+- **clock-tree generateCode 闭环**：存在违规时直接返回 error，不再产出可能导致硬件无法启动的 SystemClock_Config()
+- **register-viewer 32-bit 掩码**：`(1 << 32) - 1 === 0` JavaScript 陷阱，改用 `width >= 32 ? 0xFFFFFFFF : ((1 << width) - 1)`
+- **HexInput 0x 前缀解析**：原 `/[\s0x]/gi` 会吞掉所有 `0`，改为 `/^0x/i + /\s+/g` 顺序处理
+- **PID 图表空白**：Tabs 隐藏 panel 时 Recharts ResponsiveContainer 测不到尺寸，改为 button 切换保留 DOM
+- **chips JSON 中文引号转义**：`rtos.json` 等文件 CJK 邻近的全角引号导致 JSON.parse 失败
+- **(P3) 波特率计算器残留 USARTDIV 文案**：CardDescription 与复制按钮统一使用 BRR 编码语义
+
+### Changed
+
+- **package.json version 0.1.0 → 1.2.0**（首个语义化版本号）
+- **README/CHANGELOG/CLAUDE.md 计数同步**：23 工具 / 45 芯片 / 446 题 / 79+ 测试
+- chips 数据从硬编码 TS 数组迁移到 `public/chips/*.json`，按需 fetch，减小首屏 bundle
+- 所有持久化 store 接入 safe-merge schema 守卫，防止 localStorage 被篡改导致运行时崩溃
+
+---
+
 ## [1.1.0] - 2026-04-16
 
 5 个新工具 + 8 款新芯片定义，工具总数从 18 增加到 23，芯片支持从 2 增加到 10。

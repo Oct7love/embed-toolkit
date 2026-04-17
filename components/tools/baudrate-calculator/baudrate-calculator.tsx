@@ -54,7 +54,7 @@ export function BaudrateCalculator() {
         <CardHeader>
           <CardTitle>参数配置</CardTitle>
           <CardDescription>
-            公式：USARTDIV = f_clk / (oversampling × baudrate)
+            公式（OVER16）：BRR = round(f_clk / baudrate)；OVER8 时 BRR[3] 必须为 0
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -178,7 +178,7 @@ export function BaudrateCalculator() {
           </div>
           <div className="mt-3 flex gap-2">
             <CopyButton
-              value={`USARTDIV=${result.divider}, 实际=${result.actualBaudrate.toFixed(2)}bps, 误差=${result.errorPercent.toFixed(4)}%`}
+              value={`BRR=0x${result.brrValue.toString(16).toUpperCase().padStart(4, "0")}, mantissa=${result.mantissa}, fraction=${result.fraction}, 实际=${result.actualBaudrate.toFixed(2)}bps, 误差=${result.errorPercent.toFixed(4)}%`}
               size="sm"
               label="复制结果"
             />
