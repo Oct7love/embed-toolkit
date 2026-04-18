@@ -13,6 +13,9 @@ const eslintConfig = defineConfig([
     "build/**",
     "next-env.d.ts",
     "scripts/**",
+    // Claude Code agent worktrees are git checkouts of the same repo;
+    // lint the source paths on main instead of duplicating findings.
+    ".claude/worktrees/**",
   ]),
 ]);
 

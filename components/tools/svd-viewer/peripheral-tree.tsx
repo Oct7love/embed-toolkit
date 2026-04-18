@@ -100,7 +100,7 @@ function PeripheralNode({
   );
 
   return (
-    <li role="treeitem" aria-expanded={isExpanded}>
+    <li role="treeitem" aria-expanded={isExpanded} aria-selected={false}>
       <button
         type="button"
         onClick={onToggle}
@@ -155,7 +155,7 @@ function RegisterNode({
     selected.registerName === register.name;
 
   return (
-    <li role="treeitem">
+    <li role="treeitem" aria-selected={isSelected}>
       <button
         type="button"
         onClick={() =>
