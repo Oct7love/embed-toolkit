@@ -17,6 +17,11 @@ interface BitGridProps {
   colors?: Record<number, string>;
   className?: string;
   readOnly?: boolean;
+  /**
+   * 可选位域可视化条：在 BitGrid 下方渲染 field 横条（startBit..endBit 占位）。
+   * 默认 undefined —— 与 v1.3 行为完全一致，现有 3 处调用点零修改即兼容。
+   */
+  fields?: Array<{ startBit: number; endBit: number; name: string; color?: string }>;
 }
 
 export function BitGrid({
@@ -27,6 +32,7 @@ export function BitGrid({
   colors,
   className,
   readOnly = false,
+  fields,
 }: BitGridProps) {
   const bits = Array.from({ length: width }, (_, i) => width - 1 - i);
   const columns = Math.min(width, 16);
@@ -184,6 +190,75 @@ export function BitGrid({
           ))}
         </div>
       )}
+
+      {/* 可选 field 条（仅当 fields 非空时渲染，独立于上方 colors/labels 路径） */}
+      {fields && fields.length > 0 && (
+        <FieldBars fields={fields} width={width} />
+      )}
+    </div>
+  );
+}
+
+/** field 横条：把每个 field 按 [startBit..endBit] 投影到与 grid 同列宽的 16 列条 */
+function FieldBars({
+  fields,
+  width,
+}: {
+  fields: NonNullable<BitGridProps["fields"]>;
+  width: number;
+}) {
+  const rowsCount = width > 16 ? 2 : 1;
+  // 每行覆盖 16 个 bit，row 0 → 高 16 位（bit 31..16），row 1 → 低 16 位（bit 15..0），与上方 grid 对齐
+  return (
+    <div className="space-y-1 pt-2">
+      {Array.from({ length: rowsCount }, (_, rowIdx) => {
+        // row 0 显示高位段（width 32 时是 bit 31..16；width 16/8 时是唯一行）
+        const rowHigh = width - 1 - rowIdx * 16;
+        const rowLow = Math.max(0, rowHigh - 15);
+        const rowFields = fields.filter(
+          (f) => Math.max(f.startBit, f.endBit) >= rowLow && Math.min(f.startBit, f.endBit) <= rowHigh
+        );
+        return (
+          <div
+            key={rowIdx}
+            className="grid gap-px"
+            style={{ gridTemplateColumns: `repeat(${Math.min(width, 16)}, 1fr)` }}
+            role="presentation"
+          >
+            {rowFields.map((f) => {
+              const fLow = Math.min(f.startBit, f.endBit);
+              const fHigh = Math.max(f.startBit, f.endBit);
+              const segLow = Math.max(fLow, rowLow);
+              const segHigh = Math.min(fHigh, rowHigh);
+              // 列起始：高位在左 → 列号 = rowHigh - segHigh
+              const colStart = rowHigh - segHigh + 1; // CSS grid 1-based
+              const span = segHigh - segLow + 1;
+              return (
+                <div
+                  key={`${f.name}-${segLow}`}
+                  className={cn(
+                    "h-5 rounded-sm border text-[10px] font-mono flex items-center justify-center truncate px-1",
+                    !f.color && "bg-primary/20 border-primary/40 text-foreground"
+                  )}
+                  style={{
+                    gridColumn: `${colStart} / span ${span}`,
+                    ...(f.color
+                      ? {
+                          backgroundColor: `color-mix(in oklch, ${f.color} 25%, transparent)`,
+                          borderColor: f.color,
+                        }
+                      : undefined),
+                  }}
+                  title={`${f.name} [${fHigh}:${fLow}]`}
+                  aria-label={`位域 ${f.name}, bit ${fHigh} 到 ${fLow}`}
+                >
+                  {f.name}
+                </div>
+              );
+            })}
+          </div>
+        );
+      })}
     </div>
   );
 }
