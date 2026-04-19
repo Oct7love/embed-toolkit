@@ -5,6 +5,42 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.0] - 2026-04-18
+
+3 款新工具按 karpathy guidelines（Think Before Coding / Simplicity First / Surgical Changes / Goal-Driven Execution）开发，3 worktree 并行 agent 实现。工具数 30 → 33，测试数 181 → 248。
+
+### Added
+
+- **MCU 选型对比器** (`/tools/hardware/mcu-compare`) — 2-4 款芯片对比 CPU/主频/Flash/RAM/外设/卖点。Recharts 雷达图（Performance 用 `MHz × DMIPS/MHz` 系数加权）+ 差异表（相同字段折叠、不同字段高亮）+ URL state 分享（`?ids=stm32f103c8t6,stm32f407vgt6`）。**最多 4 款上限**，超过禁用 + 提示。**缺数据一律渲染 `"—"`，绝不编造**。22 vitest 用例。图标 `Radar`
+- **PCB 阻抗计算器** (`/tools/hardware/pcb-impedance`) — 微带线（IPC-2141A §4.2.1）/ 带状线（IPC-2141A §4.2.2）/ 差分对（Wadell 1991）三种几何，每个 lib 子文件顶部注明 source。反查线宽用牛顿迭代（≤30 步，0.01Ω 收敛阈值）+ 二分扫描兜底。SVG 截面图按参数缩放。mil ↔ mm 双制（内部 mm，常量 `MIL_TO_MM`）。**ToolIntro 明示典型误差 ±5%，精确设计请用 Polar SI9000**。15 vitest 用例。图标 `Layers3`
+- **CMSIS-SVD 查看器** (`/tools/codegen/svd-viewer`) — 粘贴或上传 .svd 文件可视化 STM32/Espressif 寄存器位域。**零依赖 XML 解析**：浏览器走原生 `DOMParser`，node test 走 80 行专用最小 XML 扫描器。左树右详 + register name/field name 模糊搜索 + 文件 10MB 上限。**纯前端解析，文件不上传**。内置 STM32F103 GPIOA + RCC 迷你 SVD 示例（约 4KB 内联常量）。30 vitest 用例（含 BitGrid 回归契约测试）。图标 `Microscope`
+- **数据扩字段**：`public/chips/index.json` 在每条 chip 末尾追加 `cpu / maxFreq / flashKB / ramKB / voltage / peripherals / features / priceRange`。9 款主流芯片完整规格 + 27 款基础规格 + 9 款仅基础。**现有 6 字段（id/name/series/manufacturer/package/pinCount）顺序、内容、缩进零修改**。`scripts/enrich-chip-specs.ts` 幂等生成器
+- **BitGrid 共享组件 surgical 扩展**：在 `BitGridProps` 末尾追加 **可选** `fields?: Array<{ startBit, endBit, name, color? }>` prop，BitGrid 内部仅在 `fields && fields.length > 0` 时多渲染一段 FieldBars 子组件。**3 处现有调用（register-viewer / ieee754-parser / bit-operation-generator）零修改**，新增 BitGrid 回归契约测试守护"不传 fields 时与 v1.3 行为一致"
+
+### Fixed
+
+- **(svd-viewer) ARIA treeitem aria-selected 警告**：`<li role="treeitem">` 缺 `aria-selected`，触发 `jsx-a11y/role-has-required-aria-props`。Peripheral 节点 `aria-selected={false}`（不可选只可展开），Register 节点 `aria-selected={isSelected}`
+
+### Changed
+
+- **package.json version 1.3.0 → 1.4.0**
+- **计数同步（README / CHANGELOG / CLAUDE.md）**：33 工具 / 45 芯片 / 446 题 / 248 测试
+- **工具分类小计**：硬件 8 → 10、代码辅助 6 → 7
+- 测试 181 → 248（+67：mcu-compare 22 + pcb-impedance 15 + svd-viewer 30）
+- tools-config.ts 注册 3 个新工具图标：`Radar / Layers3 / Microscope`
+- **eslint.config.mjs** 加 `.claude/worktrees/**` 到 globalIgnores，避免 agent worktree 的源代码被双重 lint 出幽灵 warning
+
+### Process notes
+
+本版本严格按 karpathy 4 准则开发：
+
+1. **Think Before Coding** — 3 份 planning doc（`docs/planning/v1.4-*.md`）先列假设、开放问题、可选方案，等用户拍板再开工
+2. **Simplicity First** — 不引第三方 XML / 阻抗求解 / 数据可视化库；svd-viewer 自写 80 行 XML 扫描器替代 jsdom；mcu-compare 单文件 168 行；pcb-impedance 单组件 < 200 行
+3. **Surgical Changes** — chips/index.json 只追加新字段不动旧字段；BitGrid 只加可选 prop 不破坏调用方；3 worktree 并行路径不重叠零冲突
+4. **Goal-Driven Execution** — 每个工具 planning §5 列可验证标准 → TDD 先红后绿；67 个新测试覆盖核心算法
+
+---
+
 ## [1.3.0] - 2026-04-17
 
 工具集从 23 → 30，重点扩充 RTOS 与代码辅助两大类，加上线上反馈的滚动 bug 修复。

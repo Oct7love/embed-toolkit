@@ -180,13 +180,13 @@ pnpm lint             # 代码检查
 pnpm type-check       # 类型检查
 ```
 
-## 工具分类速查（共 30 个，全部完成）
+## 工具分类速查（共 33 个，全部完成）
 
 | 分类 | 路由前缀 | 工具数量 | 具体工具 |
 |------|----------|----------|----------|
 | 数据转换工具 | `/tools/converter/` | 5 | base-converter, ieee754-parser, endian-converter, checksum-calculator, ascii-table |
 | 协议调试工具 | `/tools/protocol/` | 4 | serial-parser, mqtt-parser, json-builder, modbus-generator |
-| 芯片与硬件工具 | `/tools/hardware/` | 8 | register-viewer, gpio-planner (45 芯片), resistor-calculator, rc-calculator, timer-calculator, baudrate-calculator, adc-calculator, clock-tree |
+| 芯片与硬件工具 | `/tools/hardware/` | 10 | register-viewer, gpio-planner (45 芯片), resistor-calculator, rc-calculator, timer-calculator, baudrate-calculator, adc-calculator, clock-tree, mcu-compare, pcb-impedance |
 | RTOS 可视化工具 | `/tools/rtos/` | 6 | task-scheduler, memory-layout, pid-simulator, stack-estimator, ipc-selector, priority-inversion |
-| 代码辅助工具 | `/tools/codegen/` | 6 | bit-operation, state-machine, driver-template, isr-template, data-structure, api-cheatsheet |
+| 代码辅助工具 | `/tools/codegen/` | 7 | bit-operation, state-machine, driver-template, isr-template, data-structure, api-cheatsheet, svd-viewer |
 | 学习与求职 | `/tools/learning/` | 1 | interview-quiz（446 道题） |

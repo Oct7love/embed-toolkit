@@ -3,9 +3,9 @@
 > 嵌入式开发者的在线工具箱 — 浏览器端一站式嵌入式开发工具集合
 
 ![Status](https://img.shields.io/badge/Status-Completed-brightgreen)
-![Tools](https://img.shields.io/badge/Tools-30-blue)
+![Tools](https://img.shields.io/badge/Tools-33-blue)
 ![Chips](https://img.shields.io/badge/Chips-45-teal)
-![Tests](https://img.shields.io/badge/Tests-181-success)
+![Tests](https://img.shields.io/badge/Tests-248-success)
 ![Questions](https://img.shields.io/badge/Questions-446-orange)
 ![Next.js](https://img.shields.io/badge/Next.js-16-black)
 ![License](https://img.shields.io/badge/License-MIT-lightgrey)
@@ -26,7 +26,7 @@ Embed Toolkit 将嵌入式工程师日常开发中频繁用到的计算、转换
 
 🌐 **Live Demo**：**<https://embed-toolkit.vercel.app/>**
 
-所有 30 个工具均已上线（含 45 款芯片支持），无需注册，打开即用：
+所有 33 个工具均已上线（含 45 款芯片支持），无需注册，打开即用：
 
 | 快捷链接 | 工具 |
 |----------|------|
@@ -39,7 +39,7 @@ Embed Toolkit 将嵌入式工程师日常开发中频繁用到的计算、转换
 
 > 纯前端应用，所有计算在浏览器本地完成，不上传任何数据。本地/离线使用见下方「本地开发」章节。
 
-## 功能模块（30 个工具，6 大分类，全部完成 ✅）
+## 功能模块（33 个工具，6 大分类，全部完成 ✅）
 
 ### 一、数据转换工具
 
@@ -72,6 +72,8 @@ Embed Toolkit 将嵌入式工程师日常开发中频繁用到的计算、转换
 | 波特率误差计算器 | UART 分频系数、实际波特率、误差 %，支持 8x/16x 过采样和批量对比 | ✅ |
 | ADC 采样计算器 | 转换时间、最大采样率、LSB 精度、DMA 缓冲区建议 | ✅ |
 | 时钟树配置器 | 可视化 STM32 时钟树（F1/F4/H7），配置 PLL/AHB/APB 分频，导出 C 代码 | ✅ |
+| MCU 选型对比器 | 2-4 款芯片对比 CPU/主频/Flash/RAM/外设/卖点，雷达图 + 差异表，缺数据明示 — 不编造 | ✅ |
+| PCB 阻抗计算器 | 微带线/带状线/差分对（IPC-2141A + Wadell 近似），反查线宽 + SVG 截面 | ✅ |
 
 ### 四、RTOS 可视化工具
 
@@ -94,6 +96,7 @@ Embed Toolkit 将嵌入式工程师日常开发中频繁用到的计算、转换
 | 中断服务程序模板 | 选中断类型（EXTI/TIM/UART/ADC/DMA/SysTick）+ 通知机制，生成 ISR 框架与陷阱注释 | ✅ |
 | 嵌入式数据结构生成器 | 环形缓冲区 / 状态机宏 / 软件定时器 / 事件 Pub/Sub 四种结构一键生成 | ✅ |
 | API 速查卡 | FreeRTOS + STM32 HAL 共 60+ 常用 API，按分类筛选 + 搜索 + 典型用法 + 常见陷阱 | ✅ |
+| CMSIS-SVD 查看器 | 粘贴或上传 .svd，可视化外设寄存器位域，纯前端解析（不上传任何服务器） | ✅ |
 
 ### 六、学习与求职
 
@@ -198,7 +201,7 @@ embed-toolkit/
   - **阶段二**：6 个 P0 核心工具（3 Agent 并行，3 PR）
   - **阶段三**：7 个 P1 工具（4 Agent 并行，含 Recharts 集成、FieldHighlighter 共享组件）
   - **阶段四**：5 个 P2 工具（4 Agent 并行）+ 446 道面试题库（分 16 批次迭代生成）
-- **产出**：30 个工具、45 款芯片支持、446 道面试题、181 单元测试、6 个规划文档、约 30000+ 行代码、零构建警告
+- **产出**：33 个工具、45 款芯片支持、446 道面试题、248 单元测试、6 个规划文档、约 32000+ 行代码、零构建警告
 - **协作经验**：记录在 [docs/implementation_plan.md](./docs/implementation_plan.md#实际开发记录) 的「实际开发记录」章节
 
 ## License
