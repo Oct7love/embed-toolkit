@@ -5,6 +5,48 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.5.0] - 2026-04-22
+
+学习与求职分类新增 **LeetCode Hot 100 刷题辅助工具**（MVP 10 题）。严格按 karpathy guidelines 4 准则执行：planning doc 先行 → TDD 先红后绿 → 不引第三方依赖 → 数据格式可演进。
+
+### Added
+
+- **LeetCode Hot 100 刷题辅助** (`/tools/learning/leetcode-hot100`) — MVP 10 道经典题：1 / 3 / 5 / 11 / 15 / 20 / 21 / 53 / 70 / 206。
+  - 每题字段：题号 / 中英双语标题 / 难度 / 标签 / 自改写题型描述（≤120 字）/ LeetCode 中文站官方链接 / 3 段核心思路（本质 / 实现要点 / 陷阱或对比）/ C++（C++17 标准库 include，无 `bits/stdc++.h`）/ Python（3.9+ 兼容，typing.List/Dict/Optional）/ 时间空间复杂度 / 关键考点
+  - 列表页：表格视图 + 难度筛选 + 进度卡（done/total/%）+ 一键去 LeetCode 原题
+  - 详情页：题型描述 + 思路 + C++/Python 切换 + 复杂度 + 考点。语言偏好 zustand persist 全局记忆
+  - 完成状态：localStorage（safe merge 守卫，version: 1）
+  - URL state：`?id=N` 单页路由切换列表/详情，最小实现
+- **代码版权护栏**：vitest 黑名单测试拦截 LeetCode 原题面标志性短语（`/给你一个/`、`/Given an array/i` 等 9 条），description 字段 ≤ 120 字符强制
+- 18 vitest 测试覆盖：数据完整性（10 题、id/slug 唯一、cpp+python 都非空、官方链接格式、approach ≥ 3 段）/ 筛选（按难度、按标签）/ 查询（getProblemById、getProblemBySlug）/ 进度（含篡改防御）+ 11 store 测试（toggleCompleted 幂等、preferredLang 默认 cpp、reset 仅清完成不清偏好）
+
+### Changed
+
+- **package.json version 1.4.0 → 1.5.0**
+- **学习分类小计**：1 → 2
+- **计数同步（README / CHANGELOG / CLAUDE.md）**：34 工具 / 277 测试
+- 测试 248 → 277（+29）
+- tools-config.ts 注册新图标：`Code2`
+
+### Process notes
+
+karpathy 4 准则执行回顾：
+
+1. **Think Before Coding** — 先产出 `docs/planning/v1.5-leetcode-hot100.md`，列 6 个开放问题（数据形态 / 语言 tab state / 语法高亮 / URL 形式 / 完成状态粒度 / 列表视图）+ 倾向方案，等用户拍板。语法高亮明确决定**不上**：karpathy "不引入未请求依赖"，纯文本 `<pre>` + 等宽字体 + 深色背景已够用
+2. **Simplicity First** — 数据放单 TS 文件 `data.ts`（约 600 行）；store 复用 `_schema-guards.ts` 的 makeSafeMerge 模式；UI 拆 3 组件（列表 187 行 / 详情 198 行 / 容器 35 行）全部 < 200 行
+3. **Surgical Changes** — 仅追加新文件 + tools-config 学习分类多 1 行；零修改既有工具代码 / 既有共享组件 / CodeBlock
+4. **Goal-Driven Execution** — TDD 先写 18 lib + 11 store 测试（红）→ 实现 data + lib + store（绿）→ 再写 UI。中途暴露 1 个 data.ts 内联 ASCII 引号嵌套字符串问题，立即修
+
+### MVP 限制（v1.5.x 后续可扩）
+
+- **仅 10 题**，扩到 50/100 时再迁移到按难度拆 JSON 懒加载（`public/leetcode/easy.json` 等）
+- **仅 C++ / Python**，C / TypeScript / Java 留给后续
+- **无语法高亮** — 学习工具关注思路而非颜色，未来真要加可一次性引入 Shiki
+- **无搜索 / 无排序** — 10 题不需要，扩到 50+ 再加
+- **无导入/导出 JSON 备份** — 完成状态仅 localStorage
+
+---
+
 ## [1.4.0] - 2026-04-18
 
 3 款新工具按 karpathy guidelines（Think Before Coding / Simplicity First / Surgical Changes / Goal-Driven Execution）开发，3 worktree 并行 agent 实现。工具数 30 → 33，测试数 181 → 248。

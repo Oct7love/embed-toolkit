@@ -180,7 +180,7 @@ pnpm lint             # 代码检查
 pnpm type-check       # 类型检查
 ```
 
-## 工具分类速查（共 33 个，全部完成）
+## 工具分类速查（共 34 个，全部完成）
 
 | 分类 | 路由前缀 | 工具数量 | 具体工具 |
 |------|----------|----------|----------|
@@ -189,4 +189,4 @@ pnpm type-check       # 类型检查
 | 芯片与硬件工具 | `/tools/hardware/` | 10 | register-viewer, gpio-planner (45 芯片), resistor-calculator, rc-calculator, timer-calculator, baudrate-calculator, adc-calculator, clock-tree, mcu-compare, pcb-impedance |
 | RTOS 可视化工具 | `/tools/rtos/` | 6 | task-scheduler, memory-layout, pid-simulator, stack-estimator, ipc-selector, priority-inversion |
 | 代码辅助工具 | `/tools/codegen/` | 7 | bit-operation, state-machine, driver-template, isr-template, data-structure, api-cheatsheet, svd-viewer |
-| 学习与求职 | `/tools/learning/` | 1 | interview-quiz（446 道题） |
+| 学习与求职 | `/tools/learning/` | 2 | interview-quiz（446 道题）, leetcode-hot100（MVP 10 题）|

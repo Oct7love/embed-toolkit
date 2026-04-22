@@ -3,9 +3,9 @@
 > 嵌入式开发者的在线工具箱 — 浏览器端一站式嵌入式开发工具集合
 
 ![Status](https://img.shields.io/badge/Status-Completed-brightgreen)
-![Tools](https://img.shields.io/badge/Tools-33-blue)
+![Tools](https://img.shields.io/badge/Tools-34-blue)
 ![Chips](https://img.shields.io/badge/Chips-45-teal)
-![Tests](https://img.shields.io/badge/Tests-248-success)
+![Tests](https://img.shields.io/badge/Tests-277-success)
 ![Questions](https://img.shields.io/badge/Questions-446-orange)
 ![Next.js](https://img.shields.io/badge/Next.js-16-black)
 ![License](https://img.shields.io/badge/License-MIT-lightgrey)
@@ -26,7 +26,7 @@ Embed Toolkit 将嵌入式工程师日常开发中频繁用到的计算、转换
 
 🌐 **Live Demo**：**<https://embed-toolkit.vercel.app/>**
 
-所有 33 个工具均已上线（含 45 款芯片支持），无需注册，打开即用：
+所有 34 个工具均已上线（含 45 款芯片支持），无需注册，打开即用：
 
 | 快捷链接 | 工具 |
 |----------|------|
@@ -39,7 +39,7 @@ Embed Toolkit 将嵌入式工程师日常开发中频繁用到的计算、转换
 
 > 纯前端应用，所有计算在浏览器本地完成，不上传任何数据。本地/离线使用见下方「本地开发」章节。
 
-## 功能模块（33 个工具，6 大分类，全部完成 ✅）
+## 功能模块（34 个工具，6 大分类，全部完成 ✅）
 
 ### 一、数据转换工具
 
@@ -103,6 +103,7 @@ Embed Toolkit 将嵌入式工程师日常开发中频繁用到的计算、转换
 | 工具 | 说明 | 状态 |
 |------|------|:----:|
 | 嵌入式面试题库 | **446 道题**（C 语言 127 + RTOS 107 + 协议 107 + 硬件 105）+ 收藏 + 错题本 + 统计 | ✅ |
+| LeetCode Hot 100 | MVP 10 题：题型速览 + 3 段思路 + C++/Python 参考代码，本地记录完成进度 | ✅ |
 
 ## 技术栈
 
@@ -201,7 +202,7 @@ embed-toolkit/
   - **阶段二**：6 个 P0 核心工具（3 Agent 并行，3 PR）
   - **阶段三**：7 个 P1 工具（4 Agent 并行，含 Recharts 集成、FieldHighlighter 共享组件）
   - **阶段四**：5 个 P2 工具（4 Agent 并行）+ 446 道面试题库（分 16 批次迭代生成）
-- **产出**：33 个工具、45 款芯片支持、446 道面试题、248 单元测试、6 个规划文档、约 32000+ 行代码、零构建警告
+- **产出**：34 个工具、45 款芯片支持、446 道面试题、277 单元测试、6 个规划文档、约 33000+ 行代码、零构建警告
 - **协作经验**：记录在 [docs/implementation_plan.md](./docs/implementation_plan.md#实际开发记录) 的「实际开发记录」章节
 
 ## License
