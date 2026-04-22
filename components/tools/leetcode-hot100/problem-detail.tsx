@@ -1,5 +1,6 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -10,9 +11,18 @@ import {
   CardTitle,
   CardDescription,
 } from "@/components/ui/card";
-import { CodeBlock } from "@/components/shared/code-block";
 import { useLeetcodeHot100Store } from "@/stores/leetcode-hot100-store";
 import type { Language, Problem } from "@/types/leetcode-hot100";
+
+// Shiki 体积约 500KB，仅在本工具详情页 dynamic import；
+// 其他 33 个工具页面零 shiki 依赖。
+const HighlightedCode = dynamic(
+  () =>
+    import("@/components/shared/highlighted-code").then(
+      (m) => m.HighlightedCode
+    ),
+  { ssr: false }
+);
 import {
   ArrowLeft,
   CheckCircle2,
@@ -152,9 +162,9 @@ export function ProblemDetail({ problem }: { problem: Problem }) {
           </div>
         </CardHeader>
         <CardContent>
-          <CodeBlock
+          <HighlightedCode
             code={problem.solutions[preferredLang].code}
-            language={preferredLang === "cpp" ? "cpp" : "python"}
+            lang={preferredLang}
           />
           {problem.solutions[preferredLang].comment && (
             <p className="mt-2 text-xs text-muted-foreground italic">
