@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useRef } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
@@ -12,7 +13,11 @@ import {
   CardDescription,
 } from "@/components/ui/card";
 import { useLeetcodeHot100Store } from "@/stores/leetcode-hot100-store";
-import type { Language, Problem } from "@/types/leetcode-hot100";
+import {
+  LANG_LABEL,
+  LANGUAGES,
+  type Problem,
+} from "@/types/leetcode-hot100";
 
 // Shiki 体积约 500KB，仅在本工具详情页 dynamic import；
 // 其他 33 个工具页面零 shiki 依赖。
@@ -42,15 +47,18 @@ const DIFFICULTY_COLOR: Record<Problem["difficulty"], string> = {
   medium: "bg-yellow-500/10 text-yellow-600 border-yellow-500/30",
   hard: "bg-red-500/10 text-red-600 border-red-500/30",
 };
-const LANGUAGES: { value: Language; label: string }[] = [
-  { value: "cpp", label: "C++" },
-  { value: "python", label: "Python" },
-];
 
 export function ProblemDetail({ problem }: { problem: Problem }) {
   const { completedIds, toggleCompleted, preferredLang, setLang } =
     useLeetcodeHot100Store();
   const completed = completedIds.includes(problem.id);
+
+  // 切换 lang 后让选中 tab 自动 scroll into view（移动端横滚常用）
+  const langTabRefs = useRef<Record<string, HTMLButtonElement | null>>({});
+  useEffect(() => {
+    const el = langTabRefs.current[preferredLang];
+    el?.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
+  }, [preferredLang]);
 
   return (
     <div className="space-y-4">
@@ -141,24 +149,33 @@ export function ProblemDetail({ problem }: { problem: Problem }) {
 
       {/* 代码 */}
       <Card>
-        <CardHeader className="pb-3">
-          <div className="flex items-center justify-between flex-wrap gap-2">
-            <CardTitle className="text-base">参考代码</CardTitle>
-            <div className="flex gap-1 rounded-lg border p-1">
-              {LANGUAGES.map((l) => (
+        <CardHeader className="pb-3 space-y-2">
+          <CardTitle className="text-base">参考代码</CardTitle>
+          {/* 10 语言 tab：桌面单行排下，移动端横滚 + 右侧淡出阴影提示 */}
+          <div className="relative">
+            <div className="flex gap-1 rounded-lg border p-1 overflow-x-auto scrollbar-thin">
+              {LANGUAGES.map((value) => (
                 <button
-                  key={l.value}
-                  onClick={() => setLang(l.value)}
-                  className={`px-3 py-1 rounded-md text-sm font-medium transition-colors ${
-                    preferredLang === l.value
+                  key={value}
+                  ref={(el) => {
+                    langTabRefs.current[value] = el;
+                  }}
+                  onClick={() => setLang(value)}
+                  className={`shrink-0 px-3 py-1 rounded-md text-sm font-medium transition-colors ${
+                    preferredLang === value
                       ? "bg-primary text-primary-foreground"
                       : "text-muted-foreground hover:text-foreground"
                   }`}
                 >
-                  {l.label}
+                  {LANG_LABEL[value]}
                 </button>
               ))}
             </div>
+            {/* 右侧淡出阴影：暗示有更多内容可滚（纯 CSS，无 JS 检测）*/}
+            <div
+              aria-hidden
+              className="pointer-events-none absolute top-0 right-0 h-full w-8 bg-gradient-to-l from-background to-transparent rounded-r-lg"
+            />
           </div>
         </CardHeader>
         <CardContent>

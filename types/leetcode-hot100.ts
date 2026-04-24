@@ -4,12 +4,51 @@
 
 export type Difficulty = "easy" | "medium" | "hard";
 
-export type Language = "cpp" | "python";
+/** 10 种语言，与 LeetCode 官方提供的语言子集对齐 */
+export type Language =
+  | "c"
+  | "cpp"
+  | "python"
+  | "java"
+  | "javascript"
+  | "typescript"
+  | "go"
+  | "rust"
+  | "kotlin"
+  | "swift";
+
+/** UI tab 顺序固定（与上面类型 union 顺序一致便于查表） */
+export const LANGUAGES: readonly Language[] = [
+  "c",
+  "cpp",
+  "python",
+  "java",
+  "javascript",
+  "typescript",
+  "go",
+  "rust",
+  "kotlin",
+  "swift",
+] as const;
+
+/** UI 显示用的短标签 */
+export const LANG_LABEL: Record<Language, string> = {
+  c: "C",
+  cpp: "C++",
+  python: "Python",
+  java: "Java",
+  javascript: "JS",
+  typescript: "TS",
+  go: "Go",
+  rust: "Rust",
+  kotlin: "Kotlin",
+  swift: "Swift",
+};
 
 export interface Solution {
-  /** 完整可编译的源码（C++ 用 <vector> 等标准库 include；Python 兼容 3.9+） */
+  /** 完整可编译的源码 */
   code: string;
-  /** 可选的补充说明（例如当前解法的特殊限制） */
+  /** 可选的补充说明（例如冷门语言为绕过 ownership 等做的妥协） */
   comment?: string;
 }
 
@@ -32,7 +71,7 @@ export interface Problem {
   officialUrl: string;
   /** 核心思路（3 段：思路本质 / 实现要点 / 陷阱或优化） */
   approach: string;
-  /** 多语言解法：目前仅 cpp / python */
+  /** 10 语言解法：每种都必须存在且非空，由 vitest shape 测试守护 */
   solutions: Record<Language, Solution>;
   complexity: {
     /** 时间复杂度，如 "O(n)" */

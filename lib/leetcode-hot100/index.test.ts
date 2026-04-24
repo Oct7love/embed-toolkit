@@ -10,6 +10,26 @@ import {
   DESCRIPTION_MAX_LEN,
   BLACKLIST_PATTERNS,
 } from "./index";
+import { LANGUAGES, type Language } from "@/types/leetcode-hot100";
+
+/**
+ * Per-language entry-point shape regex.
+ * 每个语言的实现必须含有该 regex 描述的"标志性结构"，
+ * 防止某语言的代码被遗漏 / 写错入口签名。
+ */
+const LANG_SHAPE: Record<Language, RegExp> = {
+  c: /\b\w+\s*\([^)]*\)\s*\{/, // C 函数定义形式 `type name(...) {`
+  cpp: /class\s+Solution/,
+  python: /class\s+Solution\s*:/,
+  java: /class\s+Solution/,
+  // LeetCode JS 经典：`var twoSum = function(...)` 或现代 `function name(...)`
+  javascript: /(var\s+\w+\s*=\s*function|function\s+\w+\s*\()/,
+  typescript: /function\s+\w+\s*\(/,
+  go: /^func\s+\w+/m,
+  rust: /impl\s+Solution\b/,
+  kotlin: /class\s+Solution\b/,
+  swift: /class\s+Solution\b/,
+};
 
 /* ---------- 1. 数据完整性 ---------- */
 
@@ -31,10 +51,29 @@ describe("PROBLEMS data integrity (MVP = 10 道题)", () => {
     }
   });
 
-  it("every problem has BOTH cpp and python solutions, both non-empty", () => {
+  it("every problem has solutions for ALL 10 languages, non-empty", () => {
     for (const p of PROBLEMS) {
-      expect(p.solutions.cpp.code.trim().length).toBeGreaterThan(20);
-      expect(p.solutions.python.code.trim().length).toBeGreaterThan(20);
+      for (const lang of LANGUAGES) {
+        expect(
+          p.solutions[lang],
+          `problem #${p.id} missing lang=${lang}`
+        ).toBeDefined();
+        expect(
+          p.solutions[lang].code.trim().length,
+          `problem #${p.id} lang=${lang} too short`
+        ).toBeGreaterThan(20);
+      }
+    }
+  });
+
+  it("every solution matches its language entry-point shape (signature 守卫)", () => {
+    for (const p of PROBLEMS) {
+      for (const lang of LANGUAGES) {
+        expect(
+          p.solutions[lang].code,
+          `problem #${p.id} lang=${lang} 缺少入口结构 ${LANG_SHAPE[lang]}`
+        ).toMatch(LANG_SHAPE[lang]);
+      }
     }
   });
 
@@ -66,18 +105,6 @@ describe("PROBLEMS data integrity (MVP = 10 道题)", () => {
         .map((s) => s.trim())
         .filter(Boolean);
       expect(paragraphs.length).toBeGreaterThanOrEqual(3);
-    }
-  });
-
-  it("C++ code uses Solution class with method signature matching LeetCode 官方", () => {
-    for (const p of PROBLEMS) {
-      expect(p.solutions.cpp.code).toContain("class Solution");
-    }
-  });
-
-  it("Python code uses Solution class with method signature matching LeetCode 官方", () => {
-    for (const p of PROBLEMS) {
-      expect(p.solutions.python.code).toContain("class Solution");
     }
   });
 

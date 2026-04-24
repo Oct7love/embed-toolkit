@@ -1,10 +1,14 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import type { Language, LeetcodeHot100State } from "@/types/leetcode-hot100";
+import {
+  LANGUAGES,
+  type Language,
+  type LeetcodeHot100State,
+} from "@/types/leetcode-hot100";
 import { isRecord, isArrayOf, makeSafeMerge } from "./_schema-guards";
 
 function isValidLang(v: unknown): v is Language {
-  return v === "cpp" || v === "python";
+  return typeof v === "string" && (LANGUAGES as readonly string[]).includes(v);
 }
 
 export const useLeetcodeHot100Store = create<LeetcodeHot100State>()(
