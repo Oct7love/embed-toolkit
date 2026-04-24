@@ -19,23 +19,26 @@ import { LANGUAGES, type Language } from "@/types/leetcode-hot100";
  */
 const LANG_SHAPE: Record<Language, RegExp> = {
   c: /\b\w+\s*\([^)]*\)\s*\{/, // C 函数定义形式 `type name(...) {`
-  cpp: /class\s+Solution/,
-  python: /class\s+Solution\s*:/,
-  java: /class\s+Solution/,
-  // LeetCode JS 经典：`var twoSum = function(...)` 或现代 `function name(...)`
-  javascript: /(var\s+\w+\s*=\s*function|function\s+\w+\s*\()/,
-  typescript: /function\s+\w+\s*\(/,
+  // 设计题（如 #146 LRUCache、未来 #155 MinStack 等）的类名不是 Solution，
+  // 放宽到任意类名以避免在用户复制的代码里塞占位 `class Solution {}`
+  cpp: /class\s+\w+/,
+  python: /class\s+\w+\s*[(:]/,
+  java: /class\s+\w+/,
+  // LeetCode JS 经典：`var twoSum = function(...)` 或现代 `function/class name`
+  javascript: /(var\s+\w+\s*=\s*function|function\s+\w+\s*\(|class\s+\w+)/,
+  typescript: /(function\s+\w+\s*\(|class\s+\w+)/,
   go: /^func\s+\w+/m,
-  rust: /impl\s+Solution\b/,
-  kotlin: /class\s+Solution\b/,
-  swift: /class\s+Solution\b/,
+  // Rust：impl <类型名>，类名不限于 Solution（如 LRUCache）
+  rust: /impl\s+\w+\b/,
+  kotlin: /class\s+\w+\b/,
+  swift: /class\s+\w+\b/,
 };
 
 /* ---------- 1. 数据完整性 ---------- */
 
-describe("PROBLEMS data integrity (v1.5.2 第 2 批扩展 = 30 道题)", () => {
-  it("exactly 30 problems after batch 2 expansion", () => {
-    expect(PROBLEMS.length).toBe(30);
+describe("PROBLEMS data integrity (v1.5.2 第 3 批扩展 = 40 道题)", () => {
+  it("exactly 40 problems after batch 3 expansion", () => {
+    expect(PROBLEMS.length).toBe(40);
   });
 
   it("every id is unique", () => {
