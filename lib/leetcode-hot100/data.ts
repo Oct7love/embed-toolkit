@@ -4900,4 +4900,2550 @@ var permute = function(nums) {
     complexity: { time: "O(n · n!)", space: "O(n) 递归 + used 数组" },
     keyPoints: "回溯 + used 数组防重复选；path 长度等于 n 时收答案。",
   },
+
+  /* ============================================================== */
+  /*  48. Rotate Image (Medium)                                      */
+  /* ============================================================== */
+  {
+    id: 48,
+    slug: "rotate-image",
+    titleZh: "旋转图像",
+    titleEn: "Rotate Image",
+    difficulty: "medium",
+    tags: ["数组", "矩阵"],
+    description: "n×n 矩阵原地顺时针旋转 90 度，不允许使用额外的二维矩阵。",
+    officialUrl: "https://leetcode.cn/problems/rotate-image/",
+    approach: `本质：顺时针旋转 90° 等价于"先沿主对角线转置 + 再左右翻转每一行"。两次 O(n²) 的合成与直接按位置映射等效，但每步只在原矩阵交换两个元素，天然原地。
+
+实现要点：第 1 步转置：i 从 0 到 n-1，j 从 i+1 到 n-1，swap(matrix[i][j], matrix[j][i])；j 必须从 i+1 开始，否则等于交换两次回到原状。第 2 步水平翻转：每行用双指针 (l, r) 交换，l++ r--。
+
+陷阱与对比：另一种"四元素环旋转"写法直接处理 (i, j) → (j, n-1-i) → (n-1-i, n-1-j) → (n-1-j, i) 共 4 个位置；外圈 i 从 0 到 n/2，内圈 j 从 i 到 n-1-i，常数更小但边界容易写错。转置 + 翻转两行代码即可，是面试首选。`,
+    solutions: {
+      c: {
+        code: `void rotate(int** matrix, int matrixSize, int* matrixColSize) {
+    int n = matrixSize;
+    /* 1. 转置 */
+    for (int i = 0; i < n; ++i) {
+        for (int j = i + 1; j < n; ++j) {
+            int t = matrix[i][j];
+            matrix[i][j] = matrix[j][i];
+            matrix[j][i] = t;
+        }
+    }
+    /* 2. 每行左右翻转 */
+    for (int i = 0; i < n; ++i) {
+        int l = 0, r = n - 1;
+        while (l < r) {
+            int t = matrix[i][l];
+            matrix[i][l] = matrix[i][r];
+            matrix[i][r] = t;
+            ++l; --r;
+        }
+    }
+}`,
+      },
+      cpp: {
+        code: `#include <vector>
+#include <algorithm>
+using namespace std;
+
+class Solution {
+public:
+    void rotate(vector<vector<int>>& matrix) {
+        int n = (int)matrix.size();
+        for (int i = 0; i < n; ++i)
+            for (int j = i + 1; j < n; ++j)
+                swap(matrix[i][j], matrix[j][i]);
+        for (int i = 0; i < n; ++i)
+            reverse(matrix[i].begin(), matrix[i].end());
+    }
+};`,
+      },
+      python: {
+        code: `from typing import List
+
+class Solution:
+    def rotate(self, matrix: List[List[int]]) -> None:
+        n = len(matrix)
+        for i in range(n):
+            for j in range(i + 1, n):
+                matrix[i][j], matrix[j][i] = matrix[j][i], matrix[i][j]
+        for row in matrix:
+            row.reverse()`,
+      },
+      java: {
+        code: `class Solution {
+    public void rotate(int[][] matrix) {
+        int n = matrix.length;
+        for (int i = 0; i < n; i++) {
+            for (int j = i + 1; j < n; j++) {
+                int t = matrix[i][j];
+                matrix[i][j] = matrix[j][i];
+                matrix[j][i] = t;
+            }
+        }
+        for (int i = 0; i < n; i++) {
+            int l = 0, r = n - 1;
+            while (l < r) {
+                int t = matrix[i][l];
+                matrix[i][l] = matrix[i][r];
+                matrix[i][r] = t;
+                l++; r--;
+            }
+        }
+    }
+}`,
+      },
+      javascript: {
+        code: `/**
+ * @param {number[][]} matrix
+ * @return {void} 原地修改
+ */
+var rotate = function(matrix) {
+    const n = matrix.length;
+    for (let i = 0; i < n; i++) {
+        for (let j = i + 1; j < n; j++) {
+            [matrix[i][j], matrix[j][i]] = [matrix[j][i], matrix[i][j]];
+        }
+    }
+    for (let i = 0; i < n; i++) matrix[i].reverse();
+};`,
+      },
+      typescript: {
+        code: `function rotate(matrix: number[][]): void {
+    const n = matrix.length;
+    for (let i = 0; i < n; i++) {
+        for (let j = i + 1; j < n; j++) {
+            [matrix[i][j], matrix[j][i]] = [matrix[j][i], matrix[i][j]];
+        }
+    }
+    for (let i = 0; i < n; i++) matrix[i].reverse();
+}`,
+      },
+      go: {
+        code: `func rotate(matrix [][]int) {
+    n := len(matrix)
+    for i := 0; i < n; i++ {
+        for j := i + 1; j < n; j++ {
+            matrix[i][j], matrix[j][i] = matrix[j][i], matrix[i][j]
+        }
+    }
+    for i := 0; i < n; i++ {
+        l, r := 0, n-1
+        for l < r {
+            matrix[i][l], matrix[i][r] = matrix[i][r], matrix[i][l]
+            l++
+            r--
+        }
+    }
+}`,
+      },
+      rust: {
+        code: `impl Solution {
+    pub fn rotate(matrix: &mut Vec<Vec<i32>>) {
+        let n = matrix.len();
+        for i in 0..n {
+            for j in (i + 1)..n {
+                let t = matrix[i][j];
+                matrix[i][j] = matrix[j][i];
+                matrix[j][i] = t;
+            }
+        }
+        for i in 0..n {
+            matrix[i].reverse();
+        }
+    }
+}`,
+      },
+      kotlin: {
+        code: `class Solution {
+    fun rotate(matrix: Array<IntArray>): Unit {
+        val n = matrix.size
+        for (i in 0 until n) {
+            for (j in i + 1 until n) {
+                val t = matrix[i][j]
+                matrix[i][j] = matrix[j][i]
+                matrix[j][i] = t
+            }
+        }
+        for (i in 0 until n) {
+            var l = 0; var r = n - 1
+            while (l < r) {
+                val t = matrix[i][l]
+                matrix[i][l] = matrix[i][r]
+                matrix[i][r] = t
+                l++; r--
+            }
+        }
+    }
+}`,
+      },
+      swift: {
+        code: `class Solution {
+    func rotate(_ matrix: inout [[Int]]) {
+        let n = matrix.count
+        for i in 0..<n {
+            for j in (i + 1)..<n {
+                let t = matrix[i][j]
+                matrix[i][j] = matrix[j][i]
+                matrix[j][i] = t
+            }
+        }
+        for i in 0..<n {
+            matrix[i].reverse()
+        }
+    }
+}`,
+      },
+    },
+    complexity: { time: "O(n²)", space: "O(1) 原地" },
+    keyPoints: "转置 + 行翻转两步合成顺时针 90° 旋转，原地完成。",
+  },
+
+  /* ============================================================== */
+  /*  49. Group Anagrams (Medium)                                    */
+  /* ============================================================== */
+  {
+    id: 49,
+    slug: "group-anagrams",
+    titleZh: "字母异位词分组",
+    titleEn: "Group Anagrams",
+    difficulty: "medium",
+    tags: ["字符串", "哈希表", "排序"],
+    description: "字符串数组按字母组成相同分组，每组的字符串互为字母重排。",
+    officialUrl: "https://leetcode.cn/problems/group-anagrams/",
+    approach: `本质：异位词的"指纹"必须满足"同字母同次数"。可以用排序后的字符串作 key（最直接），也可以用 26 位字母频次作 key（避免排序常数）。同 key 的字符串归到同一桶里。
+
+实现要点：用 unordered_map<string, vector<string>>。遍历每个 word，算 key（sort(word) 或 "a3b1c2..." 频次串），把原 word push 到 map[key]。最后把 map 的所有 value 收集成结果。
+
+陷阱与对比：排序 key 单词总长 N，单词长 k，时间 O(N · k log k)。频次 key 是 O(N · k + N · 26)，更优但需要小心 key 编码（直接拼接频次数字会冲突，如 11 与 1+1，需要分隔符或定长）。本题字符串只含小写字母，定长 26 频次串最稳。`,
+    solutions: {
+      c: {
+        code: `#include <stdlib.h>
+#include <string.h>
+
+/* 简单哈希分组：把每个串排序后的形式作 key 存到链表桶 */
+#define BUCKETS 16384
+
+struct Group { char* key; char** strs; int n; int cap; struct Group* next; };
+
+static unsigned hashStr(const char* s) {
+    unsigned h = 2166136261u;
+    while (*s) { h ^= (unsigned char)*s++; h *= 16777619u; }
+    return h;
+}
+
+static int cmpc(const void* a, const void* b) { return *(char*)a - *(char*)b; }
+
+char*** groupAnagrams(char** strs, int strsSize, int* returnSize, int** returnColumnSizes) {
+    struct Group** tbl = (struct Group**)calloc(BUCKETS, sizeof(struct Group*));
+    int groupCnt = 0;
+    struct Group** groupList = (struct Group**)malloc(strsSize * sizeof(struct Group*));
+    for (int i = 0; i < strsSize; ++i) {
+        int len = (int)strlen(strs[i]);
+        char* key = (char*)malloc(len + 1);
+        memcpy(key, strs[i], len + 1);
+        qsort(key, len, 1, cmpc);
+        unsigned idx = hashStr(key) & (BUCKETS - 1);
+        struct Group* g = tbl[idx];
+        while (g && strcmp(g->key, key) != 0) g = g->next;
+        if (!g) {
+            g = (struct Group*)malloc(sizeof(struct Group));
+            g->key = key; g->n = 0; g->cap = 4;
+            g->strs = (char**)malloc(g->cap * sizeof(char*));
+            g->next = tbl[idx]; tbl[idx] = g;
+            groupList[groupCnt++] = g;
+        } else {
+            free(key);
+        }
+        if (g->n == g->cap) {
+            g->cap *= 2;
+            g->strs = (char**)realloc(g->strs, g->cap * sizeof(char*));
+        }
+        g->strs[g->n++] = strs[i];
+    }
+    char*** ans = (char***)malloc(groupCnt * sizeof(char**));
+    int* cols = (int*)malloc(groupCnt * sizeof(int));
+    for (int i = 0; i < groupCnt; ++i) {
+        ans[i] = groupList[i]->strs;
+        cols[i] = groupList[i]->n;
+    }
+    /* 释放 group 节点本身（strs 指针留给调用方）*/
+    for (int i = 0; i < groupCnt; ++i) {
+        free(groupList[i]->key);
+        free(groupList[i]);
+    }
+    free(groupList);
+    free(tbl);
+    *returnSize = groupCnt;
+    *returnColumnSizes = cols;
+    return ans;
+}`,
+      },
+      cpp: {
+        code: `#include <vector>
+#include <string>
+#include <unordered_map>
+#include <algorithm>
+using namespace std;
+
+class Solution {
+public:
+    vector<vector<string>> groupAnagrams(vector<string>& strs) {
+        unordered_map<string, vector<string>> groups;
+        for (const auto& s : strs) {
+            string key = s;
+            sort(key.begin(), key.end());
+            groups[key].push_back(s);
+        }
+        vector<vector<string>> ans;
+        ans.reserve(groups.size());
+        for (auto& kv : groups) ans.push_back(std::move(kv.second));
+        return ans;
+    }
+};`,
+      },
+      python: {
+        code: `from typing import List, Dict
+from collections import defaultdict
+
+class Solution:
+    def groupAnagrams(self, strs: List[str]) -> List[List[str]]:
+        groups: Dict[str, List[str]] = defaultdict(list)
+        for s in strs:
+            key = "".join(sorted(s))
+            groups[key].append(s)
+        return list(groups.values())`,
+      },
+      java: {
+        code: `import java.util.*;
+
+class Solution {
+    public List<List<String>> groupAnagrams(String[] strs) {
+        Map<String, List<String>> groups = new HashMap<>();
+        for (String s : strs) {
+            char[] arr = s.toCharArray();
+            Arrays.sort(arr);
+            String key = new String(arr);
+            groups.computeIfAbsent(key, k -> new ArrayList<>()).add(s);
+        }
+        return new ArrayList<>(groups.values());
+    }
+}`,
+      },
+      javascript: {
+        code: `/**
+ * @param {string[]} strs
+ * @return {string[][]}
+ */
+var groupAnagrams = function(strs) {
+    const groups = new Map();
+    for (const s of strs) {
+        const key = [...s].sort().join("");
+        if (!groups.has(key)) groups.set(key, []);
+        groups.get(key).push(s);
+    }
+    return [...groups.values()];
+};`,
+      },
+      typescript: {
+        code: `function groupAnagrams(strs: string[]): string[][] {
+    const groups = new Map<string, string[]>();
+    for (const s of strs) {
+        const key = [...s].sort().join("");
+        if (!groups.has(key)) groups.set(key, []);
+        groups.get(key)!.push(s);
+    }
+    return [...groups.values()];
+}`,
+      },
+      go: {
+        code: `import "sort"
+
+func groupAnagrams(strs []string) [][]string {
+    groups := make(map[string][]string)
+    for _, s := range strs {
+        b := []byte(s)
+        sort.Slice(b, func(i, j int) bool { return b[i] < b[j] })
+        key := string(b)
+        groups[key] = append(groups[key], s)
+    }
+    ans := make([][]string, 0, len(groups))
+    for _, v := range groups {
+        ans = append(ans, v)
+    }
+    return ans
+}`,
+      },
+      rust: {
+        code: `use std::collections::HashMap;
+
+impl Solution {
+    pub fn group_anagrams(strs: Vec<String>) -> Vec<Vec<String>> {
+        let mut groups: HashMap<Vec<u8>, Vec<String>> = HashMap::new();
+        for s in strs.into_iter() {
+            let mut key: Vec<u8> = s.bytes().collect();
+            key.sort_unstable();
+            groups.entry(key).or_insert_with(Vec::new).push(s);
+        }
+        groups.into_values().collect()
+    }
+}`,
+      },
+      kotlin: {
+        code: `class Solution {
+    fun groupAnagrams(strs: Array<String>): List<List<String>> {
+        val groups = HashMap<String, MutableList<String>>()
+        for (s in strs) {
+            val key = String(s.toCharArray().also { it.sort() })
+            groups.getOrPut(key) { mutableListOf() }.add(s)
+        }
+        return groups.values.toList()
+    }
+}`,
+      },
+      swift: {
+        code: `class Solution {
+    func groupAnagrams(_ strs: [String]) -> [[String]] {
+        var groups: [String: [String]] = [:]
+        for s in strs {
+            let key = String(s.sorted())
+            groups[key, default: []].append(s)
+        }
+        return Array(groups.values)
+    }
+}`,
+      },
+    },
+    complexity: { time: "O(N · k log k)", space: "O(N · k)" },
+    keyPoints: "排序后的字符串作 key 把异位词归到同一桶，输出所有桶。",
+  },
+
+  /* ============================================================== */
+  /*  55. Jump Game (Medium)                                         */
+  /* ============================================================== */
+  {
+    id: 55,
+    slug: "jump-game",
+    titleZh: "跳跃游戏",
+    titleEn: "Jump Game",
+    difficulty: "medium",
+    tags: ["贪心", "数组", "DP"],
+    description: "数组每个元素表示在该位置能向前跳的最大步数，判断能否到达末尾。",
+    officialUrl: "https://leetcode.cn/problems/jump-game/",
+    approach: `本质：维护"目前能到达的最远下标 maxReach"，从左到右扫描。只要 i ≤ maxReach 就更新 maxReach = max(maxReach, i + nums[i])；一旦 i > maxReach，说明前面没有任何位置能跳到 i，必定失败。
+
+实现要点：单次遍历 O(n)。循环中先判断 if (i > maxReach) return false；再更新 maxReach。如果 maxReach 已 ≥ n - 1 可以提前 return true。
+
+陷阱与对比：DP 写法 dp[i] = (∃ j < i, dp[j] && j + nums[j] >= i) 是 O(n²)，n = 10⁴ 还撑得住但不优雅。贪心的关键直觉：可达集合是一段前缀 [0, maxReach]，不会出现"中间断开"——因为如果 j 可达，则 [j, j + nums[j]] 都可达。`,
+    solutions: {
+      c: {
+        code: `#include <stdbool.h>
+
+bool canJump(int* nums, int numsSize) {
+    int maxReach = 0;
+    for (int i = 0; i < numsSize; ++i) {
+        if (i > maxReach) return false;
+        int reach = i + nums[i];
+        if (reach > maxReach) maxReach = reach;
+        if (maxReach >= numsSize - 1) return true;
+    }
+    return true;
+}`,
+      },
+      cpp: {
+        code: `#include <vector>
+#include <algorithm>
+using namespace std;
+
+class Solution {
+public:
+    bool canJump(vector<int>& nums) {
+        int n = (int)nums.size();
+        int maxReach = 0;
+        for (int i = 0; i < n; ++i) {
+            if (i > maxReach) return false;
+            maxReach = max(maxReach, i + nums[i]);
+            if (maxReach >= n - 1) return true;
+        }
+        return true;
+    }
+};`,
+      },
+      python: {
+        code: `from typing import List
+
+class Solution:
+    def canJump(self, nums: List[int]) -> bool:
+        n = len(nums)
+        max_reach = 0
+        for i in range(n):
+            if i > max_reach:
+                return False
+            if i + nums[i] > max_reach:
+                max_reach = i + nums[i]
+            if max_reach >= n - 1:
+                return True
+        return True`,
+      },
+      java: {
+        code: `class Solution {
+    public boolean canJump(int[] nums) {
+        int n = nums.length;
+        int maxReach = 0;
+        for (int i = 0; i < n; i++) {
+            if (i > maxReach) return false;
+            maxReach = Math.max(maxReach, i + nums[i]);
+            if (maxReach >= n - 1) return true;
+        }
+        return true;
+    }
+}`,
+      },
+      javascript: {
+        code: `/**
+ * @param {number[]} nums
+ * @return {boolean}
+ */
+var canJump = function(nums) {
+    const n = nums.length;
+    let maxReach = 0;
+    for (let i = 0; i < n; i++) {
+        if (i > maxReach) return false;
+        if (i + nums[i] > maxReach) maxReach = i + nums[i];
+        if (maxReach >= n - 1) return true;
+    }
+    return true;
+};`,
+      },
+      typescript: {
+        code: `function canJump(nums: number[]): boolean {
+    const n = nums.length;
+    let maxReach = 0;
+    for (let i = 0; i < n; i++) {
+        if (i > maxReach) return false;
+        if (i + nums[i] > maxReach) maxReach = i + nums[i];
+        if (maxReach >= n - 1) return true;
+    }
+    return true;
+}`,
+      },
+      go: {
+        code: `func canJump(nums []int) bool {
+    n := len(nums)
+    maxReach := 0
+    for i := 0; i < n; i++ {
+        if i > maxReach {
+            return false
+        }
+        if i+nums[i] > maxReach {
+            maxReach = i + nums[i]
+        }
+        if maxReach >= n-1 {
+            return true
+        }
+    }
+    return true
+}`,
+      },
+      rust: {
+        code: `impl Solution {
+    pub fn can_jump(nums: Vec<i32>) -> bool {
+        let n = nums.len();
+        let mut max_reach: usize = 0;
+        for i in 0..n {
+            if i > max_reach {
+                return false;
+            }
+            let reach = i + nums[i] as usize;
+            if reach > max_reach {
+                max_reach = reach;
+            }
+            if max_reach + 1 >= n {
+                return true;
+            }
+        }
+        true
+    }
+}`,
+      },
+      kotlin: {
+        code: `class Solution {
+    fun canJump(nums: IntArray): Boolean {
+        val n = nums.size
+        var maxReach = 0
+        for (i in 0 until n) {
+            if (i > maxReach) return false
+            if (i + nums[i] > maxReach) maxReach = i + nums[i]
+            if (maxReach >= n - 1) return true
+        }
+        return true
+    }
+}`,
+      },
+      swift: {
+        code: `class Solution {
+    func canJump(_ nums: [Int]) -> Bool {
+        let n = nums.count
+        var maxReach = 0
+        for i in 0..<n {
+            if i > maxReach { return false }
+            if i + nums[i] > maxReach { maxReach = i + nums[i] }
+            if maxReach >= n - 1 { return true }
+        }
+        return true
+    }
+}`,
+      },
+    },
+    complexity: { time: "O(n)", space: "O(1)" },
+    keyPoints: "贪心维护当前可达最远点 maxReach；i 超过它即失败。",
+  },
+
+  /* ============================================================== */
+  /*  56. Merge Intervals (Medium)                                   */
+  /* ============================================================== */
+  {
+    id: 56,
+    slug: "merge-intervals",
+    titleZh: "合并区间",
+    titleEn: "Merge Intervals",
+    difficulty: "medium",
+    tags: ["数组", "排序"],
+    description: "区间集合中所有重叠的区间合并为不相交集合，返回合并结果。",
+    officialUrl: "https://leetcode.cn/problems/merge-intervals/",
+    approach: `本质：把区间按起点排序后，重叠关系只发生在"相邻区间"之间。线性扫描即可——维护当前合并区间 [curL, curR]，下一区间 [l, r]：若 l ≤ curR 就把 curR 拉到 max(curR, r)；否则 [curL, curR] 收尾、新区间开张。
+
+实现要点：sort 按 a[0] 升序；初始 cur 取第一个区间。循环 i 从 1：相交则 curR = max；不相交则 push(cur)、cur = a[i]。循环结束别忘了 push 最后一个 cur。
+
+陷阱与对比：忘了排序会得错；按结尾排序会让合并逻辑变复杂。"区间端点开闭"在本题是闭区间，所以 l == curR 也算相交（如 [1,4] 和 [4,5] 合成 [1,5]）。复杂度由排序主导 O(n log n)。`,
+    solutions: {
+      c: {
+        code: `#include <stdlib.h>
+#include <string.h>
+
+static int cmp(const void* a, const void* b) {
+    int* x = *(int**)a; int* y = *(int**)b;
+    if (x[0] != y[0]) return x[0] - y[0];
+    return x[1] - y[1];
+}
+
+int** merge(int** intervals, int intervalsSize, int* intervalsColSize,
+            int* returnSize, int** returnColumnSizes) {
+    if (intervalsSize == 0) {
+        *returnSize = 0;
+        *returnColumnSizes = NULL;
+        return NULL;
+    }
+    qsort(intervals, intervalsSize, sizeof(int*), cmp);
+    int** ans = (int**)malloc(intervalsSize * sizeof(int*));
+    int* cols = (int*)malloc(intervalsSize * sizeof(int));
+    int cnt = 0;
+    int curL = intervals[0][0], curR = intervals[0][1];
+    for (int i = 1; i < intervalsSize; ++i) {
+        if (intervals[i][0] <= curR) {
+            if (intervals[i][1] > curR) curR = intervals[i][1];
+        } else {
+            ans[cnt] = (int*)malloc(2 * sizeof(int));
+            ans[cnt][0] = curL; ans[cnt][1] = curR;
+            cols[cnt] = 2; cnt++;
+            curL = intervals[i][0]; curR = intervals[i][1];
+        }
+    }
+    ans[cnt] = (int*)malloc(2 * sizeof(int));
+    ans[cnt][0] = curL; ans[cnt][1] = curR;
+    cols[cnt] = 2; cnt++;
+    *returnSize = cnt;
+    *returnColumnSizes = cols;
+    return ans;
+}`,
+      },
+      cpp: {
+        code: `#include <vector>
+#include <algorithm>
+using namespace std;
+
+class Solution {
+public:
+    vector<vector<int>> merge(vector<vector<int>>& intervals) {
+        if (intervals.empty()) return {};
+        sort(intervals.begin(), intervals.end(),
+             [](const vector<int>& a, const vector<int>& b) { return a[0] < b[0]; });
+        vector<vector<int>> ans;
+        ans.push_back(intervals[0]);
+        for (int i = 1; i < (int)intervals.size(); ++i) {
+            if (intervals[i][0] <= ans.back()[1]) {
+                ans.back()[1] = max(ans.back()[1], intervals[i][1]);
+            } else {
+                ans.push_back(intervals[i]);
+            }
+        }
+        return ans;
+    }
+};`,
+      },
+      python: {
+        code: `from typing import List
+
+class Solution:
+    def merge(self, intervals: List[List[int]]) -> List[List[int]]:
+        if not intervals:
+            return []
+        intervals.sort(key=lambda x: x[0])
+        ans: List[List[int]] = [intervals[0][:]]
+        for i in range(1, len(intervals)):
+            l, r = intervals[i]
+            if l <= ans[-1][1]:
+                if r > ans[-1][1]:
+                    ans[-1][1] = r
+            else:
+                ans.append([l, r])
+        return ans`,
+      },
+      java: {
+        code: `import java.util.*;
+
+class Solution {
+    public int[][] merge(int[][] intervals) {
+        if (intervals.length == 0) return new int[0][];
+        Arrays.sort(intervals, (a, b) -> Integer.compare(a[0], b[0]));
+        List<int[]> ans = new ArrayList<>();
+        ans.add(new int[]{intervals[0][0], intervals[0][1]});
+        for (int i = 1; i < intervals.length; i++) {
+            int[] last = ans.get(ans.size() - 1);
+            if (intervals[i][0] <= last[1]) {
+                last[1] = Math.max(last[1], intervals[i][1]);
+            } else {
+                ans.add(new int[]{intervals[i][0], intervals[i][1]});
+            }
+        }
+        return ans.toArray(new int[0][]);
+    }
+}`,
+      },
+      javascript: {
+        code: `/**
+ * @param {number[][]} intervals
+ * @return {number[][]}
+ */
+var merge = function(intervals) {
+    if (intervals.length === 0) return [];
+    intervals.sort((a, b) => a[0] - b[0]);
+    const ans = [intervals[0].slice()];
+    for (let i = 1; i < intervals.length; i++) {
+        const last = ans[ans.length - 1];
+        if (intervals[i][0] <= last[1]) {
+            last[1] = Math.max(last[1], intervals[i][1]);
+        } else {
+            ans.push(intervals[i].slice());
+        }
+    }
+    return ans;
+};`,
+      },
+      typescript: {
+        code: `function merge(intervals: number[][]): number[][] {
+    if (intervals.length === 0) return [];
+    intervals.sort((a, b) => a[0] - b[0]);
+    const ans: number[][] = [intervals[0].slice()];
+    for (let i = 1; i < intervals.length; i++) {
+        const last = ans[ans.length - 1];
+        if (intervals[i][0] <= last[1]) {
+            last[1] = Math.max(last[1], intervals[i][1]);
+        } else {
+            ans.push(intervals[i].slice());
+        }
+    }
+    return ans;
+}`,
+      },
+      go: {
+        code: `import "sort"
+
+func merge(intervals [][]int) [][]int {
+    if len(intervals) == 0 {
+        return [][]int{}
+    }
+    sort.Slice(intervals, func(i, j int) bool {
+        return intervals[i][0] < intervals[j][0]
+    })
+    ans := [][]int{{intervals[0][0], intervals[0][1]}}
+    for i := 1; i < len(intervals); i++ {
+        last := ans[len(ans)-1]
+        if intervals[i][0] <= last[1] {
+            if intervals[i][1] > last[1] {
+                last[1] = intervals[i][1]
+            }
+        } else {
+            ans = append(ans, []int{intervals[i][0], intervals[i][1]})
+        }
+    }
+    return ans
+}`,
+      },
+      rust: {
+        code: `impl Solution {
+    pub fn merge(intervals: Vec<Vec<i32>>) -> Vec<Vec<i32>> {
+        if intervals.is_empty() {
+            return Vec::new();
+        }
+        let mut intervals = intervals;
+        intervals.sort_by_key(|v| v[0]);
+        let mut ans: Vec<Vec<i32>> = Vec::new();
+        ans.push(intervals[0].clone());
+        for i in 1..intervals.len() {
+            let last = ans.last_mut().unwrap();
+            if intervals[i][0] <= last[1] {
+                if intervals[i][1] > last[1] {
+                    last[1] = intervals[i][1];
+                }
+            } else {
+                ans.push(intervals[i].clone());
+            }
+        }
+        ans
+    }
+}`,
+      },
+      kotlin: {
+        code: `class Solution {
+    fun merge(intervals: Array<IntArray>): Array<IntArray> {
+        if (intervals.isEmpty()) return emptyArray()
+        intervals.sortBy { it[0] }
+        val ans = mutableListOf<IntArray>()
+        ans.add(intArrayOf(intervals[0][0], intervals[0][1]))
+        for (i in 1 until intervals.size) {
+            val last = ans[ans.size - 1]
+            if (intervals[i][0] <= last[1]) {
+                if (intervals[i][1] > last[1]) last[1] = intervals[i][1]
+            } else {
+                ans.add(intArrayOf(intervals[i][0], intervals[i][1]))
+            }
+        }
+        return ans.toTypedArray()
+    }
+}`,
+      },
+      swift: {
+        code: `class Solution {
+    func merge(_ intervals: [[Int]]) -> [[Int]] {
+        if intervals.isEmpty { return [] }
+        let sorted = intervals.sorted { $0[0] < $1[0] }
+        var ans: [[Int]] = [sorted[0]]
+        for i in 1..<sorted.count {
+            if sorted[i][0] <= ans[ans.count - 1][1] {
+                if sorted[i][1] > ans[ans.count - 1][1] {
+                    ans[ans.count - 1][1] = sorted[i][1]
+                }
+            } else {
+                ans.append(sorted[i])
+            }
+        }
+        return ans
+    }
+}`,
+      },
+    },
+    complexity: { time: "O(n log n)", space: "O(n) 输出" },
+    keyPoints: "按起点排序后线性扫，相邻重叠就合并端点，否则收尾开新。",
+  },
+
+  /* ============================================================== */
+  /*  75. Sort Colors (Medium)                                       */
+  /* ============================================================== */
+  {
+    id: 75,
+    slug: "sort-colors",
+    titleZh: "颜色分类",
+    titleEn: "Sort Colors",
+    difficulty: "medium",
+    tags: ["数组", "双指针", "三指针"],
+    description: "原地把仅含 0/1/2 的数组排成 0...0,1...1,2...2，要求一次扫描。",
+    officialUrl: "https://leetcode.cn/problems/sort-colors/",
+    approach: `本质：荷兰国旗问题。把数组划成三段 [0..l-1] 全 0，[l..i-1] 全 1，[r+1..n-1] 全 2，[i..r] 待处理。三指针 l/i/r 协同推进，单次扫描完成原地分区。
+
+实现要点：l = 0, r = n - 1, i = 0。当 i ≤ r：a[i] == 0 时 swap(a[i], a[l])、l++、i++（换来的位置只能是 1，因为 [0..l-1] 已经全 0）；a[i] == 2 时 swap(a[i], a[r])、r--（i 不动！换来的元素未检查）；a[i] == 1 时 i++。
+
+陷阱与对比：处理 a[i] == 2 后 i 千万不能 ++，新换过来的可能是 2 还得继续换；这是最常见错误。两次扫描计数填充也行（先数 0/1/2 的个数再覆盖），不过单次扫描的三指针更经典。`,
+    solutions: {
+      c: {
+        code: `void sortColors(int* nums, int numsSize) {
+    int l = 0, r = numsSize - 1, i = 0;
+    while (i <= r) {
+        if (nums[i] == 0) {
+            int t = nums[i]; nums[i] = nums[l]; nums[l] = t;
+            l++; i++;
+        } else if (nums[i] == 2) {
+            int t = nums[i]; nums[i] = nums[r]; nums[r] = t;
+            r--;
+        } else {
+            i++;
+        }
+    }
+}`,
+      },
+      cpp: {
+        code: `#include <vector>
+using namespace std;
+
+class Solution {
+public:
+    void sortColors(vector<int>& nums) {
+        int l = 0, r = (int)nums.size() - 1, i = 0;
+        while (i <= r) {
+            if (nums[i] == 0)      { swap(nums[i++], nums[l++]); }
+            else if (nums[i] == 2) { swap(nums[i],   nums[r--]); }
+            else                   { i++; }
+        }
+    }
+};`,
+      },
+      python: {
+        code: `from typing import List
+
+class Solution:
+    def sortColors(self, nums: List[int]) -> None:
+        l, r, i = 0, len(nums) - 1, 0
+        while i <= r:
+            if nums[i] == 0:
+                nums[i], nums[l] = nums[l], nums[i]
+                l += 1
+                i += 1
+            elif nums[i] == 2:
+                nums[i], nums[r] = nums[r], nums[i]
+                r -= 1
+            else:
+                i += 1`,
+      },
+      java: {
+        code: `class Solution {
+    public void sortColors(int[] nums) {
+        int l = 0, r = nums.length - 1, i = 0;
+        while (i <= r) {
+            if (nums[i] == 0) {
+                int t = nums[i]; nums[i] = nums[l]; nums[l] = t;
+                l++; i++;
+            } else if (nums[i] == 2) {
+                int t = nums[i]; nums[i] = nums[r]; nums[r] = t;
+                r--;
+            } else {
+                i++;
+            }
+        }
+    }
+}`,
+      },
+      javascript: {
+        code: `/**
+ * @param {number[]} nums
+ * @return {void} 原地修改
+ */
+var sortColors = function(nums) {
+    let l = 0, r = nums.length - 1, i = 0;
+    while (i <= r) {
+        if (nums[i] === 0) {
+            [nums[i], nums[l]] = [nums[l], nums[i]];
+            l++; i++;
+        } else if (nums[i] === 2) {
+            [nums[i], nums[r]] = [nums[r], nums[i]];
+            r--;
+        } else {
+            i++;
+        }
+    }
+};`,
+      },
+      typescript: {
+        code: `function sortColors(nums: number[]): void {
+    let l = 0, r = nums.length - 1, i = 0;
+    while (i <= r) {
+        if (nums[i] === 0) {
+            [nums[i], nums[l]] = [nums[l], nums[i]];
+            l++; i++;
+        } else if (nums[i] === 2) {
+            [nums[i], nums[r]] = [nums[r], nums[i]];
+            r--;
+        } else {
+            i++;
+        }
+    }
+}`,
+      },
+      go: {
+        code: `func sortColors(nums []int) {
+    l, r, i := 0, len(nums)-1, 0
+    for i <= r {
+        switch nums[i] {
+        case 0:
+            nums[i], nums[l] = nums[l], nums[i]
+            l++
+            i++
+        case 2:
+            nums[i], nums[r] = nums[r], nums[i]
+            r--
+        default:
+            i++
+        }
+    }
+}`,
+      },
+      rust: {
+        code: `impl Solution {
+    pub fn sort_colors(nums: &mut Vec<i32>) {
+        let mut l: usize = 0;
+        let mut r: i32 = nums.len() as i32 - 1;
+        let mut i: i32 = 0;
+        while i <= r {
+            let idx = i as usize;
+            if nums[idx] == 0 {
+                nums.swap(idx, l);
+                l += 1;
+                i += 1;
+            } else if nums[idx] == 2 {
+                nums.swap(idx, r as usize);
+                r -= 1;
+            } else {
+                i += 1;
+            }
+        }
+    }
+}`,
+      },
+      kotlin: {
+        code: `class Solution {
+    fun sortColors(nums: IntArray): Unit {
+        var l = 0; var r = nums.size - 1; var i = 0
+        while (i <= r) {
+            when (nums[i]) {
+                0 -> {
+                    val t = nums[i]; nums[i] = nums[l]; nums[l] = t
+                    l++; i++
+                }
+                2 -> {
+                    val t = nums[i]; nums[i] = nums[r]; nums[r] = t
+                    r--
+                }
+                else -> i++
+            }
+        }
+    }
+}`,
+      },
+      swift: {
+        code: `class Solution {
+    func sortColors(_ nums: inout [Int]) {
+        var l = 0, r = nums.count - 1, i = 0
+        while i <= r {
+            if nums[i] == 0 {
+                nums.swapAt(i, l)
+                l += 1; i += 1
+            } else if nums[i] == 2 {
+                nums.swapAt(i, r)
+                r -= 1
+            } else {
+                i += 1
+            }
+        }
+    }
+}`,
+      },
+    },
+    complexity: { time: "O(n)", space: "O(1)" },
+    keyPoints: "三指针荷兰国旗：l/i/r 划分四段，一次扫描原地分区。",
+  },
+
+  /* ============================================================== */
+  /*  76. Minimum Window Substring (Hard)                            */
+  /* ============================================================== */
+  {
+    id: 76,
+    slug: "minimum-window-substring",
+    titleZh: "最小覆盖子串",
+    titleEn: "Minimum Window Substring",
+    difficulty: "hard",
+    tags: ["字符串", "滑动窗口", "哈希表"],
+    description: "在 s 中找最短子串，包含 t 中所有字符（含重数）；找不到返回空串。",
+    officialUrl: "https://leetcode.cn/problems/minimum-window-substring/",
+    approach: `本质：滑动窗口 + 频次表 + valid 计数。need[c] 记录 t 中字符 c 还需要几个，window[c] 记录窗口里 c 的数量。每当 window[c] == need[c] 让 valid++，窗口"覆盖度"达到 need.size 即合法，然后尝试从左收缩压最短长度。
+
+实现要点：右扩 r：若 c 在 need 中且加入后 window[c] == need[c]，valid++。当 valid == need.size 时进入收缩：记录答案，左边字符 c2 若在 need 中且窗口里 window[c2] == need[c2]，valid--；window[c2]--、l++ 推进。
+
+陷阱与对比：判断"减完才不合法"用 == 时机正确——若先 -- 再判断会错。need.size 是 t 中"不同字符种类数"，不是 t 长度。t 含重复字符（如 "aabc"）时，window["a"] 必须 ≥ 2 才计 1 次 valid，所以判断要用 ==。复杂度 O(|s| + |t|)，每个字符最多被左右指针扫一次。`,
+    solutions: {
+      c: {
+        code: `#include <stdlib.h>
+#include <string.h>
+
+char* minWindow(char* s, char* t) {
+    int sLen = (int)strlen(s), tLen = (int)strlen(t);
+    if (sLen < tLen || tLen == 0) {
+        char* empty = (char*)malloc(1); empty[0] = '\\0'; return empty;
+    }
+    int need[128] = {0}, window[128] = {0};
+    int needKinds = 0;
+    for (int i = 0; i < tLen; ++i) {
+        if (need[(unsigned char)t[i]]++ == 0) needKinds++;
+    }
+    int l = 0, valid = 0;
+    int bestL = -1, bestLen = sLen + 1;
+    for (int r = 0; r < sLen; ++r) {
+        unsigned char c = (unsigned char)s[r];
+        if (need[c] > 0) {
+            window[c]++;
+            if (window[c] == need[c]) valid++;
+        }
+        while (valid == needKinds) {
+            if (r - l + 1 < bestLen) { bestLen = r - l + 1; bestL = l; }
+            unsigned char c2 = (unsigned char)s[l];
+            if (need[c2] > 0) {
+                if (window[c2] == need[c2]) valid--;
+                window[c2]--;
+            }
+            l++;
+        }
+    }
+    if (bestL < 0) {
+        char* empty = (char*)malloc(1); empty[0] = '\\0'; return empty;
+    }
+    char* ans = (char*)malloc(bestLen + 1);
+    memcpy(ans, s + bestL, bestLen);
+    ans[bestLen] = '\\0';
+    return ans;
+}`,
+      },
+      cpp: {
+        code: `#include <string>
+#include <unordered_map>
+using namespace std;
+
+class Solution {
+public:
+    string minWindow(string s, string t) {
+        if (s.size() < t.size() || t.empty()) return "";
+        unordered_map<char, int> need, window;
+        for (char c : t) need[c]++;
+        int valid = 0, l = 0;
+        int bestL = -1, bestLen = (int)s.size() + 1;
+        for (int r = 0; r < (int)s.size(); ++r) {
+            char c = s[r];
+            if (need.count(c)) {
+                window[c]++;
+                if (window[c] == need[c]) valid++;
+            }
+            while (valid == (int)need.size()) {
+                if (r - l + 1 < bestLen) { bestLen = r - l + 1; bestL = l; }
+                char c2 = s[l];
+                if (need.count(c2)) {
+                    if (window[c2] == need[c2]) valid--;
+                    window[c2]--;
+                }
+                l++;
+            }
+        }
+        return bestL < 0 ? "" : s.substr(bestL, bestLen);
+    }
+};`,
+      },
+      python: {
+        code: `from collections import Counter, defaultdict
+from typing import Dict
+
+class Solution:
+    def minWindow(self, s: str, t: str) -> str:
+        if len(s) < len(t) or not t:
+            return ""
+        need: Dict[str, int] = Counter(t)
+        window: Dict[str, int] = defaultdict(int)
+        valid = 0
+        l = 0
+        best_l, best_len = -1, len(s) + 1
+        for r, c in enumerate(s):
+            if c in need:
+                window[c] += 1
+                if window[c] == need[c]:
+                    valid += 1
+            while valid == len(need):
+                if r - l + 1 < best_len:
+                    best_len = r - l + 1
+                    best_l = l
+                c2 = s[l]
+                if c2 in need:
+                    if window[c2] == need[c2]:
+                        valid -= 1
+                    window[c2] -= 1
+                l += 1
+        return "" if best_l < 0 else s[best_l : best_l + best_len]`,
+      },
+      java: {
+        code: `import java.util.*;
+
+class Solution {
+    public String minWindow(String s, String t) {
+        if (s.length() < t.length() || t.isEmpty()) return "";
+        Map<Character, Integer> need = new HashMap<>();
+        Map<Character, Integer> window = new HashMap<>();
+        for (char c : t.toCharArray()) need.merge(c, 1, Integer::sum);
+        int valid = 0, l = 0;
+        int bestL = -1, bestLen = s.length() + 1;
+        for (int r = 0; r < s.length(); r++) {
+            char c = s.charAt(r);
+            if (need.containsKey(c)) {
+                window.merge(c, 1, Integer::sum);
+                if (window.get(c).intValue() == need.get(c).intValue()) valid++;
+            }
+            while (valid == need.size()) {
+                if (r - l + 1 < bestLen) { bestLen = r - l + 1; bestL = l; }
+                char c2 = s.charAt(l);
+                if (need.containsKey(c2)) {
+                    if (window.get(c2).intValue() == need.get(c2).intValue()) valid--;
+                    window.merge(c2, -1, Integer::sum);
+                }
+                l++;
+            }
+        }
+        return bestL < 0 ? "" : s.substring(bestL, bestL + bestLen);
+    }
+}`,
+      },
+      javascript: {
+        code: `/**
+ * @param {string} s
+ * @param {string} t
+ * @return {string}
+ */
+var minWindow = function(s, t) {
+    if (s.length < t.length || t.length === 0) return "";
+    const need = new Map();
+    const window = new Map();
+    for (const c of t) need.set(c, (need.get(c) || 0) + 1);
+    let valid = 0, l = 0;
+    let bestL = -1, bestLen = s.length + 1;
+    for (let r = 0; r < s.length; r++) {
+        const c = s[r];
+        if (need.has(c)) {
+            window.set(c, (window.get(c) || 0) + 1);
+            if (window.get(c) === need.get(c)) valid++;
+        }
+        while (valid === need.size) {
+            if (r - l + 1 < bestLen) { bestLen = r - l + 1; bestL = l; }
+            const c2 = s[l];
+            if (need.has(c2)) {
+                if (window.get(c2) === need.get(c2)) valid--;
+                window.set(c2, window.get(c2) - 1);
+            }
+            l++;
+        }
+    }
+    return bestL < 0 ? "" : s.substring(bestL, bestL + bestLen);
+};`,
+      },
+      typescript: {
+        code: `function minWindow(s: string, t: string): string {
+    if (s.length < t.length || t.length === 0) return "";
+    const need = new Map<string, number>();
+    const window = new Map<string, number>();
+    for (const c of t) need.set(c, (need.get(c) ?? 0) + 1);
+    let valid = 0, l = 0;
+    let bestL = -1, bestLen = s.length + 1;
+    for (let r = 0; r < s.length; r++) {
+        const c = s[r];
+        if (need.has(c)) {
+            window.set(c, (window.get(c) ?? 0) + 1);
+            if (window.get(c) === need.get(c)) valid++;
+        }
+        while (valid === need.size) {
+            if (r - l + 1 < bestLen) { bestLen = r - l + 1; bestL = l; }
+            const c2 = s[l];
+            if (need.has(c2)) {
+                if (window.get(c2) === need.get(c2)) valid--;
+                window.set(c2, (window.get(c2) ?? 0) - 1);
+            }
+            l++;
+        }
+    }
+    return bestL < 0 ? "" : s.substring(bestL, bestL + bestLen);
+}`,
+      },
+      go: {
+        code: `func minWindow(s string, t string) string {
+    if len(s) < len(t) || len(t) == 0 {
+        return ""
+    }
+    need := make(map[byte]int)
+    window := make(map[byte]int)
+    for i := 0; i < len(t); i++ {
+        need[t[i]]++
+    }
+    valid, l := 0, 0
+    bestL, bestLen := -1, len(s)+1
+    for r := 0; r < len(s); r++ {
+        c := s[r]
+        if _, ok := need[c]; ok {
+            window[c]++
+            if window[c] == need[c] {
+                valid++
+            }
+        }
+        for valid == len(need) {
+            if r-l+1 < bestLen {
+                bestLen = r - l + 1
+                bestL = l
+            }
+            c2 := s[l]
+            if _, ok := need[c2]; ok {
+                if window[c2] == need[c2] {
+                    valid--
+                }
+                window[c2]--
+            }
+            l++
+        }
+    }
+    if bestL < 0 {
+        return ""
+    }
+    return s[bestL : bestL+bestLen]
+}`,
+      },
+      rust: {
+        code: `use std::collections::HashMap;
+
+impl Solution {
+    pub fn min_window(s: String, t: String) -> String {
+        if s.len() < t.len() || t.is_empty() {
+            return String::new();
+        }
+        let s_bytes = s.as_bytes();
+        let t_bytes = t.as_bytes();
+        let mut need: HashMap<u8, i32> = HashMap::new();
+        let mut window: HashMap<u8, i32> = HashMap::new();
+        for &c in t_bytes { *need.entry(c).or_insert(0) += 1; }
+        let mut valid = 0usize;
+        let mut l = 0usize;
+        let mut best_l: i32 = -1;
+        let mut best_len = s_bytes.len() + 1;
+        for r in 0..s_bytes.len() {
+            let c = s_bytes[r];
+            if let Some(&n) = need.get(&c) {
+                let w = window.entry(c).or_insert(0);
+                *w += 1;
+                if *w == n { valid += 1; }
+            }
+            while valid == need.len() {
+                if r - l + 1 < best_len {
+                    best_len = r - l + 1;
+                    best_l = l as i32;
+                }
+                let c2 = s_bytes[l];
+                if let Some(&n2) = need.get(&c2) {
+                    let w2 = window.get_mut(&c2).unwrap();
+                    if *w2 == n2 { valid -= 1; }
+                    *w2 -= 1;
+                }
+                l += 1;
+            }
+        }
+        if best_l < 0 {
+            String::new()
+        } else {
+            let start = best_l as usize;
+            String::from_utf8(s_bytes[start..start + best_len].to_vec()).unwrap()
+        }
+    }
+}`,
+      },
+      kotlin: {
+        code: `class Solution {
+    fun minWindow(s: String, t: String): String {
+        if (s.length < t.length || t.isEmpty()) return ""
+        val need = HashMap<Char, Int>()
+        val window = HashMap<Char, Int>()
+        for (c in t) need[c] = (need[c] ?: 0) + 1
+        var valid = 0; var l = 0
+        var bestL = -1; var bestLen = s.length + 1
+        for (r in s.indices) {
+            val c = s[r]
+            if (need.containsKey(c)) {
+                window[c] = (window[c] ?: 0) + 1
+                if (window[c] == need[c]) valid++
+            }
+            while (valid == need.size) {
+                if (r - l + 1 < bestLen) { bestLen = r - l + 1; bestL = l }
+                val c2 = s[l]
+                if (need.containsKey(c2)) {
+                    if (window[c2] == need[c2]) valid--
+                    window[c2] = (window[c2] ?: 0) - 1
+                }
+                l++
+            }
+        }
+        return if (bestL < 0) "" else s.substring(bestL, bestL + bestLen)
+    }
+}`,
+      },
+      swift: {
+        code: `class Solution {
+    func minWindow(_ s: String, _ t: String) -> String {
+        if s.count < t.count || t.isEmpty { return "" }
+        let sArr = Array(s)
+        var need: [Character: Int] = [:]
+        var window: [Character: Int] = [:]
+        for c in t { need[c, default: 0] += 1 }
+        var valid = 0, l = 0
+        var bestL = -1, bestLen = sArr.count + 1
+        for r in 0..<sArr.count {
+            let c = sArr[r]
+            if let n = need[c] {
+                window[c, default: 0] += 1
+                if window[c] == n { valid += 1 }
+            }
+            while valid == need.count {
+                if r - l + 1 < bestLen { bestLen = r - l + 1; bestL = l }
+                let c2 = sArr[l]
+                if let n2 = need[c2] {
+                    if window[c2] == n2 { valid -= 1 }
+                    window[c2]! -= 1
+                }
+                l += 1
+            }
+        }
+        if bestL < 0 { return "" }
+        return String(sArr[bestL..<(bestL + bestLen)])
+    }
+}`,
+      },
+    },
+    complexity: { time: "O(|s| + |t|)", space: "O(Σ) 字符集" },
+    keyPoints: "滑动窗口 + 频次表 + valid 计数；valid 满即收缩压最短。",
+  },
+
+  /* ============================================================== */
+  /*  78. Subsets (Medium)                                           */
+  /* ============================================================== */
+  {
+    id: 78,
+    slug: "subsets",
+    titleZh: "子集",
+    titleEn: "Subsets",
+    difficulty: "medium",
+    tags: ["回溯", "位运算", "数组"],
+    description: "互不相同的整数数组，返回所有可能的子集（幂集），共 2ⁿ 个。",
+    officialUrl: "https://leetcode.cn/problems/subsets/",
+    approach: `本质：每个元素独立"选 / 不选"，共 2ⁿ 种组合。两套通用写法：(1) 回溯枚举开始位置 i，每步把当前 path 收答案再循环 j ≥ i 选 nums[j] 进入下一层；(2) 位运算枚举 0..2ⁿ-1 的每个掩码，bit k = 1 即包含 nums[k]。
+
+实现要点：回溯 dfs(start, path)：进入函数立即 ans.push(path)（每个 path 都是合法子集，含空集），然后循环 i 从 start 到 n-1：path.push(nums[i])、dfs(i+1)、path.pop()。注意 dfs(i+1) 而非 dfs(start+1)，否则会出现 [1,1] 等重复或漏组合。
+
+陷阱与对比：位运算法把代码压到 5 行，但当 n > 30 时 2ⁿ 爆 int。回溯也是 O(n · 2ⁿ)，n 一般 ≤ 10。如果元素有重复（90 题），需先排序 + 跳过同层相邻相同元素去重。`,
+    solutions: {
+      c: {
+        code: `#include <stdlib.h>
+#include <string.h>
+
+static void dfs(int* nums, int n, int start, int* path, int pathLen,
+                int*** ans, int** cols, int* cnt, int* cap) {
+    if (*cnt == *cap) {
+        *cap *= 2;
+        *ans = (int**)realloc(*ans, (*cap) * sizeof(int*));
+        *cols = (int*)realloc(*cols, (*cap) * sizeof(int));
+    }
+    int* row = (int*)malloc((pathLen ? pathLen : 1) * sizeof(int));
+    memcpy(row, path, pathLen * sizeof(int));
+    (*ans)[*cnt] = row;
+    (*cols)[*cnt] = pathLen;
+    (*cnt)++;
+    for (int i = start; i < n; ++i) {
+        path[pathLen] = nums[i];
+        dfs(nums, n, i + 1, path, pathLen + 1, ans, cols, cnt, cap);
+    }
+}
+
+int** subsets(int* nums, int numsSize, int* returnSize, int** returnColumnSizes) {
+    int cap = 16;
+    int** ans = (int**)malloc(cap * sizeof(int*));
+    int* cols = (int*)malloc(cap * sizeof(int));
+    int* path = (int*)malloc((numsSize > 0 ? numsSize : 1) * sizeof(int));
+    int cnt = 0;
+    dfs(nums, numsSize, 0, path, 0, &ans, &cols, &cnt, &cap);
+    free(path);
+    *returnSize = cnt;
+    *returnColumnSizes = cols;
+    return ans;
+}`,
+      },
+      cpp: {
+        code: `#include <vector>
+using namespace std;
+
+class Solution {
+    void dfs(vector<int>& nums, int start, vector<int>& path,
+             vector<vector<int>>& ans) {
+        ans.push_back(path);
+        for (int i = start; i < (int)nums.size(); ++i) {
+            path.push_back(nums[i]);
+            dfs(nums, i + 1, path, ans);
+            path.pop_back();
+        }
+    }
+public:
+    vector<vector<int>> subsets(vector<int>& nums) {
+        vector<vector<int>> ans;
+        vector<int> path;
+        dfs(nums, 0, path, ans);
+        return ans;
+    }
+};`,
+      },
+      python: {
+        code: `from typing import List
+
+class Solution:
+    def subsets(self, nums: List[int]) -> List[List[int]]:
+        ans: List[List[int]] = []
+        path: List[int] = []
+
+        def dfs(start: int) -> None:
+            ans.append(path[:])
+            for i in range(start, len(nums)):
+                path.append(nums[i])
+                dfs(i + 1)
+                path.pop()
+
+        dfs(0)
+        return ans`,
+      },
+      java: {
+        code: `import java.util.*;
+
+class Solution {
+    public List<List<Integer>> subsets(int[] nums) {
+        List<List<Integer>> ans = new ArrayList<>();
+        dfs(nums, 0, new ArrayDeque<>(), ans);
+        return ans;
+    }
+
+    private void dfs(int[] nums, int start, Deque<Integer> path,
+                     List<List<Integer>> ans) {
+        ans.add(new ArrayList<>(path));
+        for (int i = start; i < nums.length; i++) {
+            path.addLast(nums[i]);
+            dfs(nums, i + 1, path, ans);
+            path.removeLast();
+        }
+    }
+}`,
+      },
+      javascript: {
+        code: `/**
+ * @param {number[]} nums
+ * @return {number[][]}
+ */
+var subsets = function(nums) {
+    const ans = [];
+    const path = [];
+    const dfs = (start) => {
+        ans.push([...path]);
+        for (let i = start; i < nums.length; i++) {
+            path.push(nums[i]);
+            dfs(i + 1);
+            path.pop();
+        }
+    };
+    dfs(0);
+    return ans;
+};`,
+      },
+      typescript: {
+        code: `function subsets(nums: number[]): number[][] {
+    const ans: number[][] = [];
+    const path: number[] = [];
+    const dfs = (start: number): void => {
+        ans.push([...path]);
+        for (let i = start; i < nums.length; i++) {
+            path.push(nums[i]);
+            dfs(i + 1);
+            path.pop();
+        }
+    };
+    dfs(0);
+    return ans;
+}`,
+      },
+      go: {
+        code: `func subsets(nums []int) [][]int {
+    var ans [][]int
+    var path []int
+    var dfs func(start int)
+    dfs = func(start int) {
+        tmp := make([]int, len(path))
+        copy(tmp, path)
+        ans = append(ans, tmp)
+        for i := start; i < len(nums); i++ {
+            path = append(path, nums[i])
+            dfs(i + 1)
+            path = path[:len(path)-1]
+        }
+    }
+    dfs(0)
+    return ans
+}`,
+      },
+      rust: {
+        code: `impl Solution {
+    pub fn subsets(nums: Vec<i32>) -> Vec<Vec<i32>> {
+        let mut ans: Vec<Vec<i32>> = Vec::new();
+        let mut path: Vec<i32> = Vec::new();
+        fn dfs(nums: &[i32], start: usize, path: &mut Vec<i32>,
+               ans: &mut Vec<Vec<i32>>) {
+            ans.push(path.clone());
+            for i in start..nums.len() {
+                path.push(nums[i]);
+                dfs(nums, i + 1, path, ans);
+                path.pop();
+            }
+        }
+        dfs(&nums, 0, &mut path, &mut ans);
+        ans
+    }
+}`,
+      },
+      kotlin: {
+        code: `class Solution {
+    fun subsets(nums: IntArray): List<List<Int>> {
+        val ans = mutableListOf<List<Int>>()
+        val path = mutableListOf<Int>()
+        fun dfs(start: Int) {
+            ans.add(path.toList())
+            for (i in start until nums.size) {
+                path.add(nums[i])
+                dfs(i + 1)
+                path.removeAt(path.size - 1)
+            }
+        }
+        dfs(0)
+        return ans
+    }
+}`,
+      },
+      swift: {
+        code: `class Solution {
+    func subsets(_ nums: [Int]) -> [[Int]] {
+        var ans: [[Int]] = []
+        var path: [Int] = []
+        func dfs(_ start: Int) {
+            ans.append(path)
+            for i in start..<nums.count {
+                path.append(nums[i])
+                dfs(i + 1)
+                path.removeLast()
+            }
+        }
+        dfs(0)
+        return ans
+    }
+}`,
+      },
+    },
+    complexity: { time: "O(n · 2ⁿ)", space: "O(n) 递归 + O(n · 2ⁿ) 输出" },
+    keyPoints: "回溯每步都收 path：递归参数 start 控制不重复选元素。",
+  },
+
+  /* ============================================================== */
+  /*  84. Largest Rectangle in Histogram (Hard)                      */
+  /* ============================================================== */
+  {
+    id: 84,
+    slug: "largest-rectangle-in-histogram",
+    titleZh: "柱状图中最大的矩形",
+    titleEn: "Largest Rectangle in Histogram",
+    difficulty: "hard",
+    tags: ["单调栈", "数组"],
+    description: "柱状图每根柱子宽 1 高 heights[i]，求所有矩形里面积最大的那个。",
+    officialUrl: "https://leetcode.cn/problems/largest-rectangle-in-histogram/",
+    approach: `本质：以每根柱子 h 为高的最大矩形，宽度等于"左右两侧第一根 < h 的柱子之间的距离 - 1"。求每根柱子的左右"第一个更小元素"位置，单调递增栈一次扫描即可。
+
+实现要点：栈存下标，单调递增（栈底到栈顶高度递增）。当 heights[i] < heights[stk.top()] 时，弹出 top，对它来说右边界就是 i、左边界是弹出后的新栈顶（栈空则 -1），宽度 = i - left - 1，面积 = heights[top] * 宽度。结尾在 heights 末尾加哨兵 0 触发清空。
+
+陷阱与对比：暴力 O(n²) 对每根柱子向两侧扩展，n = 10⁵ 必超时。分治"找最低柱子分两半"最坏 O(n²)。单调栈 O(n) 是唯一能过的解；常见错是忘了"宽度不含被弹的柱子下标本身"，正确公式 i - left - 1（left 为弹出后栈顶下标，右边界为 i）。`,
+    solutions: {
+      c: {
+        code: `#include <stdlib.h>
+
+int largestRectangleArea(int* heights, int heightsSize) {
+    int n = heightsSize;
+    int* stk = (int*)malloc((n + 1) * sizeof(int));
+    int top = -1;
+    int best = 0;
+    for (int i = 0; i <= n; ++i) {
+        int cur = (i == n) ? 0 : heights[i];
+        while (top >= 0 && heights[stk[top]] > cur) {
+            int h = heights[stk[top--]];
+            int left = (top < 0) ? -1 : stk[top];
+            int width = i - left - 1;
+            int area = h * width;
+            if (area > best) best = area;
+        }
+        stk[++top] = i;
+    }
+    free(stk);
+    return best;
+}`,
+      },
+      cpp: {
+        code: `#include <vector>
+#include <stack>
+using namespace std;
+
+class Solution {
+public:
+    int largestRectangleArea(vector<int>& heights) {
+        int n = (int)heights.size();
+        stack<int> stk;
+        int best = 0;
+        for (int i = 0; i <= n; ++i) {
+            int cur = (i == n) ? 0 : heights[i];
+            while (!stk.empty() && heights[stk.top()] > cur) {
+                int h = heights[stk.top()]; stk.pop();
+                int left = stk.empty() ? -1 : stk.top();
+                int width = i - left - 1;
+                if (h * width > best) best = h * width;
+            }
+            stk.push(i);
+        }
+        return best;
+    }
+};`,
+      },
+      python: {
+        code: `from typing import List
+
+class Solution:
+    def largestRectangleArea(self, heights: List[int]) -> int:
+        n = len(heights)
+        stk: List[int] = []
+        best = 0
+        for i in range(n + 1):
+            cur = 0 if i == n else heights[i]
+            while stk and heights[stk[-1]] > cur:
+                h = heights[stk.pop()]
+                left = stk[-1] if stk else -1
+                width = i - left - 1
+                if h * width > best:
+                    best = h * width
+            stk.append(i)
+        return best`,
+      },
+      java: {
+        code: `import java.util.*;
+
+class Solution {
+    public int largestRectangleArea(int[] heights) {
+        int n = heights.length;
+        Deque<Integer> stk = new ArrayDeque<>();
+        int best = 0;
+        for (int i = 0; i <= n; i++) {
+            int cur = (i == n) ? 0 : heights[i];
+            while (!stk.isEmpty() && heights[stk.peek()] > cur) {
+                int h = heights[stk.pop()];
+                int left = stk.isEmpty() ? -1 : stk.peek();
+                int width = i - left - 1;
+                if (h * width > best) best = h * width;
+            }
+            stk.push(i);
+        }
+        return best;
+    }
+}`,
+      },
+      javascript: {
+        code: `/**
+ * @param {number[]} heights
+ * @return {number}
+ */
+var largestRectangleArea = function(heights) {
+    const n = heights.length;
+    const stk = [];
+    let best = 0;
+    for (let i = 0; i <= n; i++) {
+        const cur = i === n ? 0 : heights[i];
+        while (stk.length && heights[stk[stk.length - 1]] > cur) {
+            const h = heights[stk.pop()];
+            const left = stk.length ? stk[stk.length - 1] : -1;
+            const width = i - left - 1;
+            if (h * width > best) best = h * width;
+        }
+        stk.push(i);
+    }
+    return best;
+};`,
+      },
+      typescript: {
+        code: `function largestRectangleArea(heights: number[]): number {
+    const n = heights.length;
+    const stk: number[] = [];
+    let best = 0;
+    for (let i = 0; i <= n; i++) {
+        const cur = i === n ? 0 : heights[i];
+        while (stk.length && heights[stk[stk.length - 1]] > cur) {
+            const h = heights[stk.pop()!];
+            const left = stk.length ? stk[stk.length - 1] : -1;
+            const width = i - left - 1;
+            if (h * width > best) best = h * width;
+        }
+        stk.push(i);
+    }
+    return best;
+}`,
+      },
+      go: {
+        code: `func largestRectangleArea(heights []int) int {
+    n := len(heights)
+    stk := make([]int, 0, n+1)
+    best := 0
+    for i := 0; i <= n; i++ {
+        cur := 0
+        if i < n {
+            cur = heights[i]
+        }
+        for len(stk) > 0 && heights[stk[len(stk)-1]] > cur {
+            h := heights[stk[len(stk)-1]]
+            stk = stk[:len(stk)-1]
+            left := -1
+            if len(stk) > 0 {
+                left = stk[len(stk)-1]
+            }
+            width := i - left - 1
+            if h*width > best {
+                best = h * width
+            }
+        }
+        stk = append(stk, i)
+    }
+    return best
+}`,
+      },
+      rust: {
+        code: `impl Solution {
+    pub fn largest_rectangle_area(heights: Vec<i32>) -> i32 {
+        let n = heights.len();
+        let mut stk: Vec<usize> = Vec::with_capacity(n + 1);
+        let mut best = 0i32;
+        for i in 0..=n {
+            let cur = if i == n { 0 } else { heights[i] };
+            while let Some(&top) = stk.last() {
+                if heights[top] > cur {
+                    stk.pop();
+                    let h = heights[top];
+                    let left: i32 = match stk.last() {
+                        Some(&x) => x as i32,
+                        None => -1,
+                    };
+                    let width = i as i32 - left - 1;
+                    let area = h * width;
+                    if area > best { best = area; }
+                } else {
+                    break;
+                }
+            }
+            stk.push(i);
+        }
+        best
+    }
+}`,
+      },
+      kotlin: {
+        code: `class Solution {
+    fun largestRectangleArea(heights: IntArray): Int {
+        val n = heights.size
+        val stk = ArrayDeque<Int>()
+        var best = 0
+        for (i in 0..n) {
+            val cur = if (i == n) 0 else heights[i]
+            while (stk.isNotEmpty() && heights[stk.last()] > cur) {
+                val h = heights[stk.removeLast()]
+                val left = if (stk.isEmpty()) -1 else stk.last()
+                val width = i - left - 1
+                if (h * width > best) best = h * width
+            }
+            stk.addLast(i)
+        }
+        return best
+    }
+}`,
+      },
+      swift: {
+        code: `class Solution {
+    func largestRectangleArea(_ heights: [Int]) -> Int {
+        let n = heights.count
+        var stk: [Int] = []
+        var best = 0
+        for i in 0...n {
+            let cur = (i == n) ? 0 : heights[i]
+            while let top = stk.last, heights[top] > cur {
+                stk.removeLast()
+                let h = heights[top]
+                let left = stk.last ?? -1
+                let width = i - left - 1
+                if h * width > best { best = h * width }
+            }
+            stk.append(i)
+        }
+        return best
+    }
+}`,
+      },
+    },
+    complexity: { time: "O(n)", space: "O(n) 栈" },
+    keyPoints: "单调递增栈：每根柱被弹出时即可结算以它为高的最大矩形。",
+  },
+
+  /* ============================================================== */
+  /*  94. Binary Tree Inorder Traversal (Easy)                       */
+  /* ============================================================== */
+  {
+    id: 94,
+    slug: "binary-tree-inorder-traversal",
+    titleZh: "二叉树的中序遍历",
+    titleEn: "Binary Tree Inorder Traversal",
+    difficulty: "easy",
+    tags: ["树", "栈", "二叉树"],
+    description: "返回二叉树的中序遍历（左 → 根 → 右）值序列。",
+    officialUrl: "https://leetcode.cn/problems/binary-tree-inorder-traversal/",
+    approach: `本质：中序遍历的访问顺序是"先把左子树访问完，再访问当前节点，最后右子树"。递归 3 行就行；迭代用一个栈手动模拟"一路向左压栈 → 弹出收 val → 走右子树"循环。
+
+实现要点（迭代）：维护 cur 指针 + 栈 stk。while (cur || !stk.empty)：先 while (cur) { stk.push(cur); cur = cur->left; } 把当前及一路左孩子全压栈；然后 cur = stk.pop()、ans.push(cur->val)、cur = cur->right 让外层 while 继续从右子树根开始一路向左。
+
+陷阱与对比：递归写法最简单但有递归深度上限（极偏二叉树 n = 10⁴ 可能爆栈），迭代版稳妥。Morris 遍历 O(1) 空间但代码复杂度大幅上升，面试一般不要求。`,
+    solutions: {
+      c: {
+        code: `#include <stdlib.h>
+
+struct TreeNode {
+    int val;
+    struct TreeNode *left;
+    struct TreeNode *right;
+};
+
+int* inorderTraversal(struct TreeNode* root, int* returnSize) {
+    int cap = 64, cnt = 0;
+    int* ans = (int*)malloc(cap * sizeof(int));
+    struct TreeNode** stk = (struct TreeNode**)malloc(10001 * sizeof(struct TreeNode*));
+    int top = -1;
+    struct TreeNode* cur = root;
+    while (cur || top >= 0) {
+        while (cur) { stk[++top] = cur; cur = cur->left; }
+        cur = stk[top--];
+        if (cnt == cap) { cap *= 2; ans = (int*)realloc(ans, cap * sizeof(int)); }
+        ans[cnt++] = cur->val;
+        cur = cur->right;
+    }
+    free(stk);
+    *returnSize = cnt;
+    return ans;
+}`,
+      },
+      cpp: {
+        code: `#include <vector>
+#include <stack>
+using namespace std;
+
+struct TreeNode {
+    int val;
+    TreeNode *left;
+    TreeNode *right;
+    TreeNode() : val(0), left(nullptr), right(nullptr) {}
+    TreeNode(int x) : val(x), left(nullptr), right(nullptr) {}
+    TreeNode(int x, TreeNode *l, TreeNode *r) : val(x), left(l), right(r) {}
+};
+
+class Solution {
+public:
+    vector<int> inorderTraversal(TreeNode* root) {
+        vector<int> ans;
+        stack<TreeNode*> stk;
+        TreeNode* cur = root;
+        while (cur || !stk.empty()) {
+            while (cur) { stk.push(cur); cur = cur->left; }
+            cur = stk.top(); stk.pop();
+            ans.push_back(cur->val);
+            cur = cur->right;
+        }
+        return ans;
+    }
+};`,
+      },
+      python: {
+        code: `from typing import List, Optional
+
+class TreeNode:
+    def __init__(self, val: int = 0,
+                 left: "Optional[TreeNode]" = None,
+                 right: "Optional[TreeNode]" = None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+class Solution:
+    def inorderTraversal(self, root: Optional[TreeNode]) -> List[int]:
+        ans: List[int] = []
+        stk: List[TreeNode] = []
+        cur = root
+        while cur or stk:
+            while cur:
+                stk.append(cur)
+                cur = cur.left
+            cur = stk.pop()
+            ans.append(cur.val)
+            cur = cur.right
+        return ans`,
+      },
+      java: {
+        code: `// Definition for a binary tree node (LeetCode 提供):
+// public class TreeNode {
+//     int val;
+//     TreeNode left;
+//     TreeNode right;
+//     TreeNode() {}
+//     TreeNode(int val) { this.val = val; }
+//     TreeNode(int val, TreeNode left, TreeNode right) {
+//         this.val = val; this.left = left; this.right = right;
+//     }
+// }
+import java.util.*;
+
+class Solution {
+    public List<Integer> inorderTraversal(TreeNode root) {
+        List<Integer> ans = new ArrayList<>();
+        Deque<TreeNode> stk = new ArrayDeque<>();
+        TreeNode cur = root;
+        while (cur != null || !stk.isEmpty()) {
+            while (cur != null) {
+                stk.push(cur);
+                cur = cur.left;
+            }
+            cur = stk.pop();
+            ans.add(cur.val);
+            cur = cur.right;
+        }
+        return ans;
+    }
+}`,
+      },
+      javascript: {
+        code: `/**
+ * Definition for a binary tree node (LeetCode 提供):
+ * function TreeNode(val, left, right) {
+ *     this.val = (val === undefined ? 0 : val);
+ *     this.left = (left === undefined ? null : left);
+ *     this.right = (right === undefined ? null : right);
+ * }
+ *
+ * @param {TreeNode} root
+ * @return {number[]}
+ */
+var inorderTraversal = function(root) {
+    const ans = [];
+    const stk = [];
+    let cur = root;
+    while (cur || stk.length) {
+        while (cur) {
+            stk.push(cur);
+            cur = cur.left;
+        }
+        cur = stk.pop();
+        ans.push(cur.val);
+        cur = cur.right;
+    }
+    return ans;
+};`,
+      },
+      typescript: {
+        code: `class TreeNode {
+    val: number;
+    left: TreeNode | null;
+    right: TreeNode | null;
+    constructor(val?: number, left?: TreeNode | null, right?: TreeNode | null) {
+        this.val = val ?? 0;
+        this.left = left ?? null;
+        this.right = right ?? null;
+    }
+}
+
+function inorderTraversal(root: TreeNode | null): number[] {
+    const ans: number[] = [];
+    const stk: TreeNode[] = [];
+    let cur: TreeNode | null = root;
+    while (cur || stk.length) {
+        while (cur) {
+            stk.push(cur);
+            cur = cur.left;
+        }
+        cur = stk.pop()!;
+        ans.push(cur.val);
+        cur = cur.right;
+    }
+    return ans;
+}`,
+      },
+      go: {
+        code: `// Definition for a binary tree node (LeetCode 提供):
+// type TreeNode struct {
+//     Val   int
+//     Left  *TreeNode
+//     Right *TreeNode
+// }
+func inorderTraversal(root *TreeNode) []int {
+    ans := []int{}
+    stk := []*TreeNode{}
+    cur := root
+    for cur != nil || len(stk) > 0 {
+        for cur != nil {
+            stk = append(stk, cur)
+            cur = cur.Left
+        }
+        cur = stk[len(stk)-1]
+        stk = stk[:len(stk)-1]
+        ans = append(ans, cur.Val)
+        cur = cur.Right
+    }
+    return ans
+}`,
+      },
+      rust: {
+        code: `// LeetCode Rust 二叉树节点：Option<Rc<RefCell<TreeNode>>>
+use std::rc::Rc;
+use std::cell::RefCell;
+
+impl Solution {
+    pub fn inorder_traversal(root: Option<Rc<RefCell<TreeNode>>>) -> Vec<i32> {
+        let mut ans: Vec<i32> = Vec::new();
+        let mut stk: Vec<Rc<RefCell<TreeNode>>> = Vec::new();
+        let mut cur = root;
+        while cur.is_some() || !stk.is_empty() {
+            while let Some(node) = cur {
+                cur = node.borrow().left.clone();
+                stk.push(node);
+            }
+            let top = stk.pop().unwrap();
+            ans.push(top.borrow().val);
+            cur = top.borrow().right.clone();
+        }
+        ans
+    }
+}`,
+        comment:
+          "Rust 二叉树需用 Rc<RefCell<>>；borrow() + clone() 把子节点取出避开借用冲突，运行时开销略高于递归。",
+      },
+      kotlin: {
+        code: `// Definition for a binary tree node (LeetCode 提供):
+// class TreeNode(var \`val\`: Int) {
+//     var left: TreeNode? = null
+//     var right: TreeNode? = null
+// }
+class Solution {
+    fun inorderTraversal(root: TreeNode?): List<Int> {
+        val ans = mutableListOf<Int>()
+        val stk = ArrayDeque<TreeNode>()
+        var cur = root
+        while (cur != null || stk.isNotEmpty()) {
+            while (cur != null) {
+                stk.addLast(cur)
+                cur = cur.left
+            }
+            val top = stk.removeLast()
+            ans.add(top.\`val\`)
+            cur = top.right
+        }
+        return ans
+    }
+}`,
+      },
+      swift: {
+        code: `// Definition for a binary tree node (LeetCode 提供):
+public class TreeNode {
+    public var val: Int
+    public var left: TreeNode?
+    public var right: TreeNode?
+    public init() { self.val = 0; self.left = nil; self.right = nil }
+    public init(_ val: Int) { self.val = val; self.left = nil; self.right = nil }
+    public init(_ val: Int, _ left: TreeNode?, _ right: TreeNode?) {
+        self.val = val; self.left = left; self.right = right
+    }
+}
+
+class Solution {
+    func inorderTraversal(_ root: TreeNode?) -> [Int] {
+        var ans: [Int] = []
+        var stk: [TreeNode] = []
+        var cur = root
+        while cur != nil || !stk.isEmpty {
+            while let node = cur {
+                stk.append(node)
+                cur = node.left
+            }
+            let top = stk.removeLast()
+            ans.append(top.val)
+            cur = top.right
+        }
+        return ans
+    }
+}`,
+      },
+    },
+    complexity: { time: "O(n)", space: "O(h) 栈高度" },
+    keyPoints: "迭代用栈模拟：一路向左压栈 → 弹出收 val → 转到右子树。",
+  },
+
+  /* ============================================================== */
+  /*  102. Binary Tree Level Order Traversal (Medium)                */
+  /* ============================================================== */
+  {
+    id: 102,
+    slug: "binary-tree-level-order-traversal",
+    titleZh: "二叉树的层序遍历",
+    titleEn: "Binary Tree Level Order Traversal",
+    difficulty: "medium",
+    tags: ["树", "BFS", "二叉树"],
+    description: "按层逐层遍历二叉树，返回每层节点值的二维数组。",
+    officialUrl:
+      "https://leetcode.cn/problems/binary-tree-level-order-traversal/",
+    approach: `本质：BFS 标准模板。用一个队列，每"轮"开始时记录队列长度 size = 当前层节点数，循环 size 次把它们全 pop 出来收 val，同时把它们的左右孩子 push 进队列；每轮结束就完成一层。
+
+实现要点：root 为空直接返回 []。while queue 非空：开新 vector level、记 size = q.size()、循环 size 次：node = q.front();pop;level.push(val);若 node.left/right 非空就 push 进队列。最后 ans.push(level)。
+
+陷阱与对比：忘了"用 size 锁定本层"会把后入队的下层节点掺进当前层；这是 BFS 分层最常见错。DFS + depth 参数也能做（按 depth 把 val 放到 ans[depth]），但 BFS 更直观且符合"层序"语义。`,
+    solutions: {
+      c: {
+        code: `#include <stdlib.h>
+
+struct TreeNode {
+    int val;
+    struct TreeNode *left;
+    struct TreeNode *right;
+};
+
+int** levelOrder(struct TreeNode* root, int* returnSize, int** returnColumnSizes) {
+    if (!root) {
+        *returnSize = 0;
+        *returnColumnSizes = NULL;
+        return NULL;
+    }
+    int cap = 16;
+    int** ans = (int**)malloc(cap * sizeof(int*));
+    int* cols = (int*)malloc(cap * sizeof(int));
+    int levels = 0;
+    /* 简单数组队列 */
+    struct TreeNode** q = (struct TreeNode**)malloc(2001 * sizeof(struct TreeNode*));
+    int head = 0, tail = 0;
+    q[tail++] = root;
+    while (head < tail) {
+        int size = tail - head;
+        if (levels == cap) {
+            cap *= 2;
+            ans = (int**)realloc(ans, cap * sizeof(int*));
+            cols = (int*)realloc(cols, cap * sizeof(int));
+        }
+        int* level = (int*)malloc(size * sizeof(int));
+        for (int i = 0; i < size; ++i) {
+            struct TreeNode* node = q[head++];
+            level[i] = node->val;
+            if (node->left)  q[tail++] = node->left;
+            if (node->right) q[tail++] = node->right;
+        }
+        ans[levels] = level;
+        cols[levels] = size;
+        levels++;
+    }
+    free(q);
+    *returnSize = levels;
+    *returnColumnSizes = cols;
+    return ans;
+}`,
+      },
+      cpp: {
+        code: `#include <vector>
+#include <queue>
+using namespace std;
+
+struct TreeNode {
+    int val;
+    TreeNode *left;
+    TreeNode *right;
+    TreeNode() : val(0), left(nullptr), right(nullptr) {}
+    TreeNode(int x) : val(x), left(nullptr), right(nullptr) {}
+    TreeNode(int x, TreeNode *l, TreeNode *r) : val(x), left(l), right(r) {}
+};
+
+class Solution {
+public:
+    vector<vector<int>> levelOrder(TreeNode* root) {
+        vector<vector<int>> ans;
+        if (!root) return ans;
+        queue<TreeNode*> q;
+        q.push(root);
+        while (!q.empty()) {
+            int size = (int)q.size();
+            vector<int> level;
+            level.reserve(size);
+            for (int i = 0; i < size; ++i) {
+                TreeNode* node = q.front(); q.pop();
+                level.push_back(node->val);
+                if (node->left)  q.push(node->left);
+                if (node->right) q.push(node->right);
+            }
+            ans.push_back(std::move(level));
+        }
+        return ans;
+    }
+};`,
+      },
+      python: {
+        code: `from typing import List, Optional, Deque
+from collections import deque
+
+class TreeNode:
+    def __init__(self, val: int = 0,
+                 left: "Optional[TreeNode]" = None,
+                 right: "Optional[TreeNode]" = None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+class Solution:
+    def levelOrder(self, root: Optional[TreeNode]) -> List[List[int]]:
+        ans: List[List[int]] = []
+        if root is None:
+            return ans
+        q: Deque[TreeNode] = deque([root])
+        while q:
+            size = len(q)
+            level: List[int] = []
+            for _ in range(size):
+                node = q.popleft()
+                level.append(node.val)
+                if node.left:
+                    q.append(node.left)
+                if node.right:
+                    q.append(node.right)
+            ans.append(level)
+        return ans`,
+      },
+      java: {
+        code: `// Definition for a binary tree node (LeetCode 提供):
+// public class TreeNode {
+//     int val;
+//     TreeNode left;
+//     TreeNode right;
+//     TreeNode() {}
+//     TreeNode(int val) { this.val = val; }
+//     TreeNode(int val, TreeNode left, TreeNode right) {
+//         this.val = val; this.left = left; this.right = right;
+//     }
+// }
+import java.util.*;
+
+class Solution {
+    public List<List<Integer>> levelOrder(TreeNode root) {
+        List<List<Integer>> ans = new ArrayList<>();
+        if (root == null) return ans;
+        Deque<TreeNode> q = new ArrayDeque<>();
+        q.offer(root);
+        while (!q.isEmpty()) {
+            int size = q.size();
+            List<Integer> level = new ArrayList<>(size);
+            for (int i = 0; i < size; i++) {
+                TreeNode node = q.poll();
+                level.add(node.val);
+                if (node.left != null)  q.offer(node.left);
+                if (node.right != null) q.offer(node.right);
+            }
+            ans.add(level);
+        }
+        return ans;
+    }
+}`,
+      },
+      javascript: {
+        code: `/**
+ * Definition for a binary tree node (LeetCode 提供):
+ * function TreeNode(val, left, right) {
+ *     this.val = (val === undefined ? 0 : val);
+ *     this.left = (left === undefined ? null : left);
+ *     this.right = (right === undefined ? null : right);
+ * }
+ *
+ * @param {TreeNode} root
+ * @return {number[][]}
+ */
+var levelOrder = function(root) {
+    const ans = [];
+    if (!root) return ans;
+    let q = [root];
+    while (q.length) {
+        const size = q.length;
+        const level = [];
+        const next = [];
+        for (let i = 0; i < size; i++) {
+            const node = q[i];
+            level.push(node.val);
+            if (node.left)  next.push(node.left);
+            if (node.right) next.push(node.right);
+        }
+        ans.push(level);
+        q = next;
+    }
+    return ans;
+};`,
+      },
+      typescript: {
+        code: `class TreeNode {
+    val: number;
+    left: TreeNode | null;
+    right: TreeNode | null;
+    constructor(val?: number, left?: TreeNode | null, right?: TreeNode | null) {
+        this.val = val ?? 0;
+        this.left = left ?? null;
+        this.right = right ?? null;
+    }
+}
+
+function levelOrder(root: TreeNode | null): number[][] {
+    const ans: number[][] = [];
+    if (!root) return ans;
+    let q: TreeNode[] = [root];
+    while (q.length) {
+        const size = q.length;
+        const level: number[] = [];
+        const next: TreeNode[] = [];
+        for (let i = 0; i < size; i++) {
+            const node = q[i];
+            level.push(node.val);
+            if (node.left)  next.push(node.left);
+            if (node.right) next.push(node.right);
+        }
+        ans.push(level);
+        q = next;
+    }
+    return ans;
+}`,
+      },
+      go: {
+        code: `// Definition for a binary tree node (LeetCode 提供):
+// type TreeNode struct {
+//     Val   int
+//     Left  *TreeNode
+//     Right *TreeNode
+// }
+func levelOrder(root *TreeNode) [][]int {
+    ans := [][]int{}
+    if root == nil {
+        return ans
+    }
+    q := []*TreeNode{root}
+    for len(q) > 0 {
+        size := len(q)
+        level := make([]int, 0, size)
+        next := []*TreeNode{}
+        for i := 0; i < size; i++ {
+            node := q[i]
+            level = append(level, node.Val)
+            if node.Left != nil {
+                next = append(next, node.Left)
+            }
+            if node.Right != nil {
+                next = append(next, node.Right)
+            }
+        }
+        ans = append(ans, level)
+        q = next
+    }
+    return ans
+}`,
+      },
+      rust: {
+        code: `// LeetCode Rust 二叉树节点：Option<Rc<RefCell<TreeNode>>>
+use std::rc::Rc;
+use std::cell::RefCell;
+use std::collections::VecDeque;
+
+impl Solution {
+    pub fn level_order(root: Option<Rc<RefCell<TreeNode>>>) -> Vec<Vec<i32>> {
+        let mut ans: Vec<Vec<i32>> = Vec::new();
+        if root.is_none() { return ans; }
+        let mut q: VecDeque<Rc<RefCell<TreeNode>>> = VecDeque::new();
+        q.push_back(root.unwrap());
+        while !q.is_empty() {
+            let size = q.len();
+            let mut level: Vec<i32> = Vec::with_capacity(size);
+            for _ in 0..size {
+                let node = q.pop_front().unwrap();
+                let n = node.borrow();
+                level.push(n.val);
+                if let Some(ref l) = n.left  { q.push_back(l.clone()); }
+                if let Some(ref r) = n.right { q.push_back(r.clone()); }
+            }
+            ans.push(level);
+        }
+        ans
+    }
+}`,
+        comment:
+          "Rc::clone 把子节点的智能指针入队（引用计数 +1），避免移动原节点；borrow() 临时只读访问。",
+      },
+      kotlin: {
+        code: `// Definition for a binary tree node (LeetCode 提供):
+// class TreeNode(var \`val\`: Int) {
+//     var left: TreeNode? = null
+//     var right: TreeNode? = null
+// }
+class Solution {
+    fun levelOrder(root: TreeNode?): List<List<Int>> {
+        val ans = mutableListOf<List<Int>>()
+        if (root == null) return ans
+        val q: ArrayDeque<TreeNode> = ArrayDeque()
+        q.addLast(root)
+        while (q.isNotEmpty()) {
+            val size = q.size
+            val level = ArrayList<Int>(size)
+            for (i in 0 until size) {
+                val node = q.removeFirst()
+                level.add(node.\`val\`)
+                node.left?.let  { q.addLast(it) }
+                node.right?.let { q.addLast(it) }
+            }
+            ans.add(level)
+        }
+        return ans
+    }
+}`,
+      },
+      swift: {
+        code: `// Definition for a binary tree node (LeetCode 提供):
+// public class TreeNode { ... } —— 与 #94 同
+class Solution {
+    func levelOrder(_ root: TreeNode?) -> [[Int]] {
+        var ans: [[Int]] = []
+        guard let root = root else { return ans }
+        var q: [TreeNode] = [root]
+        while !q.isEmpty {
+            let size = q.count
+            var level: [Int] = []
+            level.reserveCapacity(size)
+            var next: [TreeNode] = []
+            for i in 0..<size {
+                let node = q[i]
+                level.append(node.val)
+                if let l = node.left  { next.append(l) }
+                if let r = node.right { next.append(r) }
+            }
+            ans.append(level)
+            q = next
+        }
+        return ans
+    }
+}`,
+      },
+    },
+    complexity: { time: "O(n)", space: "O(n) 队列" },
+    keyPoints: "BFS 模板：每轮记 size 锁定本层节点数，循环 size 次再下一层。",
+  },
 ];

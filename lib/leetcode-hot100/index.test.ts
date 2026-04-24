@@ -33,9 +33,9 @@ const LANG_SHAPE: Record<Language, RegExp> = {
 
 /* ---------- 1. 数据完整性 ---------- */
 
-describe("PROBLEMS data integrity (v1.5.2 第 1 批扩展 = 20 道题)", () => {
-  it("exactly 20 problems after batch 1 expansion", () => {
-    expect(PROBLEMS.length).toBe(20);
+describe("PROBLEMS data integrity (v1.5.2 第 2 批扩展 = 30 道题)", () => {
+  it("exactly 30 problems after batch 2 expansion", () => {
+    expect(PROBLEMS.length).toBe(30);
   });
 
   it("every id is unique", () => {
