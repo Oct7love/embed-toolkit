@@ -2193,4 +2193,2711 @@ impl Solution {
     complexity: { time: "O(n)", space: "O(1)" },
     keyPoints: "三指针迭代：先存 next，再改 curr.next，最后推进。",
   },
+
+  /* ============================================================== */
+  /*  17. Letter Combinations of a Phone Number (Medium)             */
+  /* ============================================================== */
+  {
+    id: 17,
+    slug: "letter-combinations-of-a-phone-number",
+    titleZh: "电话号码的字母组合",
+    titleEn: "Letter Combinations of a Phone Number",
+    difficulty: "medium",
+    tags: ["回溯", "字符串", "哈希表"],
+    description: "数字串（2-9）按九宫格映射到字母，输出所有可能的字母组合。",
+    officialUrl: "https://leetcode.cn/problems/letter-combinations-of-a-phone-number/",
+    approach: `本质：每个数字对应一组候选字母，n 个数字就要做 n 层选择，每层从该数字对应的 3-4 个字母里挑一个。这是典型的"多叉树枚举"，回溯就是按层 DFS 每条路径。
+
+实现要点：先建数字到字母的映射表（'2'->"abc" 等）。回溯函数维护一个当前路径 path 和当前层下标 idx。idx == digits.length 时把 path 加进结果；否则取 digits[idx] 对应的字母集合，每个字母 push、递归、pop。空串特判直接返回空数组。
+
+陷阱与对比：BFS 队列也能做，但代码更长。乘积式枚举（笛卡尔积）写起来不如回溯通用，且无法附带剪枝。规模上限 4^4 = 256 很小，不需要剪枝优化。注意 path 容量预分配可以省掉小开销。`,
+    solutions: {
+      c: {
+        code: `#include <stdlib.h>
+#include <string.h>
+
+static const char* MAP[10] = {
+    "", "", "abc", "def", "ghi", "jkl", "mno", "pqrs", "tuv", "wxyz"
+};
+
+static void dfs(const char* digits, int idx, int n,
+                char* path, char** ans, int* cnt, int* cap) {
+    if (idx == n) {
+        if (*cnt == *cap) {
+            *cap *= 2;
+            ans = (char**)realloc(ans, (*cap) * sizeof(char*));
+        }
+        char* s = (char*)malloc(n + 1);
+        memcpy(s, path, n);
+        s[n] = '\\0';
+        ans[*cnt] = s;
+        (*cnt)++;
+        return;
+    }
+    const char* letters = MAP[digits[idx] - '0'];
+    for (int i = 0; letters[i]; ++i) {
+        path[idx] = letters[i];
+        dfs(digits, idx + 1, n, path, ans, cnt, cap);
+    }
+}
+
+char** letterCombinations(char* digits, int* returnSize) {
+    int n = (int)strlen(digits);
+    if (n == 0) { *returnSize = 0; return (char**)malloc(0); }
+    int cap = 16;
+    char** ans = (char**)malloc(cap * sizeof(char*));
+    char* path = (char*)malloc(n + 1);
+    int cnt = 0;
+    /* dfs may realloc; pass through by re-fetch is awkward in C, use static cap large enough */
+    /* 简化：用足够大初始 cap = 4^n 上限 */
+    free(ans);
+    cap = 1;
+    for (int i = 0; i < n; ++i) cap *= 4;
+    ans = (char**)malloc(cap * sizeof(char*));
+    dfs(digits, 0, n, path, ans, &cnt, &cap);
+    free(path);
+    *returnSize = cnt;
+    return ans;
+}`,
+      },
+      cpp: {
+        code: `#include <vector>
+#include <string>
+using namespace std;
+
+class Solution {
+    static constexpr const char* MAP[10] = {
+        "", "", "abc", "def", "ghi", "jkl", "mno", "pqrs", "tuv", "wxyz"
+    };
+    void dfs(const string& digits, int idx, string& path, vector<string>& ans) {
+        if (idx == (int)digits.size()) { ans.push_back(path); return; }
+        for (char c : string(MAP[digits[idx] - '0'])) {
+            path.push_back(c);
+            dfs(digits, idx + 1, path, ans);
+            path.pop_back();
+        }
+    }
+public:
+    vector<string> letterCombinations(string digits) {
+        vector<string> ans;
+        if (digits.empty()) return ans;
+        string path;
+        path.reserve(digits.size());
+        dfs(digits, 0, path, ans);
+        return ans;
+    }
+};`,
+      },
+      python: {
+        code: `from typing import List
+
+class Solution:
+    MAP = {
+        "2": "abc", "3": "def", "4": "ghi", "5": "jkl",
+        "6": "mno", "7": "pqrs", "8": "tuv", "9": "wxyz",
+    }
+
+    def letterCombinations(self, digits: str) -> List[str]:
+        if not digits:
+            return []
+        ans: List[str] = []
+        path: List[str] = []
+
+        def dfs(idx: int) -> None:
+            if idx == len(digits):
+                ans.append("".join(path))
+                return
+            for c in Solution.MAP[digits[idx]]:
+                path.append(c)
+                dfs(idx + 1)
+                path.pop()
+
+        dfs(0)
+        return ans`,
+      },
+      java: {
+        code: `import java.util.*;
+
+class Solution {
+    private static final String[] MAP = {
+        "", "", "abc", "def", "ghi", "jkl", "mno", "pqrs", "tuv", "wxyz"
+    };
+
+    public List<String> letterCombinations(String digits) {
+        List<String> ans = new ArrayList<>();
+        if (digits.isEmpty()) return ans;
+        dfs(digits, 0, new StringBuilder(), ans);
+        return ans;
+    }
+
+    private void dfs(String digits, int idx, StringBuilder path, List<String> ans) {
+        if (idx == digits.length()) {
+            ans.add(path.toString());
+            return;
+        }
+        for (char c : MAP[digits.charAt(idx) - '0'].toCharArray()) {
+            path.append(c);
+            dfs(digits, idx + 1, path, ans);
+            path.deleteCharAt(path.length() - 1);
+        }
+    }
+}`,
+      },
+      javascript: {
+        code: `/**
+ * @param {string} digits
+ * @return {string[]}
+ */
+var letterCombinations = function(digits) {
+    if (!digits) return [];
+    const MAP = {
+        "2": "abc", "3": "def", "4": "ghi", "5": "jkl",
+        "6": "mno", "7": "pqrs", "8": "tuv", "9": "wxyz",
+    };
+    const ans = [];
+    const path = [];
+    const dfs = (idx) => {
+        if (idx === digits.length) { ans.push(path.join("")); return; }
+        for (const c of MAP[digits[idx]]) {
+            path.push(c);
+            dfs(idx + 1);
+            path.pop();
+        }
+    };
+    dfs(0);
+    return ans;
+};`,
+      },
+      typescript: {
+        code: `function letterCombinations(digits: string): string[] {
+    if (!digits) return [];
+    const MAP: Record<string, string> = {
+        "2": "abc", "3": "def", "4": "ghi", "5": "jkl",
+        "6": "mno", "7": "pqrs", "8": "tuv", "9": "wxyz",
+    };
+    const ans: string[] = [];
+    const path: string[] = [];
+    const dfs = (idx: number): void => {
+        if (idx === digits.length) { ans.push(path.join("")); return; }
+        for (const c of MAP[digits[idx]]) {
+            path.push(c);
+            dfs(idx + 1);
+            path.pop();
+        }
+    };
+    dfs(0);
+    return ans;
+}`,
+      },
+      go: {
+        code: `func letterCombinations(digits string) []string {
+    if len(digits) == 0 {
+        return []string{}
+    }
+    m := map[byte]string{
+        '2': "abc", '3': "def", '4': "ghi", '5': "jkl",
+        '6': "mno", '7': "pqrs", '8': "tuv", '9': "wxyz",
+    }
+    var ans []string
+    path := make([]byte, 0, len(digits))
+    var dfs func(int)
+    dfs = func(idx int) {
+        if idx == len(digits) {
+            ans = append(ans, string(path))
+            return
+        }
+        for i := 0; i < len(m[digits[idx]]); i++ {
+            path = append(path, m[digits[idx]][i])
+            dfs(idx + 1)
+            path = path[:len(path)-1]
+        }
+    }
+    dfs(0)
+    return ans
+}`,
+      },
+      rust: {
+        code: `impl Solution {
+    pub fn letter_combinations(digits: String) -> Vec<String> {
+        if digits.is_empty() { return vec![]; }
+        let map: [&str; 10] = [
+            "", "", "abc", "def", "ghi", "jkl", "mno", "pqrs", "tuv", "wxyz",
+        ];
+        let bytes: Vec<usize> = digits.bytes().map(|b| (b - b'0') as usize).collect();
+        let mut ans: Vec<String> = Vec::new();
+        let mut path: Vec<u8> = Vec::with_capacity(bytes.len());
+        fn dfs(idx: usize, bytes: &[usize], map: &[&str; 10],
+               path: &mut Vec<u8>, ans: &mut Vec<String>) {
+            if idx == bytes.len() {
+                ans.push(String::from_utf8(path.clone()).unwrap());
+                return;
+            }
+            for &c in map[bytes[idx]].as_bytes() {
+                path.push(c);
+                dfs(idx + 1, bytes, map, path, ans);
+                path.pop();
+            }
+        }
+        dfs(0, &bytes, &map, &mut path, &mut ans);
+        ans
+    }
+}`,
+      },
+      kotlin: {
+        code: `class Solution {
+    private val map = mapOf(
+        '2' to "abc", '3' to "def", '4' to "ghi", '5' to "jkl",
+        '6' to "mno", '7' to "pqrs", '8' to "tuv", '9' to "wxyz",
+    )
+
+    fun letterCombinations(digits: String): List<String> {
+        if (digits.isEmpty()) return emptyList()
+        val ans = mutableListOf<String>()
+        val path = StringBuilder()
+        fun dfs(idx: Int) {
+            if (idx == digits.length) { ans.add(path.toString()); return }
+            for (c in map[digits[idx]]!!) {
+                path.append(c)
+                dfs(idx + 1)
+                path.deleteCharAt(path.length - 1)
+            }
+        }
+        dfs(0)
+        return ans
+    }
+}`,
+      },
+      swift: {
+        code: `class Solution {
+    func letterCombinations(_ digits: String) -> [String] {
+        if digits.isEmpty { return [] }
+        let map: [Character: String] = [
+            "2": "abc", "3": "def", "4": "ghi", "5": "jkl",
+            "6": "mno", "7": "pqrs", "8": "tuv", "9": "wxyz",
+        ]
+        let arr = Array(digits)
+        var ans: [String] = []
+        var path: [Character] = []
+        func dfs(_ idx: Int) {
+            if idx == arr.count { ans.append(String(path)); return }
+            for c in map[arr[idx]]! {
+                path.append(c)
+                dfs(idx + 1)
+                path.removeLast()
+            }
+        }
+        dfs(0)
+        return ans
+    }
+}`,
+      },
+    },
+    complexity: { time: "O(4^n · n)", space: "O(n) 递归栈" },
+    keyPoints: "数字到字母映射表 + 回溯按层 DFS，path 增删保持当前路径状态。",
+  },
+
+  /* ============================================================== */
+  /*  19. Remove Nth Node From End of List (Medium)                  */
+  /* ============================================================== */
+  {
+    id: 19,
+    slug: "remove-nth-node-from-end-of-list",
+    titleZh: "删除链表的倒数第 N 个结点",
+    titleEn: "Remove Nth Node From End of List",
+    difficulty: "medium",
+    tags: ["链表", "双指针"],
+    description: "单链表里删除倒数第 n 个节点，返回新头节点。",
+    officialUrl: "https://leetcode.cn/problems/remove-nth-node-from-end-of-list/",
+    approach: `本质：链表无法随机访问，要在一次遍历内定位倒数第 n 个节点，用快慢指针保持 n 步差距。快指针先走 n 步，再两个一起走，快指针到尾时慢指针正好停在被删节点的前一个。
+
+实现要点：dummy 哑节点指向 head，能统一处理"删除头节点"的边界。fast 从 dummy 出发先走 n 步，slow 从 dummy 出发；然后两者同步前进直到 fast.next == null。此时 slow.next 就是要删的节点，slow.next = slow.next.next 即可。最后返回 dummy.next。
+
+陷阱与对比：两次遍历（先求长度 L 再删第 L-n+1 个）也可，但题目鼓励一次遍历。fast 不用 dummy 起步会让"删头"特例难处理。n 一定合法（题目保证），不需要边界检查；但 fast 走 n 步前要确认非空，工程代码会加防御。`,
+    solutions: {
+      c: {
+        code: `#include <stdlib.h>
+
+struct ListNode {
+    int val;
+    struct ListNode *next;
+};
+
+struct ListNode* removeNthFromEnd(struct ListNode* head, int n) {
+    struct ListNode dummy;
+    dummy.next = head;
+    struct ListNode *fast = &dummy, *slow = &dummy;
+    for (int i = 0; i < n; ++i) fast = fast->next;
+    while (fast->next) { fast = fast->next; slow = slow->next; }
+    struct ListNode* del = slow->next;
+    slow->next = del->next;
+    free(del);
+    return dummy.next;
+}`,
+      },
+      cpp: {
+        code: `#include <cstddef>
+
+struct ListNode {
+    int val;
+    ListNode *next;
+    ListNode() : val(0), next(nullptr) {}
+    ListNode(int x) : val(x), next(nullptr) {}
+    ListNode(int x, ListNode *n) : val(x), next(n) {}
+};
+
+class Solution {
+public:
+    ListNode* removeNthFromEnd(ListNode* head, int n) {
+        ListNode dummy(0, head);
+        ListNode *fast = &dummy, *slow = &dummy;
+        for (int i = 0; i < n; ++i) fast = fast->next;
+        while (fast->next) { fast = fast->next; slow = slow->next; }
+        ListNode* del = slow->next;
+        slow->next = del->next;
+        delete del;
+        return dummy.next;
+    }
+};`,
+      },
+      python: {
+        code: `from typing import Optional
+
+class ListNode:
+    def __init__(self, val: int = 0, next: "Optional[ListNode]" = None):
+        self.val = val
+        self.next = next
+
+class Solution:
+    def removeNthFromEnd(self, head: Optional[ListNode], n: int) -> Optional[ListNode]:
+        dummy = ListNode(0, head)
+        fast: Optional[ListNode] = dummy
+        slow: Optional[ListNode] = dummy
+        for _ in range(n):
+            assert fast is not None
+            fast = fast.next
+        while fast and fast.next:
+            fast = fast.next
+            assert slow is not None
+            slow = slow.next
+        assert slow is not None and slow.next is not None
+        slow.next = slow.next.next
+        return dummy.next`,
+      },
+      java: {
+        code: `// Definition for singly-linked list (LeetCode 提供):
+// public class ListNode {
+//     int val; ListNode next;
+//     ListNode() {}
+//     ListNode(int val) { this.val = val; }
+//     ListNode(int val, ListNode next) { this.val = val; this.next = next; }
+// }
+class Solution {
+    public ListNode removeNthFromEnd(ListNode head, int n) {
+        ListNode dummy = new ListNode(0, head);
+        ListNode fast = dummy, slow = dummy;
+        for (int i = 0; i < n; i++) fast = fast.next;
+        while (fast.next != null) { fast = fast.next; slow = slow.next; }
+        slow.next = slow.next.next;
+        return dummy.next;
+    }
+}`,
+      },
+      javascript: {
+        code: `/**
+ * Definition for singly-linked list:
+ * function ListNode(val, next) {
+ *     this.val = (val === undefined ? 0 : val);
+ *     this.next = (next === undefined ? null : next);
+ * }
+ *
+ * @param {ListNode} head
+ * @param {number} n
+ * @return {ListNode}
+ */
+var removeNthFromEnd = function(head, n) {
+    const dummy = { val: 0, next: head };
+    let fast = dummy, slow = dummy;
+    for (let i = 0; i < n; i++) fast = fast.next;
+    while (fast.next) { fast = fast.next; slow = slow.next; }
+    slow.next = slow.next.next;
+    return dummy.next;
+};`,
+      },
+      typescript: {
+        code: `class ListNode {
+    val: number;
+    next: ListNode | null;
+    constructor(val?: number, next?: ListNode | null) {
+        this.val = val ?? 0;
+        this.next = next ?? null;
+    }
+}
+
+function removeNthFromEnd(head: ListNode | null, n: number): ListNode | null {
+    const dummy = new ListNode(0, head);
+    let fast: ListNode | null = dummy;
+    let slow: ListNode = dummy;
+    for (let i = 0; i < n; i++) fast = fast!.next;
+    while (fast!.next) { fast = fast!.next; slow = slow.next!; }
+    slow.next = slow.next!.next;
+    return dummy.next;
+}`,
+      },
+      go: {
+        code: `// Definition for singly-linked list (LeetCode 提供):
+// type ListNode struct {
+//     Val  int
+//     Next *ListNode
+// }
+func removeNthFromEnd(head *ListNode, n int) *ListNode {
+    dummy := &ListNode{Next: head}
+    fast, slow := dummy, dummy
+    for i := 0; i < n; i++ {
+        fast = fast.Next
+    }
+    for fast.Next != nil {
+        fast = fast.Next
+        slow = slow.Next
+    }
+    slow.Next = slow.Next.Next
+    return dummy.Next
+}`,
+      },
+      rust: {
+        code: `// LeetCode Rust 链表节点：
+// #[derive(PartialEq, Eq, Clone, Debug)]
+// pub struct ListNode {
+//     pub val: i32,
+//     pub next: Option<Box<ListNode>>,
+// }
+// impl ListNode {
+//     #[inline] fn new(val: i32) -> Self { ListNode { next: None, val } }
+// }
+impl Solution {
+    pub fn remove_nth_from_end(head: Option<Box<ListNode>>, n: i32) -> Option<Box<ListNode>> {
+        // 先求长度避免双指针在 Box 链上的可变借用冲突
+        let mut len = 0;
+        {
+            let mut p = head.as_ref();
+            while let Some(node) = p { len += 1; p = node.next.as_ref(); }
+        }
+        let target = len - n; // 要删的节点下标（从 0 起）
+        let mut dummy = Box::new(ListNode { val: 0, next: head });
+        let mut cur = &mut dummy;
+        for _ in 0..target {
+            cur = cur.next.as_mut().unwrap();
+        }
+        let next = cur.next.as_mut().unwrap().next.take();
+        cur.next = next;
+        dummy.next
+    }
+}`,
+        comment:
+          "Rust ownership 妥协：双指针在 Option<Box<ListNode>> 上同时可变借用很难，先扫一遍求长度再单指针走 target 步删除。",
+      },
+      kotlin: {
+        code: `// Definition for singly-linked list (LeetCode 提供):
+// class ListNode(var \`val\`: Int) {
+//     var next: ListNode? = null
+// }
+class Solution {
+    fun removeNthFromEnd(head: ListNode?, n: Int): ListNode? {
+        val dummy = ListNode(0).apply { next = head }
+        var fast: ListNode? = dummy
+        var slow: ListNode? = dummy
+        for (i in 0 until n) fast = fast?.next
+        while (fast?.next != null) {
+            fast = fast.next
+            slow = slow?.next
+        }
+        slow?.next = slow?.next?.next
+        return dummy.next
+    }
+}`,
+      },
+      swift: {
+        code: `// Definition for singly-linked list (LeetCode 提供):
+// public class ListNode {
+//     public var val: Int
+//     public var next: ListNode?
+//     public init() { self.val = 0; self.next = nil }
+//     public init(_ val: Int) { self.val = val; self.next = nil }
+//     public init(_ val: Int, _ next: ListNode?) { self.val = val; self.next = next }
+// }
+class Solution {
+    func removeNthFromEnd(_ head: ListNode?, _ n: Int) -> ListNode? {
+        let dummy = ListNode(0, head)
+        var fast: ListNode? = dummy
+        var slow: ListNode? = dummy
+        for _ in 0..<n { fast = fast?.next }
+        while fast?.next != nil {
+            fast = fast?.next
+            slow = slow?.next
+        }
+        slow?.next = slow?.next?.next
+        return dummy.next
+    }
+}`,
+      },
+    },
+    complexity: { time: "O(n)", space: "O(1)" },
+    keyPoints: "快慢指针保持 n 步差 + dummy 节点统一头尾删除分支。",
+  },
+
+  /* ============================================================== */
+  /*  22. Generate Parentheses (Medium)                              */
+  /* ============================================================== */
+  {
+    id: 22,
+    slug: "generate-parentheses",
+    titleZh: "括号生成",
+    titleEn: "Generate Parentheses",
+    difficulty: "medium",
+    tags: ["回溯", "字符串", "DP"],
+    description: "n 对括号生成所有合法（正确闭合）的括号字符串。",
+    officialUrl: "https://leetcode.cn/problems/generate-parentheses/",
+    approach: `本质：生成长度 2n 的二叉决策树（每位选 ( 或 )），合法性等价"任意前缀 ( 数 ≥ ) 数 且总数各 n"。回溯按 open/close 计数剪枝远比"先生成 2^(2n) 再过滤"高效。
+
+实现要点：递归参数 (path, open, close)。两条剪枝：open < n 才能放 (；close < open 才能放 )（保证任意前缀 ( ≥ )）。当 path 长度 == 2n 时收集答案。用 StringBuilder / list 拼接 + 回退减少字符串拷贝。
+
+陷阱与对比：先穷举 2^(2n) 个候选再过滤合法的，时间 4^n 级，n=8 已经卡。回溯剪枝产出的就是 Catalan 数 C(n)，远小于 4^n。DP 解法 dp[n] = ((dp[i]) dp[n-1-i]) 也行，但代码不如回溯直观。`,
+    solutions: {
+      c: {
+        code: `#include <stdlib.h>
+#include <string.h>
+
+static void dfs(int n, int open, int close, char* path, int len,
+                char** ans, int* cnt) {
+    if (len == 2 * n) {
+        char* s = (char*)malloc(2 * n + 1);
+        memcpy(s, path, 2 * n);
+        s[2 * n] = '\\0';
+        ans[(*cnt)++] = s;
+        return;
+    }
+    if (open < n) {
+        path[len] = '(';
+        dfs(n, open + 1, close, path, len + 1, ans, cnt);
+    }
+    if (close < open) {
+        path[len] = ')';
+        dfs(n, open, close + 1, path, len + 1, ans, cnt);
+    }
+}
+
+char** generateParenthesis(int n, int* returnSize) {
+    /* Catalan(n) 上限，n ≤ 8 时 1430 足够，分配 5000 安全 */
+    char** ans = (char**)malloc(5000 * sizeof(char*));
+    char* path = (char*)malloc(2 * n + 1);
+    int cnt = 0;
+    dfs(n, 0, 0, path, 0, ans, &cnt);
+    free(path);
+    *returnSize = cnt;
+    return ans;
+}`,
+      },
+      cpp: {
+        code: `#include <vector>
+#include <string>
+using namespace std;
+
+class Solution {
+    void dfs(int n, int open, int close, string& path, vector<string>& ans) {
+        if ((int)path.size() == 2 * n) { ans.push_back(path); return; }
+        if (open < n) {
+            path.push_back('(');
+            dfs(n, open + 1, close, path, ans);
+            path.pop_back();
+        }
+        if (close < open) {
+            path.push_back(')');
+            dfs(n, open, close + 1, path, ans);
+            path.pop_back();
+        }
+    }
+public:
+    vector<string> generateParenthesis(int n) {
+        vector<string> ans;
+        string path;
+        path.reserve(2 * n);
+        dfs(n, 0, 0, path, ans);
+        return ans;
+    }
+};`,
+      },
+      python: {
+        code: `from typing import List
+
+class Solution:
+    def generateParenthesis(self, n: int) -> List[str]:
+        ans: List[str] = []
+        path: List[str] = []
+
+        def dfs(open_cnt: int, close_cnt: int) -> None:
+            if len(path) == 2 * n:
+                ans.append("".join(path))
+                return
+            if open_cnt < n:
+                path.append("(")
+                dfs(open_cnt + 1, close_cnt)
+                path.pop()
+            if close_cnt < open_cnt:
+                path.append(")")
+                dfs(open_cnt, close_cnt + 1)
+                path.pop()
+
+        dfs(0, 0)
+        return ans`,
+      },
+      java: {
+        code: `import java.util.*;
+
+class Solution {
+    public List<String> generateParenthesis(int n) {
+        List<String> ans = new ArrayList<>();
+        dfs(n, 0, 0, new StringBuilder(), ans);
+        return ans;
+    }
+
+    private void dfs(int n, int open, int close, StringBuilder path, List<String> ans) {
+        if (path.length() == 2 * n) { ans.add(path.toString()); return; }
+        if (open < n) {
+            path.append('(');
+            dfs(n, open + 1, close, path, ans);
+            path.deleteCharAt(path.length() - 1);
+        }
+        if (close < open) {
+            path.append(')');
+            dfs(n, open, close + 1, path, ans);
+            path.deleteCharAt(path.length() - 1);
+        }
+    }
+}`,
+      },
+      javascript: {
+        code: `/**
+ * @param {number} n
+ * @return {string[]}
+ */
+var generateParenthesis = function(n) {
+    const ans = [];
+    const path = [];
+    const dfs = (open, close) => {
+        if (path.length === 2 * n) { ans.push(path.join("")); return; }
+        if (open < n) {
+            path.push("(");
+            dfs(open + 1, close);
+            path.pop();
+        }
+        if (close < open) {
+            path.push(")");
+            dfs(open, close + 1);
+            path.pop();
+        }
+    };
+    dfs(0, 0);
+    return ans;
+};`,
+      },
+      typescript: {
+        code: `function generateParenthesis(n: number): string[] {
+    const ans: string[] = [];
+    const path: string[] = [];
+    const dfs = (open: number, close: number): void => {
+        if (path.length === 2 * n) { ans.push(path.join("")); return; }
+        if (open < n) {
+            path.push("(");
+            dfs(open + 1, close);
+            path.pop();
+        }
+        if (close < open) {
+            path.push(")");
+            dfs(open, close + 1);
+            path.pop();
+        }
+    };
+    dfs(0, 0);
+    return ans;
+}`,
+      },
+      go: {
+        code: `func generateParenthesis(n int) []string {
+    var ans []string
+    path := make([]byte, 0, 2*n)
+    var dfs func(open, close int)
+    dfs = func(open, close int) {
+        if len(path) == 2*n {
+            ans = append(ans, string(path))
+            return
+        }
+        if open < n {
+            path = append(path, '(')
+            dfs(open+1, close)
+            path = path[:len(path)-1]
+        }
+        if close < open {
+            path = append(path, ')')
+            dfs(open, close+1)
+            path = path[:len(path)-1]
+        }
+    }
+    dfs(0, 0)
+    return ans
+}`,
+      },
+      rust: {
+        code: `impl Solution {
+    pub fn generate_parenthesis(n: i32) -> Vec<String> {
+        let mut ans: Vec<String> = Vec::new();
+        let mut path: Vec<u8> = Vec::with_capacity((2 * n) as usize);
+        fn dfs(n: i32, open: i32, close: i32, path: &mut Vec<u8>, ans: &mut Vec<String>) {
+            if path.len() as i32 == 2 * n {
+                ans.push(String::from_utf8(path.clone()).unwrap());
+                return;
+            }
+            if open < n {
+                path.push(b'(');
+                dfs(n, open + 1, close, path, ans);
+                path.pop();
+            }
+            if close < open {
+                path.push(b')');
+                dfs(n, open, close + 1, path, ans);
+                path.pop();
+            }
+        }
+        dfs(n, 0, 0, &mut path, &mut ans);
+        ans
+    }
+}`,
+      },
+      kotlin: {
+        code: `class Solution {
+    fun generateParenthesis(n: Int): List<String> {
+        val ans = mutableListOf<String>()
+        val path = StringBuilder()
+        fun dfs(open: Int, close: Int) {
+            if (path.length == 2 * n) { ans.add(path.toString()); return }
+            if (open < n) {
+                path.append('(')
+                dfs(open + 1, close)
+                path.deleteCharAt(path.length - 1)
+            }
+            if (close < open) {
+                path.append(')')
+                dfs(open, close + 1)
+                path.deleteCharAt(path.length - 1)
+            }
+        }
+        dfs(0, 0)
+        return ans
+    }
+}`,
+      },
+      swift: {
+        code: `class Solution {
+    func generateParenthesis(_ n: Int) -> [String] {
+        var ans: [String] = []
+        var path: [Character] = []
+        func dfs(_ open: Int, _ close: Int) {
+            if path.count == 2 * n { ans.append(String(path)); return }
+            if open < n {
+                path.append("(")
+                dfs(open + 1, close)
+                path.removeLast()
+            }
+            if close < open {
+                path.append(")")
+                dfs(open, close + 1)
+                path.removeLast()
+            }
+        }
+        dfs(0, 0)
+        return ans
+    }
+}`,
+      },
+    },
+    complexity: { time: "O(C(n)) ≈ O(4^n / √n)", space: "O(n) 递归栈" },
+    keyPoints: "open/close 双计数剪枝：open < n 可加左，close < open 才能加右。",
+  },
+
+  /* ============================================================== */
+  /*  23. Merge k Sorted Lists (Hard)                                */
+  /* ============================================================== */
+  {
+    id: 23,
+    slug: "merge-k-sorted-lists",
+    titleZh: "合并 K 个升序链表",
+    titleEn: "Merge k Sorted Lists",
+    difficulty: "hard",
+    tags: ["链表", "分治", "堆"],
+    description: "k 个升序链表合并为一个升序链表，返回新链表头。",
+    officialUrl: "https://leetcode.cn/problems/merge-k-sorted-lists/",
+    approach: `本质：把"合并 2 个有序链表"扩展到 k 个。两两分治合并是最稳的写法：第 1 轮合并 k/2 对、第 2 轮 k/4 对…共 log k 轮，每轮总节点数 N，总时间 O(N log k)。
+
+实现要点：写一个 mergeTwo(a, b) 子过程（哑节点 + 双指针）；外层循环每次把 lists[i] 和 lists[i + step] 合并到 lists[i]，step 翻倍直到 step ≥ k。最终 lists[0] 即答案。空数组、单链表都能被这个框架自然处理。
+
+陷阱与对比：朴素逐个合并 O(N · k)，k=10⁴ 时被卡。最小堆方案 O(N log k) 同样最优，但不是所有语言都自带堆（C/JS/Swift 要自写），分治在每语言都易写。把所有节点 val 倒进数组排序再串成链表 O(N log N) 也行但破坏了"链表合并"的考点。`,
+    solutions: {
+      c: {
+        code: `#include <stdlib.h>
+
+struct ListNode {
+    int val;
+    struct ListNode *next;
+};
+
+static struct ListNode* mergeTwo(struct ListNode* a, struct ListNode* b) {
+    struct ListNode dummy;
+    dummy.next = NULL;
+    struct ListNode* tail = &dummy;
+    while (a && b) {
+        if (a->val <= b->val) { tail->next = a; a = a->next; }
+        else                  { tail->next = b; b = b->next; }
+        tail = tail->next;
+    }
+    tail->next = a ? a : b;
+    return dummy.next;
+}
+
+struct ListNode* mergeKLists(struct ListNode** lists, int listsSize) {
+    if (listsSize == 0) return NULL;
+    int step = 1;
+    while (step < listsSize) {
+        for (int i = 0; i + step < listsSize; i += 2 * step) {
+            lists[i] = mergeTwo(lists[i], lists[i + step]);
+        }
+        step *= 2;
+    }
+    return lists[0];
+}`,
+      },
+      cpp: {
+        code: `#include <vector>
+#include <cstddef>
+using namespace std;
+
+struct ListNode {
+    int val;
+    ListNode *next;
+    ListNode() : val(0), next(nullptr) {}
+    ListNode(int x) : val(x), next(nullptr) {}
+    ListNode(int x, ListNode *n) : val(x), next(n) {}
+};
+
+class Solution {
+    ListNode* mergeTwo(ListNode* a, ListNode* b) {
+        ListNode dummy;
+        ListNode* tail = &dummy;
+        while (a && b) {
+            if (a->val <= b->val) { tail->next = a; a = a->next; }
+            else                  { tail->next = b; b = b->next; }
+            tail = tail->next;
+        }
+        tail->next = a ? a : b;
+        return dummy.next;
+    }
+public:
+    ListNode* mergeKLists(vector<ListNode*>& lists) {
+        int n = (int)lists.size();
+        if (n == 0) return nullptr;
+        int step = 1;
+        while (step < n) {
+            for (int i = 0; i + step < n; i += 2 * step) {
+                lists[i] = mergeTwo(lists[i], lists[i + step]);
+            }
+            step *= 2;
+        }
+        return lists[0];
+    }
+};`,
+      },
+      python: {
+        code: `from typing import List, Optional
+
+class ListNode:
+    def __init__(self, val: int = 0, next: "Optional[ListNode]" = None):
+        self.val = val
+        self.next = next
+
+class Solution:
+    def mergeKLists(self, lists: List[Optional[ListNode]]) -> Optional[ListNode]:
+        if not lists:
+            return None
+        n = len(lists)
+        step = 1
+        while step < n:
+            for i in range(0, n - step, 2 * step):
+                lists[i] = self._merge_two(lists[i], lists[i + step])
+            step *= 2
+        return lists[0]
+
+    def _merge_two(
+        self,
+        a: Optional[ListNode],
+        b: Optional[ListNode],
+    ) -> Optional[ListNode]:
+        dummy = ListNode()
+        tail = dummy
+        while a and b:
+            if a.val <= b.val:
+                tail.next = a; a = a.next
+            else:
+                tail.next = b; b = b.next
+            tail = tail.next
+        tail.next = a if a else b
+        return dummy.next`,
+      },
+      java: {
+        code: `// Definition for singly-linked list (LeetCode 提供):
+// public class ListNode {
+//     int val; ListNode next;
+//     ListNode() {}
+//     ListNode(int val) { this.val = val; }
+//     ListNode(int val, ListNode next) { this.val = val; this.next = next; }
+// }
+class Solution {
+    public ListNode mergeKLists(ListNode[] lists) {
+        int n = lists.length;
+        if (n == 0) return null;
+        int step = 1;
+        while (step < n) {
+            for (int i = 0; i + step < n; i += 2 * step) {
+                lists[i] = mergeTwo(lists[i], lists[i + step]);
+            }
+            step *= 2;
+        }
+        return lists[0];
+    }
+
+    private ListNode mergeTwo(ListNode a, ListNode b) {
+        ListNode dummy = new ListNode();
+        ListNode tail = dummy;
+        while (a != null && b != null) {
+            if (a.val <= b.val) { tail.next = a; a = a.next; }
+            else                { tail.next = b; b = b.next; }
+            tail = tail.next;
+        }
+        tail.next = (a != null) ? a : b;
+        return dummy.next;
+    }
+}`,
+      },
+      javascript: {
+        code: `/**
+ * Definition for singly-linked list:
+ * function ListNode(val, next) {
+ *     this.val = (val === undefined ? 0 : val);
+ *     this.next = (next === undefined ? null : next);
+ * }
+ *
+ * @param {ListNode[]} lists
+ * @return {ListNode}
+ */
+var mergeKLists = function(lists) {
+    const n = lists.length;
+    if (n === 0) return null;
+    const mergeTwo = (a, b) => {
+        const dummy = { val: 0, next: null };
+        let tail = dummy;
+        while (a && b) {
+            if (a.val <= b.val) { tail.next = a; a = a.next; }
+            else                { tail.next = b; b = b.next; }
+            tail = tail.next;
+        }
+        tail.next = a || b;
+        return dummy.next;
+    };
+    let step = 1;
+    while (step < n) {
+        for (let i = 0; i + step < n; i += 2 * step) {
+            lists[i] = mergeTwo(lists[i], lists[i + step]);
+        }
+        step *= 2;
+    }
+    return lists[0];
+};`,
+      },
+      typescript: {
+        code: `class ListNode {
+    val: number;
+    next: ListNode | null;
+    constructor(val?: number, next?: ListNode | null) {
+        this.val = val ?? 0;
+        this.next = next ?? null;
+    }
+}
+
+function mergeKLists(lists: Array<ListNode | null>): ListNode | null {
+    const n = lists.length;
+    if (n === 0) return null;
+    const mergeTwo = (a: ListNode | null, b: ListNode | null): ListNode | null => {
+        const dummy = new ListNode();
+        let tail = dummy;
+        while (a && b) {
+            if (a.val <= b.val) { tail.next = a; a = a.next; }
+            else                { tail.next = b; b = b.next; }
+            tail = tail.next;
+        }
+        tail.next = a ?? b;
+        return dummy.next;
+    };
+    let step = 1;
+    while (step < n) {
+        for (let i = 0; i + step < n; i += 2 * step) {
+            lists[i] = mergeTwo(lists[i], lists[i + step]);
+        }
+        step *= 2;
+    }
+    return lists[0];
+}`,
+      },
+      go: {
+        code: `// Definition for singly-linked list (LeetCode 提供):
+// type ListNode struct {
+//     Val  int
+//     Next *ListNode
+// }
+func mergeKLists(lists []*ListNode) *ListNode {
+    n := len(lists)
+    if n == 0 {
+        return nil
+    }
+    mergeTwo := func(a, b *ListNode) *ListNode {
+        dummy := &ListNode{}
+        tail := dummy
+        for a != nil && b != nil {
+            if a.Val <= b.Val {
+                tail.Next = a
+                a = a.Next
+            } else {
+                tail.Next = b
+                b = b.Next
+            }
+            tail = tail.Next
+        }
+        if a != nil {
+            tail.Next = a
+        } else {
+            tail.Next = b
+        }
+        return dummy.Next
+    }
+    step := 1
+    for step < n {
+        for i := 0; i+step < n; i += 2 * step {
+            lists[i] = mergeTwo(lists[i], lists[i+step])
+        }
+        step *= 2
+    }
+    return lists[0]
+}`,
+      },
+      rust: {
+        code: `// LeetCode Rust 链表节点：Option<Box<ListNode>>
+impl Solution {
+    pub fn merge_k_lists(lists: Vec<Option<Box<ListNode>>>) -> Option<Box<ListNode>> {
+        let mut lists = lists;
+        let n = lists.len();
+        if n == 0 { return None; }
+        let mut step = 1;
+        while step < n {
+            let mut i = 0;
+            while i + step < n {
+                let b = lists[i + step].take();
+                let a = lists[i].take();
+                lists[i] = Self::merge_two(a, b);
+                i += 2 * step;
+            }
+            step *= 2;
+        }
+        lists[0].take()
+    }
+
+    fn merge_two(
+        mut a: Option<Box<ListNode>>,
+        mut b: Option<Box<ListNode>>,
+    ) -> Option<Box<ListNode>> {
+        let mut dummy = Box::new(ListNode::new(0));
+        let mut tail = &mut dummy;
+        while a.is_some() && b.is_some() {
+            let take_a = a.as_ref().unwrap().val <= b.as_ref().unwrap().val;
+            if take_a {
+                let mut node = a.take().unwrap();
+                a = node.next.take();
+                tail.next = Some(node);
+            } else {
+                let mut node = b.take().unwrap();
+                b = node.next.take();
+                tail.next = Some(node);
+            }
+            tail = tail.next.as_mut().unwrap();
+        }
+        tail.next = if a.is_some() { a } else { b };
+        dummy.next
+    }
+}`,
+        comment:
+          "Rust ownership 妥协：用 take() 把 lists[i] 取出再嫁接，避免同时可变借用两个 slot。",
+      },
+      kotlin: {
+        code: `// Definition for singly-linked list (LeetCode 提供):
+// class ListNode(var \`val\`: Int) {
+//     var next: ListNode? = null
+// }
+class Solution {
+    fun mergeKLists(lists: Array<ListNode?>): ListNode? {
+        val n = lists.size
+        if (n == 0) return null
+        var step = 1
+        while (step < n) {
+            var i = 0
+            while (i + step < n) {
+                lists[i] = mergeTwo(lists[i], lists[i + step])
+                i += 2 * step
+            }
+            step *= 2
+        }
+        return lists[0]
+    }
+
+    private fun mergeTwo(a0: ListNode?, b0: ListNode?): ListNode? {
+        val dummy = ListNode(0)
+        var tail = dummy
+        var a = a0; var b = b0
+        while (a != null && b != null) {
+            if (a.\`val\` <= b.\`val\`) { tail.next = a; a = a.next }
+            else                       { tail.next = b; b = b.next }
+            tail = tail.next!!
+        }
+        tail.next = a ?: b
+        return dummy.next
+    }
+}`,
+      },
+      swift: {
+        code: `// Definition for singly-linked list (LeetCode 提供):
+// public class ListNode {
+//     public var val: Int
+//     public var next: ListNode?
+//     public init() { self.val = 0; self.next = nil }
+//     public init(_ val: Int) { self.val = val; self.next = nil }
+//     public init(_ val: Int, _ next: ListNode?) { self.val = val; self.next = next }
+// }
+class Solution {
+    func mergeKLists(_ lists: [ListNode?]) -> ListNode? {
+        var lists = lists
+        let n = lists.count
+        if n == 0 { return nil }
+        var step = 1
+        while step < n {
+            var i = 0
+            while i + step < n {
+                lists[i] = mergeTwo(lists[i], lists[i + step])
+                i += 2 * step
+            }
+            step *= 2
+        }
+        return lists[0]
+    }
+
+    private func mergeTwo(_ a0: ListNode?, _ b0: ListNode?) -> ListNode? {
+        let dummy = ListNode()
+        var tail = dummy
+        var a = a0, b = b0
+        while let na = a, let nb = b {
+            if na.val <= nb.val { tail.next = na; a = na.next }
+            else                { tail.next = nb; b = nb.next }
+            tail = tail.next!
+        }
+        tail.next = a ?? b
+        return dummy.next
+    }
+}`,
+      },
+    },
+    complexity: { time: "O(N log k)", space: "O(1) 额外（不算原节点）" },
+    keyPoints: "两两分治合并：log k 轮，每轮线性扫所有节点。",
+  },
+
+  /* ============================================================== */
+  /*  24. Swap Nodes in Pairs (Medium)                               */
+  /* ============================================================== */
+  {
+    id: 24,
+    slug: "swap-nodes-in-pairs",
+    titleZh: "两两交换链表中的节点",
+    titleEn: "Swap Nodes in Pairs",
+    difficulty: "medium",
+    tags: ["链表", "递归"],
+    description: "把链表中相邻每两个节点两两交换位置，返回新头。",
+    officialUrl: "https://leetcode.cn/problems/swap-nodes-in-pairs/",
+    approach: `本质：每次操作三个指针——前驱 prev、第一个 a、第二个 b。把 a 和 b 互换后，prev 指向 b，a 指向 b 原来的下一个，b 指向 a；然后 prev 推进到 a（即新的尾），继续下一对。
+
+实现要点：用 dummy 节点充当初始 prev。循环条件：prev.next != null 且 prev.next.next != null（保证后面还有完整一对）。三指针赋值要小心顺序：先存 a.next = b.next，再 b.next = a，再 prev.next = b，最后 prev = a 推进。
+
+陷阱与对比：递归写法 swap(head) = b -> swap(b.next原)，代码极短（4 行）但 O(n) 栈空间。迭代 O(1) 空间面试更稳。容易写错的就是指针顺序——稍微交换一下顺序就会断链。可以画图验证。`,
+    solutions: {
+      c: {
+        code: `#include <stdlib.h>
+
+struct ListNode {
+    int val;
+    struct ListNode *next;
+};
+
+struct ListNode* swapPairs(struct ListNode* head) {
+    struct ListNode dummy;
+    dummy.next = head;
+    struct ListNode* prev = &dummy;
+    while (prev->next && prev->next->next) {
+        struct ListNode* a = prev->next;
+        struct ListNode* b = a->next;
+        a->next = b->next;
+        b->next = a;
+        prev->next = b;
+        prev = a;
+    }
+    return dummy.next;
+}`,
+      },
+      cpp: {
+        code: `#include <cstddef>
+
+struct ListNode {
+    int val;
+    ListNode *next;
+    ListNode() : val(0), next(nullptr) {}
+    ListNode(int x) : val(x), next(nullptr) {}
+    ListNode(int x, ListNode *n) : val(x), next(n) {}
+};
+
+class Solution {
+public:
+    ListNode* swapPairs(ListNode* head) {
+        ListNode dummy(0, head);
+        ListNode* prev = &dummy;
+        while (prev->next && prev->next->next) {
+            ListNode* a = prev->next;
+            ListNode* b = a->next;
+            a->next = b->next;
+            b->next = a;
+            prev->next = b;
+            prev = a;
+        }
+        return dummy.next;
+    }
+};`,
+      },
+      python: {
+        code: `from typing import Optional
+
+class ListNode:
+    def __init__(self, val: int = 0, next: "Optional[ListNode]" = None):
+        self.val = val
+        self.next = next
+
+class Solution:
+    def swapPairs(self, head: Optional[ListNode]) -> Optional[ListNode]:
+        dummy = ListNode(0, head)
+        prev = dummy
+        while prev.next and prev.next.next:
+            a = prev.next
+            b = a.next
+            a.next = b.next
+            b.next = a
+            prev.next = b
+            prev = a
+        return dummy.next`,
+      },
+      java: {
+        code: `// Definition for singly-linked list (LeetCode 提供):
+// public class ListNode {
+//     int val; ListNode next;
+//     ListNode() {}
+//     ListNode(int val) { this.val = val; }
+//     ListNode(int val, ListNode next) { this.val = val; this.next = next; }
+// }
+class Solution {
+    public ListNode swapPairs(ListNode head) {
+        ListNode dummy = new ListNode(0, head);
+        ListNode prev = dummy;
+        while (prev.next != null && prev.next.next != null) {
+            ListNode a = prev.next;
+            ListNode b = a.next;
+            a.next = b.next;
+            b.next = a;
+            prev.next = b;
+            prev = a;
+        }
+        return dummy.next;
+    }
+}`,
+      },
+      javascript: {
+        code: `/**
+ * Definition for singly-linked list:
+ * function ListNode(val, next) {
+ *     this.val = (val === undefined ? 0 : val);
+ *     this.next = (next === undefined ? null : next);
+ * }
+ *
+ * @param {ListNode} head
+ * @return {ListNode}
+ */
+var swapPairs = function(head) {
+    const dummy = { val: 0, next: head };
+    let prev = dummy;
+    while (prev.next && prev.next.next) {
+        const a = prev.next;
+        const b = a.next;
+        a.next = b.next;
+        b.next = a;
+        prev.next = b;
+        prev = a;
+    }
+    return dummy.next;
+};`,
+      },
+      typescript: {
+        code: `class ListNode {
+    val: number;
+    next: ListNode | null;
+    constructor(val?: number, next?: ListNode | null) {
+        this.val = val ?? 0;
+        this.next = next ?? null;
+    }
+}
+
+function swapPairs(head: ListNode | null): ListNode | null {
+    const dummy = new ListNode(0, head);
+    let prev: ListNode = dummy;
+    while (prev.next && prev.next.next) {
+        const a = prev.next;
+        const b = a.next!;
+        a.next = b.next;
+        b.next = a;
+        prev.next = b;
+        prev = a;
+    }
+    return dummy.next;
+}`,
+      },
+      go: {
+        code: `// Definition for singly-linked list (LeetCode 提供):
+// type ListNode struct {
+//     Val  int
+//     Next *ListNode
+// }
+func swapPairs(head *ListNode) *ListNode {
+    dummy := &ListNode{Next: head}
+    prev := dummy
+    for prev.Next != nil && prev.Next.Next != nil {
+        a := prev.Next
+        b := a.Next
+        a.Next = b.Next
+        b.Next = a
+        prev.Next = b
+        prev = a
+    }
+    return dummy.Next
+}`,
+      },
+      rust: {
+        code: `// LeetCode Rust 链表节点：Option<Box<ListNode>>
+impl Solution {
+    pub fn swap_pairs(head: Option<Box<ListNode>>) -> Option<Box<ListNode>> {
+        // 递归写法在 Rust 上比迭代易处理 ownership：
+        // swap(head) = b -> a -> swap(rest)
+        match head {
+            None => None,
+            Some(mut a) => match a.next.take() {
+                None => Some(a),
+                Some(mut b) => {
+                    a.next = Self::swap_pairs(b.next.take());
+                    b.next = Some(a);
+                    Some(b)
+                }
+            }
+        }
+    }
+}`,
+        comment:
+          "Rust 用递归而非迭代：迭代里需要同时持有 prev/a/b 三个 Box 的可变借用，借用检查不通过；递归靠 take() 转移所有权天然干净。",
+      },
+      kotlin: {
+        code: `// Definition for singly-linked list (LeetCode 提供):
+// class ListNode(var \`val\`: Int) {
+//     var next: ListNode? = null
+// }
+class Solution {
+    fun swapPairs(head: ListNode?): ListNode? {
+        val dummy = ListNode(0).apply { next = head }
+        var prev: ListNode = dummy
+        while (prev.next != null && prev.next!!.next != null) {
+            val a = prev.next!!
+            val b = a.next!!
+            a.next = b.next
+            b.next = a
+            prev.next = b
+            prev = a
+        }
+        return dummy.next
+    }
+}`,
+      },
+      swift: {
+        code: `// Definition for singly-linked list (LeetCode 提供):
+// public class ListNode {
+//     public var val: Int
+//     public var next: ListNode?
+//     public init() { self.val = 0; self.next = nil }
+//     public init(_ val: Int) { self.val = val; self.next = nil }
+//     public init(_ val: Int, _ next: ListNode?) { self.val = val; self.next = next }
+// }
+class Solution {
+    func swapPairs(_ head: ListNode?) -> ListNode? {
+        let dummy = ListNode(0, head)
+        var prev: ListNode = dummy
+        while prev.next != nil && prev.next?.next != nil {
+            let a = prev.next!
+            let b = a.next!
+            a.next = b.next
+            b.next = a
+            prev.next = b
+            prev = a
+        }
+        return dummy.next
+    }
+}`,
+      },
+    },
+    complexity: { time: "O(n)", space: "O(1)" },
+    keyPoints: "dummy + 三指针严格顺序：先断 a.next，再 b.next=a，最后 prev.next=b。",
+  },
+
+  /* ============================================================== */
+  /*  33. Search in Rotated Sorted Array (Medium)                    */
+  /* ============================================================== */
+  {
+    id: 33,
+    slug: "search-in-rotated-sorted-array",
+    titleZh: "搜索旋转排序数组",
+    titleEn: "Search in Rotated Sorted Array",
+    difficulty: "medium",
+    tags: ["数组", "二分查找"],
+    description: "升序数组在某点被旋转过，O(log n) 内查找目标值的下标。",
+    officialUrl: "https://leetcode.cn/problems/search-in-rotated-sorted-array/",
+    approach: `本质：旋转后数组被分成两段升序子数组，但用二分仍可，因为任意 mid 把数组切两半后，至少有一半是完整有序的，可以直接判断 target 是否落在那一半范围内。
+
+实现要点：l, r 标准二分。每轮算 mid，先看 nums[mid] 是否命中；否则比较 nums[l] 和 nums[mid]：若 nums[l] <= nums[mid]，左半段有序——target 是否在 [nums[l], nums[mid]) 决定走左还是右；否则右半段有序——target 是否在 (nums[mid], nums[r]] 决定。
+
+陷阱与对比：必须用 <=（不是 <）判左半有序，否则 l == mid 单元素的边界出错。target 范围比较要左闭右开 / 左开右闭对应清楚。线性扫 O(n) 当然能做但浪费"有序"信息。有重复元素的版本（81 题）需特殊处理 nums[l] == nums[mid] 的情况，本题元素唯一。`,
+    solutions: {
+      c: {
+        code: `int search(int* nums, int numsSize, int target) {
+    int l = 0, r = numsSize - 1;
+    while (l <= r) {
+        int mid = l + (r - l) / 2;
+        if (nums[mid] == target) return mid;
+        if (nums[l] <= nums[mid]) {
+            if (nums[l] <= target && target < nums[mid]) r = mid - 1;
+            else l = mid + 1;
+        } else {
+            if (nums[mid] < target && target <= nums[r]) l = mid + 1;
+            else r = mid - 1;
+        }
+    }
+    return -1;
+}`,
+      },
+      cpp: {
+        code: `#include <vector>
+using namespace std;
+
+class Solution {
+public:
+    int search(vector<int>& nums, int target) {
+        int l = 0, r = (int)nums.size() - 1;
+        while (l <= r) {
+            int mid = l + (r - l) / 2;
+            if (nums[mid] == target) return mid;
+            if (nums[l] <= nums[mid]) {
+                if (nums[l] <= target && target < nums[mid]) r = mid - 1;
+                else l = mid + 1;
+            } else {
+                if (nums[mid] < target && target <= nums[r]) l = mid + 1;
+                else r = mid - 1;
+            }
+        }
+        return -1;
+    }
+};`,
+      },
+      python: {
+        code: `from typing import List
+
+class Solution:
+    def search(self, nums: List[int], target: int) -> int:
+        l, r = 0, len(nums) - 1
+        while l <= r:
+            mid = (l + r) // 2
+            if nums[mid] == target:
+                return mid
+            if nums[l] <= nums[mid]:  # 左半段有序
+                if nums[l] <= target < nums[mid]:
+                    r = mid - 1
+                else:
+                    l = mid + 1
+            else:                     # 右半段有序
+                if nums[mid] < target <= nums[r]:
+                    l = mid + 1
+                else:
+                    r = mid - 1
+        return -1`,
+      },
+      java: {
+        code: `class Solution {
+    public int search(int[] nums, int target) {
+        int l = 0, r = nums.length - 1;
+        while (l <= r) {
+            int mid = l + (r - l) / 2;
+            if (nums[mid] == target) return mid;
+            if (nums[l] <= nums[mid]) {
+                if (nums[l] <= target && target < nums[mid]) r = mid - 1;
+                else l = mid + 1;
+            } else {
+                if (nums[mid] < target && target <= nums[r]) l = mid + 1;
+                else r = mid - 1;
+            }
+        }
+        return -1;
+    }
+}`,
+      },
+      javascript: {
+        code: `/**
+ * @param {number[]} nums
+ * @param {number} target
+ * @return {number}
+ */
+var search = function(nums, target) {
+    let l = 0, r = nums.length - 1;
+    while (l <= r) {
+        const mid = (l + r) >> 1;
+        if (nums[mid] === target) return mid;
+        if (nums[l] <= nums[mid]) {
+            if (nums[l] <= target && target < nums[mid]) r = mid - 1;
+            else l = mid + 1;
+        } else {
+            if (nums[mid] < target && target <= nums[r]) l = mid + 1;
+            else r = mid - 1;
+        }
+    }
+    return -1;
+};`,
+      },
+      typescript: {
+        code: `function search(nums: number[], target: number): number {
+    let l = 0, r = nums.length - 1;
+    while (l <= r) {
+        const mid = (l + r) >> 1;
+        if (nums[mid] === target) return mid;
+        if (nums[l] <= nums[mid]) {
+            if (nums[l] <= target && target < nums[mid]) r = mid - 1;
+            else l = mid + 1;
+        } else {
+            if (nums[mid] < target && target <= nums[r]) l = mid + 1;
+            else r = mid - 1;
+        }
+    }
+    return -1;
+}`,
+      },
+      go: {
+        code: `func search(nums []int, target int) int {
+    l, r := 0, len(nums)-1
+    for l <= r {
+        mid := (l + r) / 2
+        if nums[mid] == target {
+            return mid
+        }
+        if nums[l] <= nums[mid] {
+            if nums[l] <= target && target < nums[mid] {
+                r = mid - 1
+            } else {
+                l = mid + 1
+            }
+        } else {
+            if nums[mid] < target && target <= nums[r] {
+                l = mid + 1
+            } else {
+                r = mid - 1
+            }
+        }
+    }
+    return -1
+}`,
+      },
+      rust: {
+        code: `impl Solution {
+    pub fn search(nums: Vec<i32>, target: i32) -> i32 {
+        let (mut l, mut r) = (0_i32, nums.len() as i32 - 1);
+        while l <= r {
+            let mid = l + (r - l) / 2;
+            let m = mid as usize;
+            if nums[m] == target { return mid; }
+            if nums[l as usize] <= nums[m] {
+                if nums[l as usize] <= target && target < nums[m] { r = mid - 1; }
+                else                                               { l = mid + 1; }
+            } else {
+                if nums[m] < target && target <= nums[r as usize] { l = mid + 1; }
+                else                                               { r = mid - 1; }
+            }
+        }
+        -1
+    }
+}`,
+      },
+      kotlin: {
+        code: `class Solution {
+    fun search(nums: IntArray, target: Int): Int {
+        var l = 0; var r = nums.size - 1
+        while (l <= r) {
+            val mid = (l + r) ushr 1
+            if (nums[mid] == target) return mid
+            if (nums[l] <= nums[mid]) {
+                if (nums[l] <= target && target < nums[mid]) r = mid - 1 else l = mid + 1
+            } else {
+                if (nums[mid] < target && target <= nums[r]) l = mid + 1 else r = mid - 1
+            }
+        }
+        return -1
+    }
+}`,
+      },
+      swift: {
+        code: `class Solution {
+    func search(_ nums: [Int], _ target: Int) -> Int {
+        var l = 0, r = nums.count - 1
+        while l <= r {
+            let mid = (l + r) / 2
+            if nums[mid] == target { return mid }
+            if nums[l] <= nums[mid] {
+                if nums[l] <= target && target < nums[mid] { r = mid - 1 }
+                else                                       { l = mid + 1 }
+            } else {
+                if nums[mid] < target && target <= nums[r] { l = mid + 1 }
+                else                                       { r = mid - 1 }
+            }
+        }
+        return -1
+    }
+}`,
+      },
+    },
+    complexity: { time: "O(log n)", space: "O(1)" },
+    keyPoints: "二分时先判断哪一半有序（nums[l] <= nums[mid]），再看 target 是否落在该半。",
+  },
+
+  /* ============================================================== */
+  /*  34. Find First and Last Position of Element in Sorted Array    */
+  /* ============================================================== */
+  {
+    id: 34,
+    slug: "find-first-and-last-position-of-element-in-sorted-array",
+    titleZh: "在排序数组中查找元素的第一个和最后一个位置",
+    titleEn: "Find First and Last Position of Element in Sorted Array",
+    difficulty: "medium",
+    tags: ["数组", "二分查找"],
+    description: "有序数组里返回目标值首尾下标，没有返回 [-1, -1]。",
+    officialUrl: "https://leetcode.cn/problems/find-first-and-last-position-of-element-in-sorted-array/",
+    approach: `本质：两次二分分别求 lower_bound（第一个 >= target）和 upper_bound（第一个 > target）。前者就是首位置；后者减 1 是末位置；判 lower_bound 是否真等于 target 决定是否返回 [-1, -1]。
+
+实现要点：写一个统一 lowerBound(target)：当 nums[mid] < target 时 l = mid + 1，否则 r = mid，循环 while l < r，结束后 l 是第一个不小于 target 的位置。upperBound(target) 等价 lowerBound(target + 1)。两次调用分别得 lo 和 hi - 1。
+
+陷阱与对比：朴素 O(n) 线扫当然能做但浪费有序。用闭区间 [l, r] 二分也可但循环条件、收缩量更易写错；左闭右开 [l, r) 模板（while l < r, r = mid）最不容易出错。要小心 lo == n 或 nums[lo] != target 的"未命中"边界。`,
+    solutions: {
+      c: {
+        code: `#include <stdlib.h>
+
+static int lowerBound(int* nums, int n, int target) {
+    int l = 0, r = n;
+    while (l < r) {
+        int mid = l + (r - l) / 2;
+        if (nums[mid] < target) l = mid + 1;
+        else r = mid;
+    }
+    return l;
+}
+
+int* searchRange(int* nums, int numsSize, int target, int* returnSize) {
+    int* ans = (int*)malloc(2 * sizeof(int));
+    *returnSize = 2;
+    int lo = lowerBound(nums, numsSize, target);
+    int hi = lowerBound(nums, numsSize, target + 1) - 1;
+    if (lo == numsSize || nums[lo] != target) {
+        ans[0] = -1; ans[1] = -1;
+    } else {
+        ans[0] = lo; ans[1] = hi;
+    }
+    return ans;
+}`,
+      },
+      cpp: {
+        code: `#include <vector>
+using namespace std;
+
+class Solution {
+    int lowerBound(vector<int>& nums, int target) {
+        int l = 0, r = (int)nums.size();
+        while (l < r) {
+            int mid = l + (r - l) / 2;
+            if (nums[mid] < target) l = mid + 1;
+            else r = mid;
+        }
+        return l;
+    }
+public:
+    vector<int> searchRange(vector<int>& nums, int target) {
+        int lo = lowerBound(nums, target);
+        int hi = lowerBound(nums, target + 1) - 1;
+        if (lo == (int)nums.size() || nums[lo] != target) return {-1, -1};
+        return {lo, hi};
+    }
+};`,
+      },
+      python: {
+        code: `from typing import List
+
+class Solution:
+    def searchRange(self, nums: List[int], target: int) -> List[int]:
+        def lower_bound(t: int) -> int:
+            l, r = 0, len(nums)
+            while l < r:
+                mid = (l + r) // 2
+                if nums[mid] < t:
+                    l = mid + 1
+                else:
+                    r = mid
+            return l
+
+        lo = lower_bound(target)
+        hi = lower_bound(target + 1) - 1
+        if lo == len(nums) or nums[lo] != target:
+            return [-1, -1]
+        return [lo, hi]`,
+      },
+      java: {
+        code: `class Solution {
+    public int[] searchRange(int[] nums, int target) {
+        int lo = lowerBound(nums, target);
+        int hi = lowerBound(nums, target + 1) - 1;
+        if (lo == nums.length || nums[lo] != target) return new int[]{-1, -1};
+        return new int[]{lo, hi};
+    }
+
+    private int lowerBound(int[] nums, int target) {
+        int l = 0, r = nums.length;
+        while (l < r) {
+            int mid = l + (r - l) / 2;
+            if (nums[mid] < target) l = mid + 1;
+            else r = mid;
+        }
+        return l;
+    }
+}`,
+      },
+      javascript: {
+        code: `/**
+ * @param {number[]} nums
+ * @param {number} target
+ * @return {number[]}
+ */
+var searchRange = function(nums, target) {
+    const lowerBound = (t) => {
+        let l = 0, r = nums.length;
+        while (l < r) {
+            const mid = (l + r) >> 1;
+            if (nums[mid] < t) l = mid + 1;
+            else r = mid;
+        }
+        return l;
+    };
+    const lo = lowerBound(target);
+    const hi = lowerBound(target + 1) - 1;
+    if (lo === nums.length || nums[lo] !== target) return [-1, -1];
+    return [lo, hi];
+};`,
+      },
+      typescript: {
+        code: `function searchRange(nums: number[], target: number): number[] {
+    const lowerBound = (t: number): number => {
+        let l = 0, r = nums.length;
+        while (l < r) {
+            const mid = (l + r) >> 1;
+            if (nums[mid] < t) l = mid + 1;
+            else r = mid;
+        }
+        return l;
+    };
+    const lo = lowerBound(target);
+    const hi = lowerBound(target + 1) - 1;
+    if (lo === nums.length || nums[lo] !== target) return [-1, -1];
+    return [lo, hi];
+}`,
+      },
+      go: {
+        code: `func searchRange(nums []int, target int) []int {
+    lowerBound := func(t int) int {
+        l, r := 0, len(nums)
+        for l < r {
+            mid := (l + r) / 2
+            if nums[mid] < t {
+                l = mid + 1
+            } else {
+                r = mid
+            }
+        }
+        return l
+    }
+    lo := lowerBound(target)
+    hi := lowerBound(target+1) - 1
+    if lo == len(nums) || nums[lo] != target {
+        return []int{-1, -1}
+    }
+    return []int{lo, hi}
+}`,
+      },
+      rust: {
+        code: `impl Solution {
+    pub fn search_range(nums: Vec<i32>, target: i32) -> Vec<i32> {
+        fn lower_bound(nums: &[i32], t: i32) -> i32 {
+            let (mut l, mut r) = (0_i32, nums.len() as i32);
+            while l < r {
+                let mid = l + (r - l) / 2;
+                if nums[mid as usize] < t { l = mid + 1; } else { r = mid; }
+            }
+            l
+        }
+        let lo = lower_bound(&nums, target);
+        let hi = lower_bound(&nums, target + 1) - 1;
+        if lo == nums.len() as i32 || nums[lo as usize] != target {
+            return vec![-1, -1];
+        }
+        vec![lo, hi]
+    }
+}`,
+      },
+      kotlin: {
+        code: `class Solution {
+    fun searchRange(nums: IntArray, target: Int): IntArray {
+        fun lowerBound(t: Int): Int {
+            var l = 0; var r = nums.size
+            while (l < r) {
+                val mid = (l + r) ushr 1
+                if (nums[mid] < t) l = mid + 1 else r = mid
+            }
+            return l
+        }
+        val lo = lowerBound(target)
+        val hi = lowerBound(target + 1) - 1
+        if (lo == nums.size || nums[lo] != target) return intArrayOf(-1, -1)
+        return intArrayOf(lo, hi)
+    }
+}`,
+      },
+      swift: {
+        code: `class Solution {
+    func searchRange(_ nums: [Int], _ target: Int) -> [Int] {
+        func lowerBound(_ t: Int) -> Int {
+            var l = 0, r = nums.count
+            while l < r {
+                let mid = (l + r) / 2
+                if nums[mid] < t { l = mid + 1 } else { r = mid }
+            }
+            return l
+        }
+        let lo = lowerBound(target)
+        let hi = lowerBound(target + 1) - 1
+        if lo == nums.count || nums[lo] != target { return [-1, -1] }
+        return [lo, hi]
+    }
+}`,
+      },
+    },
+    complexity: { time: "O(log n)", space: "O(1)" },
+    keyPoints: "lower_bound(t) 与 lower_bound(t+1) 两次二分定首尾边界。",
+  },
+
+  /* ============================================================== */
+  /*  39. Combination Sum (Medium)                                   */
+  /* ============================================================== */
+  {
+    id: 39,
+    slug: "combination-sum",
+    titleZh: "组合总和",
+    titleEn: "Combination Sum",
+    difficulty: "medium",
+    tags: ["回溯", "数组"],
+    description: "正整数集合（可重复使用同一数）里找所有和为 target 的组合。",
+    officialUrl: "https://leetcode.cn/problems/combination-sum/",
+    approach: `本质：从 candidates 里挑若干个（同一个可挑多次）凑成 target，要求组合（无序），不要排列。回溯 + 起始下标 start 控制"只往后选"避免重复组合。
+
+实现要点：dfs(start, remain)。remain == 0 收答案；remain < 0 剪掉。循环 i 从 start 到 n-1：把 candidates[i] 加进 path，递归 dfs(i, remain - candidates[i])（注意是 i 不是 i+1，允许重选自己），递归回退弹出。candidates 排序后还能 remain - candidates[i] < 0 即 break 提前剪。
+
+陷阱与对比：dfs 调用传 i + 1 会变成"每个数最多选一次"（这是 40 题）。dfs 传 0 会枚举到重复组合 [2,3] 与 [3,2]。题目允许重复使用，所以传 i。candidates 元素本身互不相同，所以无需去重相同元素。`,
+    solutions: {
+      c: {
+        code: `#include <stdlib.h>
+#include <string.h>
+
+static void dfs(int* cand, int n, int start, int remain,
+                int* path, int pathLen,
+                int*** ans, int** cols, int* cnt, int* cap) {
+    if (remain == 0) {
+        if (*cnt == *cap) {
+            *cap *= 2;
+            *ans = (int**)realloc(*ans, (*cap) * sizeof(int*));
+            *cols = (int*)realloc(*cols, (*cap) * sizeof(int));
+        }
+        int* row = (int*)malloc(pathLen * sizeof(int));
+        memcpy(row, path, pathLen * sizeof(int));
+        (*ans)[*cnt] = row;
+        (*cols)[*cnt] = pathLen;
+        (*cnt)++;
+        return;
+    }
+    for (int i = start; i < n; ++i) {
+        if (cand[i] > remain) continue;
+        path[pathLen] = cand[i];
+        dfs(cand, n, i, remain - cand[i], path, pathLen + 1, ans, cols, cnt, cap);
+    }
+}
+
+int** combinationSum(int* candidates, int candidatesSize, int target,
+                     int* returnSize, int** returnColumnSizes) {
+    int cap = 16;
+    int** ans = (int**)malloc(cap * sizeof(int*));
+    int* cols = (int*)malloc(cap * sizeof(int));
+    int* path = (int*)malloc(target * sizeof(int)); /* 上限 target/min ≤ target */
+    int cnt = 0;
+    dfs(candidates, candidatesSize, 0, target, path, 0, &ans, &cols, &cnt, &cap);
+    free(path);
+    *returnSize = cnt;
+    *returnColumnSizes = cols;
+    return ans;
+}`,
+      },
+      cpp: {
+        code: `#include <vector>
+using namespace std;
+
+class Solution {
+    void dfs(vector<int>& cand, int start, int remain,
+             vector<int>& path, vector<vector<int>>& ans) {
+        if (remain == 0) { ans.push_back(path); return; }
+        for (int i = start; i < (int)cand.size(); ++i) {
+            if (cand[i] > remain) continue;
+            path.push_back(cand[i]);
+            dfs(cand, i, remain - cand[i], path, ans); // 同一元素可重选 -> 传 i
+            path.pop_back();
+        }
+    }
+public:
+    vector<vector<int>> combinationSum(vector<int>& candidates, int target) {
+        vector<vector<int>> ans;
+        vector<int> path;
+        dfs(candidates, 0, target, path, ans);
+        return ans;
+    }
+};`,
+      },
+      python: {
+        code: `from typing import List
+
+class Solution:
+    def combinationSum(self, candidates: List[int], target: int) -> List[List[int]]:
+        ans: List[List[int]] = []
+        path: List[int] = []
+
+        def dfs(start: int, remain: int) -> None:
+            if remain == 0:
+                ans.append(path[:])
+                return
+            for i in range(start, len(candidates)):
+                if candidates[i] > remain:
+                    continue
+                path.append(candidates[i])
+                dfs(i, remain - candidates[i])  # 允许重选当前元素
+                path.pop()
+
+        dfs(0, target)
+        return ans`,
+      },
+      java: {
+        code: `import java.util.*;
+
+class Solution {
+    public List<List<Integer>> combinationSum(int[] candidates, int target) {
+        List<List<Integer>> ans = new ArrayList<>();
+        dfs(candidates, 0, target, new ArrayDeque<>(), ans);
+        return ans;
+    }
+
+    private void dfs(int[] cand, int start, int remain,
+                     Deque<Integer> path, List<List<Integer>> ans) {
+        if (remain == 0) { ans.add(new ArrayList<>(path)); return; }
+        for (int i = start; i < cand.length; i++) {
+            if (cand[i] > remain) continue;
+            path.push(cand[i]);
+            dfs(cand, i, remain - cand[i], path, ans);
+            path.pop();
+        }
+    }
+}`,
+      },
+      javascript: {
+        code: `/**
+ * @param {number[]} candidates
+ * @param {number} target
+ * @return {number[][]}
+ */
+var combinationSum = function(candidates, target) {
+    const ans = [];
+    const path = [];
+    const dfs = (start, remain) => {
+        if (remain === 0) { ans.push([...path]); return; }
+        for (let i = start; i < candidates.length; i++) {
+            if (candidates[i] > remain) continue;
+            path.push(candidates[i]);
+            dfs(i, remain - candidates[i]);
+            path.pop();
+        }
+    };
+    dfs(0, target);
+    return ans;
+};`,
+      },
+      typescript: {
+        code: `function combinationSum(candidates: number[], target: number): number[][] {
+    const ans: number[][] = [];
+    const path: number[] = [];
+    const dfs = (start: number, remain: number): void => {
+        if (remain === 0) { ans.push([...path]); return; }
+        for (let i = start; i < candidates.length; i++) {
+            if (candidates[i] > remain) continue;
+            path.push(candidates[i]);
+            dfs(i, remain - candidates[i]);
+            path.pop();
+        }
+    };
+    dfs(0, target);
+    return ans;
+}`,
+      },
+      go: {
+        code: `func combinationSum(candidates []int, target int) [][]int {
+    var ans [][]int
+    var path []int
+    var dfs func(start, remain int)
+    dfs = func(start, remain int) {
+        if remain == 0 {
+            tmp := make([]int, len(path))
+            copy(tmp, path)
+            ans = append(ans, tmp)
+            return
+        }
+        for i := start; i < len(candidates); i++ {
+            if candidates[i] > remain {
+                continue
+            }
+            path = append(path, candidates[i])
+            dfs(i, remain-candidates[i])
+            path = path[:len(path)-1]
+        }
+    }
+    dfs(0, target)
+    return ans
+}`,
+      },
+      rust: {
+        code: `impl Solution {
+    pub fn combination_sum(candidates: Vec<i32>, target: i32) -> Vec<Vec<i32>> {
+        let mut ans: Vec<Vec<i32>> = Vec::new();
+        let mut path: Vec<i32> = Vec::new();
+        fn dfs(cand: &[i32], start: usize, remain: i32,
+               path: &mut Vec<i32>, ans: &mut Vec<Vec<i32>>) {
+            if remain == 0 { ans.push(path.clone()); return; }
+            for i in start..cand.len() {
+                if cand[i] > remain { continue; }
+                path.push(cand[i]);
+                dfs(cand, i, remain - cand[i], path, ans);
+                path.pop();
+            }
+        }
+        dfs(&candidates, 0, target, &mut path, &mut ans);
+        ans
+    }
+}`,
+      },
+      kotlin: {
+        code: `class Solution {
+    fun combinationSum(candidates: IntArray, target: Int): List<List<Int>> {
+        val ans = mutableListOf<List<Int>>()
+        val path = mutableListOf<Int>()
+        fun dfs(start: Int, remain: Int) {
+            if (remain == 0) { ans.add(path.toList()); return }
+            for (i in start until candidates.size) {
+                if (candidates[i] > remain) continue
+                path.add(candidates[i])
+                dfs(i, remain - candidates[i])
+                path.removeAt(path.size - 1)
+            }
+        }
+        dfs(0, target)
+        return ans
+    }
+}`,
+      },
+      swift: {
+        code: `class Solution {
+    func combinationSum(_ candidates: [Int], _ target: Int) -> [[Int]] {
+        var ans: [[Int]] = []
+        var path: [Int] = []
+        func dfs(_ start: Int, _ remain: Int) {
+            if remain == 0 { ans.append(path); return }
+            for i in start..<candidates.count {
+                if candidates[i] > remain { continue }
+                path.append(candidates[i])
+                dfs(i, remain - candidates[i])
+                path.removeLast()
+            }
+        }
+        dfs(0, target)
+        return ans
+    }
+}`,
+      },
+    },
+    complexity: { time: "O(S) S 为合法组合数总长度", space: "O(target) 递归深度" },
+    keyPoints: "回溯递归传 i（不是 i+1）允许重选；start 参数避免组合重复枚举。",
+  },
+
+  /* ============================================================== */
+  /*  42. Trapping Rain Water (Hard)                                 */
+  /* ============================================================== */
+  {
+    id: 42,
+    slug: "trapping-rain-water",
+    titleZh: "接雨水",
+    titleEn: "Trapping Rain Water",
+    difficulty: "hard",
+    tags: ["数组", "双指针", "单调栈", "DP"],
+    description: "高度数组表示柱子，下雨后能接住多少单位的雨水。",
+    officialUrl: "https://leetcode.cn/problems/trapping-rain-water/",
+    approach: `本质：每一格的接水量 = min(左侧最高柱, 右侧最高柱) - 该格高度（负值取 0）。难点是高效求出每格的左右最大值。双指针让两边同时收缩，O(n) 时间 O(1) 空间最优。
+
+实现要点：l, r 从两端往中间走，维护 leftMax 和 rightMax。每步比较 height[l] 和 height[r]：哪边小，哪边的最高柱就是已经确定的"瓶颈"——它不会被另一边 push 高（另一边更高）。低的那边累计 max - height[i] 然后指针推进。
+
+陷阱与对比：先用两次扫求 leftMax[] 和 rightMax[] 数组再求和，O(n) 时间但 O(n) 空间。单调栈解法 O(n) 也可，按行（横向）累计水量，思路更绕。双指针是经典最优解，关键是能讲清"为什么处理较低那侧是安全的"——因为另一侧 max 已经 ≥ 它，瓶颈就是较低侧的 max。`,
+    solutions: {
+      c: {
+        code: `int trap(int* height, int heightSize) {
+    int l = 0, r = heightSize - 1;
+    int leftMax = 0, rightMax = 0;
+    int ans = 0;
+    while (l < r) {
+        if (height[l] < height[r]) {
+            if (height[l] >= leftMax) leftMax = height[l];
+            else ans += leftMax - height[l];
+            ++l;
+        } else {
+            if (height[r] >= rightMax) rightMax = height[r];
+            else ans += rightMax - height[r];
+            --r;
+        }
+    }
+    return ans;
+}`,
+      },
+      cpp: {
+        code: `#include <vector>
+using namespace std;
+
+class Solution {
+public:
+    int trap(vector<int>& height) {
+        int l = 0, r = (int)height.size() - 1;
+        int leftMax = 0, rightMax = 0, ans = 0;
+        while (l < r) {
+            if (height[l] < height[r]) {
+                if (height[l] >= leftMax) leftMax = height[l];
+                else ans += leftMax - height[l];
+                ++l;
+            } else {
+                if (height[r] >= rightMax) rightMax = height[r];
+                else ans += rightMax - height[r];
+                --r;
+            }
+        }
+        return ans;
+    }
+};`,
+      },
+      python: {
+        code: `from typing import List
+
+class Solution:
+    def trap(self, height: List[int]) -> int:
+        l, r = 0, len(height) - 1
+        left_max = right_max = 0
+        ans = 0
+        while l < r:
+            if height[l] < height[r]:
+                if height[l] >= left_max:
+                    left_max = height[l]
+                else:
+                    ans += left_max - height[l]
+                l += 1
+            else:
+                if height[r] >= right_max:
+                    right_max = height[r]
+                else:
+                    ans += right_max - height[r]
+                r -= 1
+        return ans`,
+      },
+      java: {
+        code: `class Solution {
+    public int trap(int[] height) {
+        int l = 0, r = height.length - 1;
+        int leftMax = 0, rightMax = 0, ans = 0;
+        while (l < r) {
+            if (height[l] < height[r]) {
+                if (height[l] >= leftMax) leftMax = height[l];
+                else ans += leftMax - height[l];
+                l++;
+            } else {
+                if (height[r] >= rightMax) rightMax = height[r];
+                else ans += rightMax - height[r];
+                r--;
+            }
+        }
+        return ans;
+    }
+}`,
+      },
+      javascript: {
+        code: `/**
+ * @param {number[]} height
+ * @return {number}
+ */
+var trap = function(height) {
+    let l = 0, r = height.length - 1;
+    let leftMax = 0, rightMax = 0, ans = 0;
+    while (l < r) {
+        if (height[l] < height[r]) {
+            if (height[l] >= leftMax) leftMax = height[l];
+            else ans += leftMax - height[l];
+            l++;
+        } else {
+            if (height[r] >= rightMax) rightMax = height[r];
+            else ans += rightMax - height[r];
+            r--;
+        }
+    }
+    return ans;
+};`,
+      },
+      typescript: {
+        code: `function trap(height: number[]): number {
+    let l = 0, r = height.length - 1;
+    let leftMax = 0, rightMax = 0, ans = 0;
+    while (l < r) {
+        if (height[l] < height[r]) {
+            if (height[l] >= leftMax) leftMax = height[l];
+            else ans += leftMax - height[l];
+            l++;
+        } else {
+            if (height[r] >= rightMax) rightMax = height[r];
+            else ans += rightMax - height[r];
+            r--;
+        }
+    }
+    return ans;
+}`,
+      },
+      go: {
+        code: `func trap(height []int) int {
+    l, r := 0, len(height)-1
+    leftMax, rightMax, ans := 0, 0, 0
+    for l < r {
+        if height[l] < height[r] {
+            if height[l] >= leftMax {
+                leftMax = height[l]
+            } else {
+                ans += leftMax - height[l]
+            }
+            l++
+        } else {
+            if height[r] >= rightMax {
+                rightMax = height[r]
+            } else {
+                ans += rightMax - height[r]
+            }
+            r--
+        }
+    }
+    return ans
+}`,
+      },
+      rust: {
+        code: `impl Solution {
+    pub fn trap(height: Vec<i32>) -> i32 {
+        let (mut l, mut r) = (0_usize, height.len().saturating_sub(1));
+        let (mut left_max, mut right_max, mut ans) = (0_i32, 0_i32, 0_i32);
+        while l < r {
+            if height[l] < height[r] {
+                if height[l] >= left_max { left_max = height[l]; }
+                else                     { ans += left_max - height[l]; }
+                l += 1;
+            } else {
+                if height[r] >= right_max { right_max = height[r]; }
+                else                      { ans += right_max - height[r]; }
+                r -= 1;
+            }
+        }
+        ans
+    }
+}`,
+      },
+      kotlin: {
+        code: `class Solution {
+    fun trap(height: IntArray): Int {
+        var l = 0; var r = height.size - 1
+        var leftMax = 0; var rightMax = 0; var ans = 0
+        while (l < r) {
+            if (height[l] < height[r]) {
+                if (height[l] >= leftMax) leftMax = height[l]
+                else ans += leftMax - height[l]
+                l++
+            } else {
+                if (height[r] >= rightMax) rightMax = height[r]
+                else ans += rightMax - height[r]
+                r--
+            }
+        }
+        return ans
+    }
+}`,
+      },
+      swift: {
+        code: `class Solution {
+    func trap(_ height: [Int]) -> Int {
+        var l = 0, r = height.count - 1
+        var leftMax = 0, rightMax = 0, ans = 0
+        while l < r {
+            if height[l] < height[r] {
+                if height[l] >= leftMax { leftMax = height[l] }
+                else                    { ans += leftMax - height[l] }
+                l += 1
+            } else {
+                if height[r] >= rightMax { rightMax = height[r] }
+                else                     { ans += rightMax - height[r] }
+                r -= 1
+            }
+        }
+        return ans
+    }
+}`,
+      },
+    },
+    complexity: { time: "O(n)", space: "O(1)" },
+    keyPoints: "双指针 + leftMax/rightMax 同步收缩：处理较低那侧总安全。",
+  },
+
+  /* ============================================================== */
+  /*  46. Permutations (Medium)                                      */
+  /* ============================================================== */
+  {
+    id: 46,
+    slug: "permutations",
+    titleZh: "全排列",
+    titleEn: "Permutations",
+    difficulty: "medium",
+    tags: ["回溯", "数组"],
+    description: "互不相同的整数数组返回所有可能的全排列。",
+    officialUrl: "https://leetcode.cn/problems/permutations/",
+    approach: `本质：n 个不同元素的全排列共 n! 个，每次从尚未用过的元素里挑一个放到当前位置。回溯模板：path + used 数组 + dfs。
+
+实现要点：dfs(path)。当 path.size == n 收答案。否则循环每个 i：若 used[i] 跳过；否则 used[i] = true、path.push(nums[i])、递归、回退（pop + used[i] = false）。used 数组比"在 path 里查找元素是否已用"快 n 倍。
+
+陷阱与对比：交换法（每次把 nums[i] 与 nums[start] 交换 + 递归 start+1）也是经典实现，省去 used 数组但破坏原数组顺序。元素有重复时（47 题）需要"同层去重"：先排序，循环里跳过 i > start && nums[i] == nums[i-1] && !used[i-1]。本题无重复，最简单模板即可。`,
+    solutions: {
+      c: {
+        code: `#include <stdlib.h>
+#include <string.h>
+
+static void dfs(int* nums, int n, int* path, int pathLen, int* used,
+                int*** ans, int** cols, int* cnt, int* cap) {
+    if (pathLen == n) {
+        if (*cnt == *cap) {
+            *cap *= 2;
+            *ans = (int**)realloc(*ans, (*cap) * sizeof(int*));
+            *cols = (int*)realloc(*cols, (*cap) * sizeof(int));
+        }
+        int* row = (int*)malloc(n * sizeof(int));
+        memcpy(row, path, n * sizeof(int));
+        (*ans)[*cnt] = row;
+        (*cols)[*cnt] = n;
+        (*cnt)++;
+        return;
+    }
+    for (int i = 0; i < n; ++i) {
+        if (used[i]) continue;
+        used[i] = 1;
+        path[pathLen] = nums[i];
+        dfs(nums, n, path, pathLen + 1, used, ans, cols, cnt, cap);
+        used[i] = 0;
+    }
+}
+
+int** permute(int* nums, int numsSize, int* returnSize, int** returnColumnSizes) {
+    int cap = 16;
+    int** ans = (int**)malloc(cap * sizeof(int*));
+    int* cols = (int*)malloc(cap * sizeof(int));
+    int* path = (int*)malloc(numsSize * sizeof(int));
+    int* used = (int*)calloc(numsSize, sizeof(int));
+    int cnt = 0;
+    dfs(nums, numsSize, path, 0, used, &ans, &cols, &cnt, &cap);
+    free(path);
+    free(used);
+    *returnSize = cnt;
+    *returnColumnSizes = cols;
+    return ans;
+}`,
+      },
+      cpp: {
+        code: `#include <vector>
+using namespace std;
+
+class Solution {
+    void dfs(vector<int>& nums, vector<int>& path, vector<bool>& used,
+             vector<vector<int>>& ans) {
+        if (path.size() == nums.size()) { ans.push_back(path); return; }
+        for (int i = 0; i < (int)nums.size(); ++i) {
+            if (used[i]) continue;
+            used[i] = true;
+            path.push_back(nums[i]);
+            dfs(nums, path, used, ans);
+            path.pop_back();
+            used[i] = false;
+        }
+    }
+public:
+    vector<vector<int>> permute(vector<int>& nums) {
+        vector<vector<int>> ans;
+        vector<int> path;
+        vector<bool> used(nums.size(), false);
+        dfs(nums, path, used, ans);
+        return ans;
+    }
+};`,
+      },
+      python: {
+        code: `from typing import List
+
+class Solution:
+    def permute(self, nums: List[int]) -> List[List[int]]:
+        ans: List[List[int]] = []
+        path: List[int] = []
+        used = [False] * len(nums)
+
+        def dfs() -> None:
+            if len(path) == len(nums):
+                ans.append(path[:])
+                return
+            for i in range(len(nums)):
+                if used[i]:
+                    continue
+                used[i] = True
+                path.append(nums[i])
+                dfs()
+                path.pop()
+                used[i] = False
+
+        dfs()
+        return ans`,
+      },
+      java: {
+        code: `import java.util.*;
+
+class Solution {
+    public List<List<Integer>> permute(int[] nums) {
+        List<List<Integer>> ans = new ArrayList<>();
+        boolean[] used = new boolean[nums.length];
+        dfs(nums, new ArrayDeque<>(), used, ans);
+        return ans;
+    }
+
+    private void dfs(int[] nums, Deque<Integer> path, boolean[] used,
+                     List<List<Integer>> ans) {
+        if (path.size() == nums.length) { ans.add(new ArrayList<>(path)); return; }
+        for (int i = 0; i < nums.length; i++) {
+            if (used[i]) continue;
+            used[i] = true;
+            path.addLast(nums[i]);
+            dfs(nums, path, used, ans);
+            path.removeLast();
+            used[i] = false;
+        }
+    }
+}`,
+      },
+      javascript: {
+        code: `/**
+ * @param {number[]} nums
+ * @return {number[][]}
+ */
+var permute = function(nums) {
+    const ans = [];
+    const path = [];
+    const used = new Array(nums.length).fill(false);
+    const dfs = () => {
+        if (path.length === nums.length) { ans.push([...path]); return; }
+        for (let i = 0; i < nums.length; i++) {
+            if (used[i]) continue;
+            used[i] = true;
+            path.push(nums[i]);
+            dfs();
+            path.pop();
+            used[i] = false;
+        }
+    };
+    dfs();
+    return ans;
+};`,
+      },
+      typescript: {
+        code: `function permute(nums: number[]): number[][] {
+    const ans: number[][] = [];
+    const path: number[] = [];
+    const used: boolean[] = new Array(nums.length).fill(false);
+    const dfs = (): void => {
+        if (path.length === nums.length) { ans.push([...path]); return; }
+        for (let i = 0; i < nums.length; i++) {
+            if (used[i]) continue;
+            used[i] = true;
+            path.push(nums[i]);
+            dfs();
+            path.pop();
+            used[i] = false;
+        }
+    };
+    dfs();
+    return ans;
+}`,
+      },
+      go: {
+        code: `func permute(nums []int) [][]int {
+    var ans [][]int
+    var path []int
+    used := make([]bool, len(nums))
+    var dfs func()
+    dfs = func() {
+        if len(path) == len(nums) {
+            tmp := make([]int, len(path))
+            copy(tmp, path)
+            ans = append(ans, tmp)
+            return
+        }
+        for i := 0; i < len(nums); i++ {
+            if used[i] {
+                continue
+            }
+            used[i] = true
+            path = append(path, nums[i])
+            dfs()
+            path = path[:len(path)-1]
+            used[i] = false
+        }
+    }
+    dfs()
+    return ans
+}`,
+      },
+      rust: {
+        code: `impl Solution {
+    pub fn permute(nums: Vec<i32>) -> Vec<Vec<i32>> {
+        let n = nums.len();
+        let mut ans: Vec<Vec<i32>> = Vec::new();
+        let mut path: Vec<i32> = Vec::with_capacity(n);
+        let mut used = vec![false; n];
+        fn dfs(nums: &[i32], path: &mut Vec<i32>, used: &mut [bool],
+               ans: &mut Vec<Vec<i32>>) {
+            if path.len() == nums.len() { ans.push(path.clone()); return; }
+            for i in 0..nums.len() {
+                if used[i] { continue; }
+                used[i] = true;
+                path.push(nums[i]);
+                dfs(nums, path, used, ans);
+                path.pop();
+                used[i] = false;
+            }
+        }
+        dfs(&nums, &mut path, &mut used, &mut ans);
+        ans
+    }
+}`,
+      },
+      kotlin: {
+        code: `class Solution {
+    fun permute(nums: IntArray): List<List<Int>> {
+        val ans = mutableListOf<List<Int>>()
+        val path = mutableListOf<Int>()
+        val used = BooleanArray(nums.size)
+        fun dfs() {
+            if (path.size == nums.size) { ans.add(path.toList()); return }
+            for (i in nums.indices) {
+                if (used[i]) continue
+                used[i] = true
+                path.add(nums[i])
+                dfs()
+                path.removeAt(path.size - 1)
+                used[i] = false
+            }
+        }
+        dfs()
+        return ans
+    }
+}`,
+      },
+      swift: {
+        code: `class Solution {
+    func permute(_ nums: [Int]) -> [[Int]] {
+        var ans: [[Int]] = []
+        var path: [Int] = []
+        var used = [Bool](repeating: false, count: nums.count)
+        func dfs() {
+            if path.count == nums.count { ans.append(path); return }
+            for i in 0..<nums.count {
+                if used[i] { continue }
+                used[i] = true
+                path.append(nums[i])
+                dfs()
+                path.removeLast()
+                used[i] = false
+            }
+        }
+        dfs()
+        return ans
+    }
+}`,
+      },
+    },
+    complexity: { time: "O(n · n!)", space: "O(n) 递归 + used 数组" },
+    keyPoints: "回溯 + used 数组防重复选；path 长度等于 n 时收答案。",
+  },
 ];

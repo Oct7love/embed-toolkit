@@ -33,9 +33,9 @@ const LANG_SHAPE: Record<Language, RegExp> = {
 
 /* ---------- 1. 数据完整性 ---------- */
 
-describe("PROBLEMS data integrity (MVP = 10 道题)", () => {
-  it("exactly 10 problems in MVP", () => {
-    expect(PROBLEMS.length).toBe(10);
+describe("PROBLEMS data integrity (v1.5.2 第 1 批扩展 = 20 道题)", () => {
+  it("exactly 20 problems after batch 1 expansion", () => {
+    expect(PROBLEMS.length).toBe(20);
   });
 
   it("every id is unique", () => {
@@ -169,23 +169,27 @@ describe("getProblemById / getProblemBySlug", () => {
 });
 
 describe("getProgressPercent", () => {
-  it("0 / 10 → 0%", () => {
-    expect(getProgressPercent([])).toEqual({ done: 0, total: 10, percent: 0 });
+  it("0 / total → 0%", () => {
+    expect(getProgressPercent([])).toEqual({
+      done: 0,
+      total: PROBLEMS.length,
+      percent: 0,
+    });
   });
 
-  it("5 / 10 → 50%", () => {
-    expect(getProgressPercent([1, 3, 5, 20, 70])).toEqual({
-      done: 5,
-      total: 10,
-      percent: 50,
-    });
+  it("部分完成的 done/total/percent 一致", () => {
+    const ids = [1, 3, 5, 20, 70];
+    const snap = getProgressPercent(ids);
+    expect(snap.done).toBe(5);
+    expect(snap.total).toBe(PROBLEMS.length);
+    expect(snap.percent).toBe(Math.round((5 / PROBLEMS.length) * 100));
   });
 
   it("全部完成 → 100%", () => {
     const allIds = PROBLEMS.map((p) => p.id);
     expect(getProgressPercent(allIds)).toEqual({
-      done: 10,
-      total: 10,
+      done: PROBLEMS.length,
+      total: PROBLEMS.length,
       percent: 100,
     });
   });
@@ -193,8 +197,8 @@ describe("getProgressPercent", () => {
   it("不存在的 id 不计入（防止 localStorage 被篡改后虚假进度）", () => {
     expect(getProgressPercent([1, 99999])).toEqual({
       done: 1,
-      total: 10,
-      percent: 10,
+      total: PROBLEMS.length,
+      percent: Math.round((1 / PROBLEMS.length) * 100),
     });
   });
 });
